@@ -49,7 +49,7 @@ const changeLoginType = (type: LoginType) => {
             <span class="text-20px font-bold">{{ underlineToHump(appStore.getTitle) }}</span>
           </div>
           <div class="flex justify-center items-center h-[calc(100%-60px)]">
-            <TransitionGroup appear tag="div" enter-active-class="animate__animated animate__bounceInLeft">
+            <TransitionGroup appear tag="div" enter-active-class="animated bounceInLeft">
               <img src="@/assets/svgs/login-box-bg.svg" key="1" alt="" class="w-350px" />
               <div class="text-3xl text-white" key="2">{{ t('login.welcome') }}</div>
               <div class="mt-5 font-normal text-white text-14px" key="3">
@@ -70,7 +70,7 @@ const changeLoginType = (type: LoginType) => {
               <LocaleDropdown class="lt-xl:text-white dark:text-white" />
             </div>
           </div>
-          <Transition appear enter-active-class="animate__animated animate__bounceInRight">
+          <Transition appear enter-active-class="animated bounceInRight">
             <div
               class="h-full flex items-center m-auto w-[100%] at-2xl:max-w-500px at-xl:max-w-500px at-md:max-w-500px at-lg:max-w-500px"
             >

@@ -46,3 +46,4 @@ docker compose run --rm migrate
 - 内网只保留 admin 容器内 1 个 nginx（托管 SPA）
 - `migrate` 使用 Dockerfile 的 `migrator` 阶段；`server` 使用 `runner` 阶段
 - prisma7不兼容node26,故使用node24
+- 清理docker残留: `docker system prune -a --volumes -f`

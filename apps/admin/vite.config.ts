@@ -118,7 +118,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       // 跳过 gzip 体积计算，结束阶段可省不少 CPU/内存
       reportCompressedSize: false,
       cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
-      cssTarget: ['chrome31'],
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
         plugins: env.VITE_USE_BUNDLE_ANALYZER === 'true' ? [visualizer()] : undefined,

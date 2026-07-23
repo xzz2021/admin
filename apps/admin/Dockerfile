@@ -13,6 +13,7 @@ RUN pnpm config set registry https://registry.npmmirror.com
 
 # 使用 BuildKit 缓存 pnpm store
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+  pnpm config set store-dir /pnpm/store && \
   pnpm install --frozen-lockfile --filter admin...
 
 COPY . .

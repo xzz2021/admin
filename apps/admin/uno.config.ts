@@ -1,9 +1,6 @@
 import transformerVariantGroup from '@unocss/transformer-variant-group'
 import { defineConfig, toEscapedSelector as e, presetIcons, presetUno } from 'unocss'
 import { loadEnv } from 'vite'
-import antIcons from './src/components/IconPicker/src/data/icons.ant-design'
-import epIcons from './src/components/IconPicker/src/data/icons.ep'
-import tIcons from './src/components/IconPicker/src/data/icons.tdesign'
 import { ICON_PREFIX } from './src/constants'
 
 const root = process.cwd()
@@ -31,7 +28,6 @@ const createPresetIcons = () => {
 
 export default defineConfig({
   // ...UnoCSS options
-  safelist: [...epIcons.icons, ...antIcons.icons, ...tIcons.icons],
   rules: [
     [
       /^overflow-ellipsis$/,
@@ -144,7 +140,9 @@ ${selector}:after {
   transformers: [transformerVariantGroup()],
   content: {
     pipeline: {
-      include: [/\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html|ts)($|\?)/]
+      // include: [/\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html|ts)($|\?)/]
+      include: [/\.(vue|[jt]sx|html)($|\?)/], // 去掉纯 .ts，或显式 exclude icons.*.ts
+      exclude: [/IconPicker\/src\/data\/icons\..*\.ts$/]
     }
   }
 })
