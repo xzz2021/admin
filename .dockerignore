@@ -1,6 +1,7 @@
 **/node_modules
 **/dist
-**/dist-pro
+!apps/admin/dist-pro
+!apps/admin/dist-pro/**
 .git
 .vscode
 .cursor

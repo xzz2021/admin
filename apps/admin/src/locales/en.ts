@@ -155,7 +155,6 @@ export default {
     editor: 'Editor',
     richText: 'Rich text',
     jsonEditor: 'JSON Editor',
-    codeEditor: 'Code Editor',
     dialog: 'Dialog',
     imageViewer: 'Image viewer',
     descriptions: 'Descriptions',
@@ -503,9 +502,7 @@ export default {
     richText: 'Rich text',
     richTextDes: 'Secondary packaging based on wangeditor',
     jsonEditor: 'JSON Editor',
-    jsonEditorDes: 'Secondary packaging based on vue-json-pretty',
-    codeEditor: 'Code Editor',
-    codeEditorDes: 'Secondary packaging based on monaco-editor'
+    jsonEditorDes: 'Secondary packaging based on vue-json-pretty'
   },
   dialogDemo: {
     dialog: 'Dialog',

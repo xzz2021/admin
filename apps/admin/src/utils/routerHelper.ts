@@ -3,7 +3,13 @@ import { cloneDeep, omit, pick } from 'lodash-es'
 import type { RouteLocationNormalized, Router, RouteRecordNormalized, RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-const modules = import.meta.glob('../views/**/*.{vue,tsx}')
+/**
+ * 动态路由组件映射。
+ * 排除 Components 演示页：含 xgplayer 等重型 demo，
+ * 会被 Rollup 全量 transform，显著抬高构建内存与耗时。
+ * 业务菜单不应指向 views/Components/**；若需本地预览演示页，请用显式 import 或临时去掉排除项。
+ */
+const modules = import.meta.glob(['../views/**/*.{vue,tsx}', '!../views/Components/**'])
 
 const ROUTE_MENU_META_KEYS = [
   'hidden',

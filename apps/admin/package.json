@@ -40,7 +40,6 @@
     "element-plus": "2.9.2",
     "lodash-es": "^4.17.21",
     "mitt": "^3.0.1",
-    "monaco-editor": "^0.52.2",
     "nprogress": "^0.2.0",
     "pinia": "^2.3.0",
     "pinia-plugin-persistedstate": "^4.2.0",

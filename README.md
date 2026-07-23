@@ -16,9 +16,9 @@ docker compose -f compose.yml up -d --build
 
 本 compose **不对外暴露端口**。对外访问由 NPM 在 `shared` 网络上反代：
 
-| 用途 | 转发目标（服务名） |
-|------|-------------------|
-| 前端 | `http://admin:80` |
+| 用途     | 转发目标（服务名）   |
+| -------- | -------------------- |
+| 前端     | `http://admin:80`    |
 | 后端 API | `http://server:3000` |
 
 前端 `VITE_API_BASE_PATH=api/`：若前后端同域名，NPM 需把 `/api` 转到 server，并去掉 `/api` 前缀（与开发时 Vite proxy 一致）。
@@ -45,3 +45,4 @@ docker compose run --rm migrate
 
 - 内网只保留 admin 容器内 1 个 nginx（托管 SPA）
 - `migrate` 使用 Dockerfile 的 `migrator` 阶段；`server` 使用 `runner` 阶段
+- prisma7不兼容node26,故使用node24

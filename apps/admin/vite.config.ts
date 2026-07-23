@@ -56,12 +56,15 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             ]
           })
         : undefined,
-      EslintPlugin({
-        cache: false,
-        failOnWarning: false,
-        failOnError: false,
-        include: ['src/**/*.vue', 'src/**/*.ts', 'src/**/*.tsx'] // 检查的文件
-      }),
+      // 生产构建不要跑 ESLint：会扫全量源码且 cache:false，极易拖慢/抬高内存
+      !isBuild
+        ? EslintPlugin({
+            cache: true,
+            failOnWarning: false,
+            failOnError: false,
+            include: ['src/**/*.vue', 'src/**/*.ts', 'src/**/*.tsx']
+          })
+        : undefined,
       VueI18nPlugin({
         runtimeOnly: true,
         compositionOnly: true,
@@ -108,10 +111,13 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       target: 'es2015',
       outDir: env.VITE_OUT_DIR || 'dist',
       sourcemap: env.VITE_SOURCEMAP === 'true',
-      // brotliSize: false,
+      // 跳过 gzip 体积计算，结束阶段可省不少 CPU/内存
+      // reportCompressedSize: false,
+      cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
+      cssTarget: ['chrome31'],
+      chunkSizeWarningLimit: 1500,
       rollupOptions: {
         plugins: env.VITE_USE_BUNDLE_ANALYZER === 'true' ? [visualizer()] : undefined,
-        // 拆包
         output: {
           manualChunks: {
             'vue-chunks': ['vue', 'vue-router', 'pinia', 'vue-i18n'],
@@ -120,14 +126,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             echarts: ['echarts', 'echarts-wordcloud']
           }
         }
-      },
-      cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
-      cssTarget: ['chrome31']
+      }
     },
     server: {
       port: 4000,
       proxy: {
-        // 选项写法
         '/api': {
           target: 'http://127.0.0.1:3000',
           changeOrigin: true,
@@ -137,7 +140,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       hmr: {
         overlay: false
       },
-      host: '0.0.0.0'
+      host: '0.0.0.0',
+      // 避免 watch dist-pro 导致 Windows EBUSY / 与 build 互相锁文件
+      watch: {
+        ignored: ['**/dist/**', '**/dist-pro/**', '**/dist-dev/**']
+      }
     },
     optimizeDeps: {
       include: [
