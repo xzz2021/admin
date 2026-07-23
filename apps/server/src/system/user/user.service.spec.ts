@@ -6,7 +6,6 @@ import type { RedisService } from '@liaoliaots/nestjs-redis';
 import { UserService } from './user.service';
 
 jest.mock('@/processor/utils', () => ({
-  buildPrismaWhere: jest.fn(),
   formatDateToYMDHMS: jest.fn(),
   hashPayPassword: jest.fn(() => Promise.resolve('hashed')),
   verifyPayPassword: jest.fn(() => Promise.resolve(true)),

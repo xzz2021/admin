@@ -177,11 +177,6 @@ const searchSchema = reactive<FormSchema[]>([
     component: 'Input'
   },
   {
-    field: 'responseMsg',
-    label: '响应信息',
-    component: 'Input'
-  },
-  {
     field: 'method',
     label: '方法',
     component: 'Select',
@@ -196,18 +191,18 @@ const searchSchema = reactive<FormSchema[]>([
     }
   },
   {
-    field: 'status',
+    field: 'isSuccess',
     label: '结果',
     component: 'Select',
     componentProps: {
       options: [
         {
           label: '成功',
-          value: 'success'
+          value: true
         },
         {
           label: '失败',
-          value: 'fail'
+          value: false
         }
       ]
     }

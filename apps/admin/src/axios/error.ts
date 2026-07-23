@@ -1,6 +1,14 @@
 import type { AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 
+type ErrorResponse = {
+  message?: string | string[]
+}
+
+const isErrorResponse = (value: unknown): value is ErrorResponse => {
+  return typeof value === 'object' && value !== null && 'message' in value
+}
+
 export const showAxiosError = (msg: string) => {
   ElMessage({
     message: msg.length > 150 ? msg.slice(0, 150) : msg,
@@ -9,9 +17,10 @@ export const showAxiosError = (msg: string) => {
   })
 }
 
-export const getAxiosErrorMessage = (error: AxiosError<any>): string => {
+export const getAxiosErrorMessage = (error: AxiosError<unknown>): string => {
   const status = error.response?.status
-  const serverMessage = error.response?.data?.message
+  const responseData = error.response?.data
+  const serverMessage = isErrorResponse(responseData) ? responseData.message : undefined
 
   if (typeof serverMessage === 'string' && serverMessage) {
     return serverMessage

@@ -1,6 +1,6 @@
 import { UserOperationLogModel } from '@prisma/generated/zod';
-import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
 const LogSchema = UserOperationLogModel.pick({
   id: true,
@@ -18,12 +18,10 @@ export class LogDto extends createZodDto(LogSchema) {}
 const QueryLogParamsSchema = z.object({
   pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
   pageSize: z.coerce.number().int().min(1).max(100).optional().default(10).meta({ description: '每页条数', example: 10 }),
-  status: z.string().optional().meta({ description: '状态' }),
-  target: z.string().optional().meta({ description: '目标' }),
+  isSuccess: z.boolean().optional().meta({ description: '状态' }),
   method: z.string().optional().meta({ description: '方法' }),
   requestUrl: z.string().optional().meta({ description: '请求URL' }),
   dateRange: z.string().optional().meta({ description: '日期范围' }),
-  responseMsg: z.string().optional().meta({ description: '响应消息' }),
 });
 export class QueryLogParams extends createZodDto(QueryLogParamsSchema) {}
 

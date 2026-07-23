@@ -1,4 +1,4 @@
-import type { InternalAxiosRequestConfig } from './types'
+import type { InternalAxiosRequestConfig } from 'axios'
 
 type PendingEntry = { controller: AbortController; url: string }
 
@@ -18,16 +18,6 @@ export const cleanupPending = (config?: InternalAxiosRequestConfig) => {
   }
 }
 
-/** 为尚未绑定 signal 的请求注册 AbortController（含刷新重试） */
-export const attachAbortSignal = (config: InternalAxiosRequestConfig) => {
-  if (config.signal) return config
-
-  const { controller, requestId } = createPending(config.url || '')
-  config.signal = controller.signal
-  config.requestId = requestId
-  return config
-}
-
 export const cancelRequest = (url: string | string[]) => {
   const urlList = Array.isArray(url) ? url : [url]
   for (const [requestId, pending] of pendingMap) {
@@ -36,12 +26,6 @@ export const cancelRequest = (url: string | string[]) => {
       pendingMap.delete(requestId)
     }
   }
-}
-
-export const cancelUniqueRequest = (requestId: string) => {
-  const pending = pendingMap.get(requestId)
-  pending?.controller.abort()
-  pendingMap.delete(requestId)
 }
 
 export const cancelAllRequest = () => {

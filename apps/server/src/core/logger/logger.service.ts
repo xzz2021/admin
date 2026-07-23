@@ -1,5 +1,5 @@
+import { Prisma } from '@/prisma/generated/prisma/client';
 import { PgService } from '@/prisma/pg.service';
-import { buildPrismaWhere, BuildPrismaWhereParams } from '@/processor/utils';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -49,7 +49,7 @@ export class LogService implements LoggerService {
           requestUrl: data.requestUrl.slice(0, 255),
           isSuccess: data.isSuccess,
           responseMsg: data.responseMsg?.slice(0, 500) ?? null,
-          detailInfo: data?.detailInfo || '',
+          detailInfo: data.detailInfo == null ? Prisma.DbNull : (data.detailInfo as Prisma.InputJsonValue),
           duration: data.duration,
         },
       });
@@ -59,10 +59,29 @@ export class LogService implements LoggerService {
   }
 
   async getUserOperationLogList(searchParam: QueryLogParams) {
-    // console.log('xzz2021: LogServic==================~ searchParam:');
-    const { where, skip, take } = buildPrismaWhere(searchParam as BuildPrismaWhereParams);
-    // console.log('xzz2021: LogService -> getUserOperationLogList -> where:', where);
-    const newSearchParam = {
+    const { pageIndex, pageSize, isSuccess, method, requestUrl, dateRange } = searchParam;
+    const skip = (pageIndex - 1) * pageSize;
+    const take = pageSize;
+    const where: Prisma.UserOperationLogWhereInput = {};
+
+    if (isSuccess !== undefined) {
+      where.isSuccess = isSuccess;
+    }
+    if (method) {
+      where.method = method;
+    }
+    if (requestUrl) {
+      where.requestUrl = { contains: requestUrl };
+    }
+    if (dateRange) {
+      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [string, string];
+      where.createdAt = {
+        gte: new Date(start),
+        lte: new Date(end),
+      };
+    }
+
+    const list = await this.pgService.userOperationLog.findMany({
       where,
       skip,
       take,
@@ -74,14 +93,9 @@ export class LogService implements LoggerService {
           },
         },
       },
-      orderBy: { id: 'desc' as const },
-    };
-    const list = await this.pgService.userOperationLog.findMany({
-      ...newSearchParam,
+      orderBy: { id: 'desc' },
     });
-    const total = await this.pgService.userOperationLog.count({
-      where,
-    });
+    const total = await this.pgService.userOperationLog.count({ where });
     return { list, total, message: '获取日志列表成功' };
   }
 

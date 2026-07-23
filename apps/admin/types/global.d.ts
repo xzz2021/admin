@@ -27,10 +27,7 @@ declare global {
   declare type LayoutType = 'classic' | 'topLeft' | 'top' | 'cutMenu'
 
   declare type AxiosContentType =
-    | 'application/json'
-    | 'application/x-www-form-urlencoded'
-    | 'multipart/form-data'
-    | 'text/plain'
+    'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
 
   declare type AxiosMethod = 'get' | 'post' | 'delete' | 'put'
 
@@ -48,7 +45,7 @@ declare global {
 
   declare interface IResponse<T = any> {
     code: number
-    data: T extends any ? T : T & any
+    data: T
     message: string
   }
 

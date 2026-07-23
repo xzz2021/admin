@@ -8,7 +8,6 @@ export * from './generateBinaryKey';
 export * from './ip.util';
 export * from './list2tree.util';
 export * from './response.model';
-export * from './object';
 export * from './env';
 export * from './prismaError';
 export * from './number';

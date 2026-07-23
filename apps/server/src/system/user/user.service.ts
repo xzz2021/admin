@@ -1,6 +1,7 @@
+import { Prisma } from '@/prisma/generated/prisma/client';
 import { PgService } from '@/prisma/pg.service';
 import { RbacPermissionCacheService } from '@/processor/rbac';
-import { buildPrismaWhere, formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils';
+import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils';
 import { RtTokenService } from '@/system/auth/rt.token.service';
 import { TokenService } from '@/system/auth/token.service';
 import { sanitizePathSegment } from '@/system/staticfile/multer.config';
@@ -294,23 +295,34 @@ export class UserService {
 
   async findAll(searchParam: QueryUserParams) {
     // 此处查询 只批量返回一般数据   查询效率会更好    详细数据应当通过单个ip去查询处理
-    const { where, skip, take } = buildPrismaWhere(searchParam);
-    // console.log('xzz2021: LogService -> getUserOperationLogList -> where:', where);
-    const newSearchParam = {
+    const { pageIndex, pageSize, username, phone, enabled, id } = searchParam;
+    const skip = (pageIndex - 1) * pageSize;
+    const take = pageSize;
+    const where: Prisma.UserWhereInput = {};
+
+    if (username) {
+      where.username = { contains: username };
+    }
+    if (phone) {
+      where.phone = { contains: phone };
+    }
+    if (enabled !== undefined) {
+      where.enabled = enabled;
+    }
+    if (id) {
+      where.departmentId = id;
+    }
+
+    const list = await this.pgService.user.findMany({
       where,
       skip,
       take,
-      orderBy: { id: 'desc' as const },
-    };
-    const list = await this.pgService.user.findMany({
-      ...newSearchParam,
+      orderBy: { id: 'desc' },
       omit: {
         password: true,
       },
     });
-    const total = await this.pgService.user.count({
-      where,
-    });
+    const total = await this.pgService.user.count({ where });
     return { list, total, message: '获取用户列表成功' };
   }
 

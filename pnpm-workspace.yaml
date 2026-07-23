@@ -2,9 +2,10 @@ packages:
   - apps/*
   - packages/*
 allowBuilds:
-  '@hatkom/nestjs-zod-prisma': true
-  '@prisma/engines': true
-  '@scarf/scarf': true
+  # preinstall 使用 Unix find，Windows 会失败；该脚本仅清理测试目录，可安全跳过
+  "@hatkom/nestjs-zod-prisma": false
+  "@prisma/engines": true
+  "@scarf/scarf": true
   argon2: true
   core-js: true
   es5-ext: true
