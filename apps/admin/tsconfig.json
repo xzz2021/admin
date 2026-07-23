@@ -24,12 +24,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": [
-      "@intlify/unplugin-vue-i18n/types",
-      "vite/client",
-      "element-plus/global",
-      "@types/qrcode"
-    ]
+    "types": ["@intlify/unplugin-vue-i18n/types", "vite/client", "@types/qrcode"]
   },
   "include": ["src", "types/**/*.d.ts"]
   // "exclude": ["dist", "node_modules"]

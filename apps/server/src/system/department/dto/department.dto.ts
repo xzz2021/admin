@@ -33,7 +33,10 @@ export class FindDepartmentDto extends createZodDto(FindDepartmentSchema) {}
 export class DeleteDepartmentDto extends createZodDto(FindDepartmentSchema) {}
 
 // 排除updatedAt字段
-const DepartmentTreeSchema = DepartmentModel.extend({
+const DepartmentTreeSchema = DepartmentModel.omit({
+  updatedAt: true,
+}).extend({
+  createdAt: z.iso.datetime(),
   get children() {
     return z.array(DepartmentTreeSchema).optional();
   },

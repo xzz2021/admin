@@ -3,13 +3,15 @@ import { loadEnv } from 'vite'
 import type { UserConfig, ConfigEnv } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import progress from 'vite-plugin-progress'
 import EslintPlugin from 'vite-plugin-eslint'
 import { ViteEjsPlugin } from 'vite-plugin-ejs'
 import PurgeIcons from 'vite-plugin-purge-icons'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
-import { createStyleImportPlugin, ElementPlusResolve } from 'vite-plugin-style-import'
 import UnoCSS from 'unocss/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
 
@@ -21,16 +23,35 @@ function pathResolve(dir: string) {
 }
 
 export default ({ command, mode }: ConfigEnv): UserConfig => {
-  let env = {} as any
   const isBuild = command === 'build'
-  if (!isBuild) {
-    env = loadEnv(process.argv[3] === '--mode' ? process.argv[4] : process.argv[3], root)
-  } else {
-    env = loadEnv(mode, root)
-  }
+  const envMode = isBuild ? mode : process.argv[3] === '--mode' ? process.argv[4] : process.argv[3]
+  const env = loadEnv(envMode, root)
+  const elementPlusImportStyle = env.VITE_USE_ALL_ELEMENT_PLUS_STYLE === 'false' ? 'css' : false
+
   return {
     base: env.VITE_BASE_PATH,
     plugins: [
+      AutoImport({
+        imports: ['vue', 'vue-router', 'pinia'],
+        resolvers: [
+          ElementPlusResolver({
+            importStyle: elementPlusImportStyle
+          })
+        ],
+        dts: pathResolve('types/auto-imports.d.ts')
+      }),
+      Components({
+        // 仅解析第三方组件；本地组件继续显式导入，避免意外扩大依赖图。
+        dirs: [],
+        // Element Plus 指令已由 setupElementPlus 注册，避免重复解析及额外类型约束。
+        directives: false,
+        resolvers: [
+          ElementPlusResolver({
+            importStyle: elementPlusImportStyle
+          })
+        ],
+        dts: pathResolve('types/auto-components.d.ts')
+      }),
       Vue({
         script: {
           // 开启defineModel
@@ -39,23 +60,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       }),
       VueJsx(),
       progress(),
-      env.VITE_USE_ALL_ELEMENT_PLUS_STYLE === 'false'
-        ? createStyleImportPlugin({
-            resolves: [ElementPlusResolve()],
-            libs: [
-              {
-                libraryName: 'element-plus',
-                esModule: true,
-                resolveStyle: (name) => {
-                  if (name === 'click-outside') {
-                    return ''
-                  }
-                  return `element-plus/es/components/${name.replace(/^el-/, '')}/style/css`
-                }
-              }
-            ]
-          })
-        : undefined,
       // 生产构建不要跑 ESLint：会扫全量源码且 cache:false，极易拖慢/抬高内存
       !isBuild
         ? EslintPlugin({

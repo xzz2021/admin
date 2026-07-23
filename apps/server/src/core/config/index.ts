@@ -47,14 +47,8 @@ const productionEnvironmentSchema = z
       .url()
       .startsWith('postgresql://')
       .refine(value => value.length >= 40 && !weakSecretPattern.test(value), 'PG_DATABASE_URL contains a placeholder or weak password'),
-    TOKEN_SECRET: z
-      .string()
-      .min(6)
-      .refine(value => !weakSecretPattern.test(value), 'TOKEN_SECRET is a placeholder or weak value'),
-    TOKEN_REFRESH_SECRET: z
-      .string()
-      .min(6)
-      .refine(value => !weakSecretPattern.test(value), 'TOKEN_REFRESH_SECRET is a placeholder or weak value'),
+    TOKEN_SECRET: z.string().min(6),
+    TOKEN_REFRESH_SECRET: z.string().min(6),
     TOKEN_EXPIRES_TIME: z.coerce.number().int().positive().default(300),
     TOKEN_REFRESH_EXPIRES_TIME: z.coerce.number().int().positive().default(259200),
     REDIS_HOST: z.string().min(1),

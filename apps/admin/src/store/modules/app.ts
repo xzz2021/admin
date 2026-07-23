@@ -1,8 +1,10 @@
+import { ElMessage } from 'element-plus'
+
 import { defineStore } from 'pinia'
 import { store } from '../index'
 import { setCssVar, humpToUnderline } from '@/utils'
 import { colorIsDark, hexToRGB, lighten, mix } from '@/utils/color'
-import { ElMessage, ComponentSize } from 'element-plus'
+import type { ComponentSize } from 'element-plus'
 import { useCssVar } from '@vueuse/core'
 import { unref } from 'vue'
 import { useDark } from '@vueuse/core'
