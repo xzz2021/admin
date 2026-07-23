@@ -1,6 +1,9 @@
-import { defineConfig, toEscapedSelector as e, presetUno, presetIcons } from 'unocss'
 import transformerVariantGroup from '@unocss/transformer-variant-group'
+import { defineConfig, toEscapedSelector as e, presetIcons, presetUno } from 'unocss'
 import { loadEnv } from 'vite'
+import antIcons from './src/components/IconPicker/src/data/icons.ant-design'
+import epIcons from './src/components/IconPicker/src/data/icons.ep'
+import tIcons from './src/components/IconPicker/src/data/icons.tdesign'
 import { ICON_PREFIX } from './src/constants'
 
 const root = process.cwd()
@@ -28,6 +31,7 @@ const createPresetIcons = () => {
 
 export default defineConfig({
   // ...UnoCSS options
+  safelist: [...epIcons.icons, ...antIcons.icons, ...tIcons.icons],
   rules: [
     [
       /^overflow-ellipsis$/,
