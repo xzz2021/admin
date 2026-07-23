@@ -1,20 +1,20 @@
 export interface BuildPrismaWhereParams {
-  pageIndex: number;
-  pageSize: number;
-  status?: string;
+  pageIndex: number | string;
+  pageSize: number | string;
+  enabled?: string;
   dateRange?: [string, string] | string;
   [key: string]: any;
 }
 
 export const buildPrismaWhere = (params: BuildPrismaWhereParams) => {
-  const { pageIndex, pageSize, enabled, dateRange, orderBy, status, ...rest } = params;
+  const { pageIndex, pageSize, enabled, dateRange, orderBy, ...rest } = params;
   const skip = (Number(pageIndex) - 1) * Number(pageSize);
   const take = Number(pageSize);
   const where: any = {};
-  if (status === 'success') {
-    where.isSuccess = true;
-  } else if (status === 'fail') {
-    where.isSuccess = false;
+  if (enabled === 'true') {
+    where.enabled = true;
+  } else if (enabled === 'false') {
+    where.enabled = false;
   }
   if (dateRange) {
     let newRange;

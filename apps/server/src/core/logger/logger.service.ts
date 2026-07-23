@@ -1,7 +1,6 @@
 import { PgService } from '@/prisma/pg.service';
-import { buildPrismaWhere } from '@/processor/utils';
+import { buildPrismaWhere, BuildPrismaWhereParams } from '@/processor/utils';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { Prisma } from '@prisma/generated/prisma/client';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { DeleteLogDto, QueryLogParams } from './dto/logger.dto';
@@ -50,7 +49,7 @@ export class LogService implements LoggerService {
           requestUrl: data.requestUrl.slice(0, 255),
           isSuccess: data.isSuccess,
           responseMsg: data.responseMsg?.slice(0, 500) ?? null,
-          detailInfo: (data.detailInfo ?? undefined) as Prisma.InputJsonValue | undefined,
+          detailInfo: data?.detailInfo || '',
           duration: data.duration,
         },
       });
@@ -61,7 +60,7 @@ export class LogService implements LoggerService {
 
   async getUserOperationLogList(searchParam: QueryLogParams) {
     // console.log('xzz2021: LogServic==================~ searchParam:');
-    const { where, skip, take } = buildPrismaWhere(searchParam);
+    const { where, skip, take } = buildPrismaWhere(searchParam as BuildPrismaWhereParams);
     // console.log('xzz2021: LogService -> getUserOperationLogList -> where:', where);
     const newSearchParam = {
       where,
