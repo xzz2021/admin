@@ -552,6 +552,9 @@ importers:
       "@nestjs/serve-static":
         specifier: ^5.0.5
         version: 5.0.5(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(express@5.2.1)
+      "@nestjs/swagger":
+        specifier: ^11.4.5
+        version: 11.4.6(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
       "@nestjs/throttler":
         specifier: ^6.5.0
         version: 6.5.0(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(reflect-metadata@0.2.2)
@@ -564,6 +567,9 @@ importers:
       argon2:
         specifier: ^0.44.0
         version: 0.44.0
+      basic-auth:
+        specifier: ^2.0.1
+        version: 2.0.1
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -625,9 +631,6 @@ importers:
       "@nestjs/schematics":
         specifier: ^11.0.0
         version: 11.1.0(chokidar@4.0.3)(prettier@3.9.5)(typescript@5.7.3)
-      "@nestjs/swagger":
-        specifier: ^11.4.5
-        version: 11.4.6(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
       "@nestjs/testing":
         specifier: ^11.0.1
         version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(@nestjs/platform-express@11.1.28)
@@ -649,9 +652,6 @@ importers:
       "@types/supertest":
         specifier: ^7.0.0
         version: 7.2.1
-      basic-auth:
-        specifier: ^2.0.1
-        version: 2.0.1
       eslint:
         specifier: ^9.18.0
         version: 9.39.5(jiti@2.6.1)

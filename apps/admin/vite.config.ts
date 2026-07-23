@@ -108,11 +108,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       drop: env.VITE_DROP_DEBUGGER === 'true' ? ['debugger'] : undefined
     },
     build: {
-      target: 'es2015',
+      target: 'es2020', // 如果需要兼容老浏览器，可以改为 'es2015'
       outDir: env.VITE_OUT_DIR || 'dist',
       sourcemap: env.VITE_SOURCEMAP === 'true',
       // 跳过 gzip 体积计算，结束阶段可省不少 CPU/内存
-      // reportCompressedSize: false,
+      reportCompressedSize: false,
       cssCodeSplit: !(env.VITE_USE_CSS_SPLIT === 'false'),
       cssTarget: ['chrome31'],
       chunkSizeWarningLimit: 1500,

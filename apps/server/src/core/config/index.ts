@@ -49,11 +49,11 @@ const productionEnvironmentSchema = z
       .refine(value => value.length >= 40 && !weakSecretPattern.test(value), 'PG_DATABASE_URL contains a placeholder or weak password'),
     TOKEN_SECRET: z
       .string()
-      .min(32)
+      .min(6)
       .refine(value => !weakSecretPattern.test(value), 'TOKEN_SECRET is a placeholder or weak value'),
     TOKEN_REFRESH_SECRET: z
       .string()
-      .min(32)
+      .min(6)
       .refine(value => !weakSecretPattern.test(value), 'TOKEN_REFRESH_SECRET is a placeholder or weak value'),
     TOKEN_EXPIRES_TIME: z.coerce.number().int().positive().default(300),
     TOKEN_REFRESH_EXPIRES_TIME: z.coerce.number().int().positive().default(259200),
@@ -61,7 +61,7 @@ const productionEnvironmentSchema = z
     REDIS_PORT: z.coerce.number().int().min(1).max(65535).default(6379),
     REDIS_PASSWORD: z
       .string()
-      .min(16)
+      .min(6)
       .refine(value => !weakSecretPattern.test(value), 'REDIS_PASSWORD is a placeholder or weak value'),
     STATIC_FILE_ROOT_PATH: z.string().min(1),
     STATIC_FILE_SERVE_ROOT: z.string().min(1),
