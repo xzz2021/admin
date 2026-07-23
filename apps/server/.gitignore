@@ -3,4 +3,4 @@ logs/
 dist/
 *.log
 
-
+public/file/
