@@ -12,4 +12,4 @@ admin/node_modules/
 
 server/node_modules/
 
-apps/server/src/prisma/generated/
+# apps/server/src/prisma/generated/

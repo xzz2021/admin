@@ -32,6 +32,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        run: |
+          pnpm --filter server lint:check -- --quiet
+          pnpm --filter admin lint -- --quiet
+
       - name: Run quality gate
         env:
           NODE_ENV: test
