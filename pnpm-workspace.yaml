@@ -1,0 +1,14 @@
+packages:
+  - apps/*
+  - packages/*
+allowBuilds:
+  '@hatkom/nestjs-zod-prisma': true
+  '@prisma/engines': true
+  '@scarf/scarf': true
+  argon2: true
+  core-js: true
+  es5-ext: true
+  esbuild: true
+  prisma: true
+  unrs-resolver: true
+  vue-demi: true

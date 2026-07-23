@@ -1,0 +1,15 @@
+node_modules/
+
+.env
+!.env.example
+!apps/admin/.env.pro
+!apps/server/.env
+
+*.log
+admin/dist/
+admin/dist-pro/
+admin/node_modules/
+
+server/node_modules/
+
+apps/server/src/prisma/generated/

@@ -1,0 +1,39 @@
+import { BadRequestException } from '@nestjs/common';
+import { resolve, sep } from 'path';
+import { assertPathInsideRoot, sanitizePathSegment, sanitizeUploadFilename, UPLOAD_ALLOWLIST } from './multer.config';
+
+describe('multer upload safety helpers', () => {
+  const prevRoot = process.env.STATIC_FILE_ROOT_PATH;
+
+  beforeAll(() => {
+    process.env.STATIC_FILE_ROOT_PATH = 'public';
+  });
+
+  afterAll(() => {
+    process.env.STATIC_FILE_ROOT_PATH = prevRoot;
+  });
+
+  it('rejects path traversal and dangerous extensions in filenames', () => {
+    expect(() => sanitizeUploadFilename('../../etc/passwd', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(BadRequestException);
+    expect(() => sanitizeUploadFilename('shell.php', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(BadRequestException);
+    expect(() => sanitizeUploadFilename('photo.exe.jpg', UPLOAD_ALLOWLIST.IMAGE_EXT)).toThrow(BadRequestException);
+  });
+
+  it('keeps only basename and generates a safe stored name', () => {
+    const name = sanitizeUploadFilename('../dir/avatar.PNG', UPLOAD_ALLOWLIST.IMAGE_EXT);
+    expect(name).toMatch(/^\d+-[a-f0-9]{8}-avatar\.png$/i);
+    expect(name.includes('..')).toBe(false);
+    expect(name.includes(sep)).toBe(false);
+  });
+
+  it('sanitizes path segments used for avatar directories', () => {
+    expect(sanitizePathSegment('138-0013/../../root')).toBe('138-0013root');
+    expect(sanitizePathSegment('')).toBe('unknown');
+  });
+
+  it('blocks delete/unlink targets outside the static root', () => {
+    const root = resolve(process.cwd(), 'public');
+    expect(() => assertPathInsideRoot(root, resolve(root, '..', 'package.json'))).toThrow(BadRequestException);
+    expect(assertPathInsideRoot(root, resolve(root, 'avatar', 'u1', 'a.png'))).toBe(resolve(root, 'avatar', 'u1', 'a.png'));
+  });
+});
