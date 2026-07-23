@@ -33,6 +33,7 @@ const formSchema = reactive<FormSchema[]>([
         value: 'id',
         children: 'children'
       },
+      defaultExpandAll: true,
       highlightCurrent: true,
       expandOnClickNode: false,
       checkStrictly: true,
@@ -40,6 +41,7 @@ const formSchema = reactive<FormSchema[]>([
       clearable: true
     },
     optionApi: async () => {
+      // 每次打开面板不应该都请求接口,直接读父组件数据就可以了  --- 待优化
       const res = await getDepartmentListApi()
       return filterDepartmentTreeForParent(res.data.list || [], editingId.value)
     }

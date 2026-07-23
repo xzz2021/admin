@@ -49,7 +49,8 @@ const tableColumns = reactive<TableColumn[]>([
   },
   {
     field: 'name',
-    label: t('userDemo.departmentName')
+    label: t('userDemo.departmentName'),
+    minWidth: 200
   },
   // {
   //   field: 'sort',
@@ -71,7 +72,7 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'description',
     label: t('userDemo.remark'),
-    minWidth: 160,
+    minWidth: 80,
     showOverflowTooltip: true
   },
   {
