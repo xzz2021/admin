@@ -19,7 +19,6 @@ export class PermissionService {
   }
 
   async update(updatePermissionDto: UpdatePermissionDto) {
-    console.log('TCL: PermissionService -> update -> updatePermissionDto', updatePermissionDto);
     const { id, ...rest } = updatePermissionDto;
     const res = await this.pgService.permission.update({
       where: { id },

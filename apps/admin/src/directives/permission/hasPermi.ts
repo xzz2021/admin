@@ -1,11 +1,12 @@
-import type { App, Directive, DirectiveBinding } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
 import router from '@/router'
+import type { App, Directive, DirectiveBinding } from 'vue'
 
 const { t } = useI18n()
 
 const hasPermission = (value: string): boolean => {
-  const permission = (router.currentRoute.value.meta.permission || []) as string[]
+  const permission = (router.currentRoute.value.meta.permissions || []) as string[]
+  console.log('TCL: permission', permission)
   if (!value) {
     throw new Error(t('permission.hasPermission'))
   }

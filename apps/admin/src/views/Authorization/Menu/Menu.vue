@@ -8,6 +8,7 @@ import { FormSchema } from '@/components/Form'
 import { Icon } from '@/components/Icon'
 import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
+import { useRoleMenu } from '@/hooks/fn/useRoleMenu'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
 import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
@@ -16,10 +17,9 @@ import { onActivated, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SortMenu from './components/SortMenu.vue'
 import { filterMenuTree } from './utils/menuTree'
-
 const { t } = useI18n()
 const router = useRouter()
-
+const { getRole } = useRoleMenu()
 /** 完整菜单树缓存，搜索只在前端过滤 */
 const sourceList = ref<MenuItem[]>([])
 const searchParams = ref<Recordable>({})
@@ -233,6 +233,9 @@ onActivated(() => {
         <BaseButton type="primary" class="mb-[18px] flex-shrink-0" @click="openSortDialog">
           {{ t('menu.sort') }}
         </BaseButton>
+        <BaseButton type="danger" v-hasPermi="'menu:refresh'" class="mb-[18px] flex-shrink-0" @click="getRole">{{
+          t('common.refresh')
+        }}</BaseButton>
       </div>
     </div>
     <Table

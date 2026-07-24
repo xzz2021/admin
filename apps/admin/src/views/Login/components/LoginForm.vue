@@ -1,7 +1,6 @@
 <script setup lang="tsx">
 import { getCaptchaApi, loginApi } from '@/api/login'
 import { UserLoginFormType, UserLoginType } from '@/api/login/types'
-import { CAPTCHA_TEXT_COOKIE, clearCookie, setCookie } from '@/utils/cookie'
 import { BaseButton } from '@/components/Button'
 import { Form, FormSchema } from '@/components/Form'
 import { Icon } from '@/components/Icon'
@@ -9,6 +8,7 @@ import { useForm } from '@/hooks/web/useForm'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
 import { useUserStore } from '@/store/modules/user'
+import { CAPTCHA_TEXT_COOKIE, clearCookie, setCookie } from '@/utils/cookie'
 import { AxiosError } from 'axios'
 import { ElCheckbox, ElLink, ElMessage } from 'element-plus'
 import { onMounted, reactive, ref, unref } from 'vue'
@@ -56,7 +56,10 @@ const schema = reactive<FormSchema[]>([
   {
     field: 'phone',
     label: t('login.phone'),
-    // value: '13077908822',
+    componentProps: {
+      // 用于demo快速登录
+      placeholder: '13011112222'
+    },
     component: 'Input',
     colProps: {
       span: 24
@@ -65,15 +68,12 @@ const schema = reactive<FormSchema[]>([
   {
     field: 'password',
     label: t('login.password'),
-    // value: '112233',
     component: 'InputPassword',
     colProps: {
       span: 24
     },
     componentProps: {
-      style: {
-        width: '100%'
-      }
+      placeholder: '123456'
     }
   },
   {
@@ -166,7 +166,7 @@ const schema = reactive<FormSchema[]>([
               <div class="flex justify-around w-[100%]">
                 <div onClick={toSms}>
                   <Icon
-                    icon="messages-square"
+                    icon="message-circle"
                     size={iconSize}
                     class="cursor-pointer ant-icon"
                     color={iconColor}
@@ -175,7 +175,7 @@ const schema = reactive<FormSchema[]>([
                 </div>
                 <div onClick={toWechat}>
                   <Icon
-                    icon="message-circle"
+                    icon="messages-square"
                     size={iconSize}
                     class="cursor-pointer ant-icon"
                     color={iconColor}

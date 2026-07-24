@@ -3,19 +3,34 @@ import { addPermissionApi, delPermissionApi, getMenuListApi, updatePermissionApi
 import type { MenuItem, MenuPermission, PermissionType } from '@/api/menu/types'
 import { BaseButton } from '@/components/Button'
 import { Form, FormSchema } from '@/components/Form'
+import { Icon } from '@/components/Icon'
+import { useClipboard } from '@/hooks/web/useClipboard'
 import { useForm } from '@/hooks/web/useForm'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
-import { ElButton, ElMessage, ElPopconfirm, ElTable, ElTableColumn, ElTag } from 'element-plus'
+import { ElButton, ElMessage, ElMessageBox, ElPopconfirm, ElTable, ElTableColumn, ElTag } from 'element-plus'
 import { cloneDeep, pick } from 'lodash-es'
-import { PropType, reactive, ref, unref, watch } from 'vue'
+import { computed, PropType, reactive, ref, unref, watch } from 'vue'
+import {
+  buildMenuFormSnapshot,
+  collectMenuIds,
+  collectMenuNames,
+  parseMenuFormSnapshot,
+  prepareMenuFormImport
+} from '../utils/menuFormSnapshot'
 import { filterMenuTreeForParent, findMenuById } from '../utils/menuTree'
 import { getPermissionCodeSuffix } from '../utils/permissionCode'
+import {
+  adaptPermissionSnapshotToMenu,
+  buildMenuPermissionSnapshot,
+  parseMenuPermissionSnapshot
+} from '../utils/permissionSnapshot'
 import { isTempPermissionId } from '../utils/syncPermissions'
 import AddButtonPermission from './AddButtonPermission.vue'
 
 const { t } = useI18n()
 const { required } = useValidator()
+const { copy, getText } = useClipboard()
 
 const PERMISSION_TYPE_LABELS: Record<PermissionType, string> = {
   BUTTON: '按钮权限',
@@ -96,10 +111,168 @@ const normalizeMenuRow = (row: MenuItem | null): Partial<MenuItem> | null => {
 }
 
 const permissionSaving = ref(false)
+const permissionImporting = ref(false)
+const formImporting = ref(false)
+const cacheComponent = ref('')
+const editingMenuId = ref<string>()
+const isEditMode = computed(() => !!editingMenuId.value)
 
 const getMenuId = async () => {
   const formData = await getFormData()
   return formData.id ?? props.currentRow?.id
+}
+
+const applyMenuTypeSchema = async (type: number, componentValue?: string) => {
+  if (type === 1) {
+    setSchema([{ field: 'component', path: 'componentProps.disabled', value: false }])
+    if (componentValue !== undefined) {
+      setValues({ component: componentValue })
+      cacheComponent.value = componentValue
+    }
+  } else {
+    setSchema([{ field: 'component', path: 'componentProps.disabled', value: true }])
+  }
+}
+
+const handleCopyMenuForm = async () => {
+  const formData = await getFormData()
+  if (!formData?.title && !formData?.path && !formData?.name) {
+    ElMessage.warning(t('menu.copyFormEmpty'))
+    return
+  }
+  const snapshot = buildMenuFormSnapshot(formData)
+  copy(JSON.stringify(snapshot, null, 2))
+}
+
+const handleImportMenuForm = async () => {
+  const clipboardText = await getText()
+  if (!clipboardText?.trim()) {
+    ElMessage.warning(t('menu.importFormEmpty'))
+    return
+  }
+
+  const snapshot = parseMenuFormSnapshot(clipboardText.trim())
+  if (!snapshot) {
+    ElMessage.error(t('menu.importFormInvalid'))
+    return
+  }
+
+  formImporting.value = true
+  try {
+    const res = await getMenuListApi()
+    const list = res.data.list || []
+    const { values, nameConflict, parentCleared } = prepareMenuFormImport(snapshot, {
+      existingNames: collectMenuNames(list, editingMenuId.value),
+      existingIds: collectMenuIds(list)
+    })
+
+    const type = values.type ?? 0
+    await applyMenuTypeSchema(type, type === 1 ? (values.component ?? '') : undefined)
+
+    if (type === 0) {
+      values.component = values.parentId ? '##' : '#'
+    }
+
+    await setValues(values)
+
+    if (nameConflict) {
+      ElMessage.warning(t('menu.importFormNameConflict'))
+    } else if (parentCleared) {
+      ElMessage.warning(t('menu.importFormParentCleared'))
+    } else {
+      ElMessage.success(t('menu.importFormSuccess'))
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error(t('menu.importFormFailed'))
+  } finally {
+    formImporting.value = false
+  }
+}
+
+const handleCopyPermissions = async () => {
+  const formData = await getFormData()
+  const permissions = normalizePermissions(formData?.permissions)
+  if (!permissions.length) {
+    ElMessage.warning(t('menu.copyPermissionEmpty'))
+    return
+  }
+  const snapshot = buildMenuPermissionSnapshot(permissions, formData?.path)
+  copy(JSON.stringify(snapshot, null, 2))
+}
+
+const handleImportPermissions = async () => {
+  const menuId = await getMenuId()
+  if (!menuId) {
+    ElMessage.warning(t('menu.importPermissionNeedSave'))
+    return
+  }
+
+  const formData = await getFormData()
+  const menuPath = formData?.path?.trim()
+  if (!menuPath) {
+    ElMessage.warning(t('menu.importPermissionNeedPath'))
+    return
+  }
+
+  const clipboardText = await getText()
+  if (!clipboardText?.trim()) {
+    ElMessage.warning(t('menu.importPermissionEmpty'))
+    return
+  }
+
+  const snapshot = parseMenuPermissionSnapshot(clipboardText.trim())
+  if (!snapshot) {
+    ElMessage.error(t('menu.importPermissionInvalid'))
+    return
+  }
+
+  const existingCodes = new Set(normalizePermissions(formData?.permissions).map((item) => item.code))
+  const { toCreate, skippedDuplicate } = adaptPermissionSnapshotToMenu(snapshot, menuPath, existingCodes)
+
+  if (!toCreate.length) {
+    ElMessage.warning(skippedDuplicate > 0 ? t('menu.importPermissionAllDuplicate') : t('menu.importPermissionEmpty'))
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(t('menu.importPermissionConfirm', { count: toCreate.length }), t('common.reminder'), {
+      confirmButtonText: t('common.ok'),
+      cancelButtonText: t('common.cancel'),
+      type: 'warning'
+    })
+  } catch {
+    return
+  }
+
+  permissionImporting.value = true
+  try {
+    let successCount = 0
+    for (const item of toCreate) {
+      await addPermissionApi({
+        name: item.name,
+        code: item.code,
+        type: item.type,
+        sort: item.sort ?? 0,
+        enabled: item.enabled ?? true,
+        menuId
+      })
+      successCount++
+    }
+    await reloadPermissionsFromApi()
+    ElMessage.success(
+      t('menu.importPermissionSuccess', {
+        count: successCount,
+        skipped: skippedDuplicate
+      })
+    )
+  } catch (error) {
+    console.error(error)
+    ElMessage.error(t('menu.importPermissionFailed'))
+    await reloadPermissionsFromApi()
+  } finally {
+    permissionImporting.value = false
+  }
 }
 
 const reloadPermissionsFromApi = async () => {
@@ -148,8 +321,6 @@ const openPermissionDrawer = async (row?: MenuPermission) => {
   editingPermission.value = row ? { ...row } : null
   showDrawer.value = true
 }
-const cacheComponent = ref('')
-const editingMenuId = ref<string>()
 
 const COL_FULL = { span: 24 }
 const COL_THIRD = { span: 8 }
@@ -232,7 +403,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'name',
-    label: t('menu.name'),
+    label: t('menu.componentName'),
     component: 'Input',
     colProps: COL_THIRD
   },
@@ -382,9 +553,24 @@ const formSchema = reactive<FormSchema[]>([
       slots: {
         default: (data: any) => (
           <>
-            <BaseButton class="m-t-5px" type="primary" size="small" onClick={() => openPermissionDrawer()}>
-              添加权限
-            </BaseButton>
+            <div class="flex flex-wrap gap-8px items-center mt-5px">
+              <BaseButton type="primary" size="small" onClick={() => openPermissionDrawer()}>
+                添加权限
+              </BaseButton>
+              <BaseButton size="small" onClick={() => handleCopyPermissions()}>
+                <Icon icon="copy" class="mr-4px" />
+                {t('menu.copyPermission')}
+              </BaseButton>
+              <BaseButton
+                size="small"
+                disabled={!isEditMode.value}
+                loading={permissionImporting.value}
+                onClick={() => handleImportPermissions()}
+              >
+                <Icon icon="clipboard-paste" class="mr-4px" />
+                {t('menu.importPermission')}
+              </BaseButton>
+            </div>
             <ElTable
               key={JSON.stringify(data?.permissions?.map((p: MenuPermission) => p.id))}
               data={data?.permissions}
@@ -522,6 +708,12 @@ watch(
   { immediate: true }
 )
 
+const pageMenuTitle = computed(() => {
+  const title = props.currentRow?.title?.trim()
+  if (title) return t(title)
+  return t('menu.addMenu')
+})
+
 defineExpose({ submit })
 
 const confirmPermission = async (data: MenuPermission) => {
@@ -585,17 +777,59 @@ const confirmPermission = async (data: MenuPermission) => {
 </script>
 
 <template>
-  <Form :rules="rules" label-width="96px" @register="formRegister" :schema="formSchema" class="menu-write-form" />
-  <AddButtonPermission
-    v-model="showDrawer"
-    :menu-path="drawerMenuPath"
-    :edit-data="editingPermission"
-    :confirm-loading="permissionSaving"
-    @confirm="confirmPermission"
-  />
+  <div class="menu-write">
+    <div class="menu-write-toolbar">
+      <div class="menu-write-title">{{ pageMenuTitle }}</div>
+      <div class="menu-write-actions">
+        <BaseButton :loading="formImporting" @click="handleImportMenuForm">
+          <Icon icon="clipboard-paste" class="mr-4px" />
+          {{ t('menu.writeForm') }}
+        </BaseButton>
+        <BaseButton @click="handleCopyMenuForm">
+          <Icon icon="copy" class="mr-4px" />
+          {{ t('menu.copyForm') }}
+        </BaseButton>
+      </div>
+    </div>
+
+    <Form :rules="rules" label-width="96px" @register="formRegister" :schema="formSchema" class="menu-write-form" />
+    <AddButtonPermission
+      v-model="showDrawer"
+      :menu-path="drawerMenuPath"
+      :edit-data="editingPermission"
+      :confirm-loading="permissionSaving"
+      @confirm="confirmPermission"
+    />
+  </div>
 </template>
 
 <style scoped lang="less">
+.menu-write {
+  .menu-write-toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .menu-write-title {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .menu-write-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+}
+
 .menu-write-form {
   :deep(.el-divider__text) {
     font-size: 14px;
