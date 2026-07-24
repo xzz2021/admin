@@ -1,6 +1,8 @@
 import { PgService } from '@/prisma/pg.service';
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils';
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { OnlineGateway } from '@/system/online/online.gateway';
+import { OnlineService } from '@/system/online/online.service';
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginInfoDto, RegisterDto } from './dto/auth.dto';
 import { RedisService } from '@liaoliaots/nestjs-redis';
@@ -22,6 +24,12 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
     private readonly rtTokenService: RtTokenService,
+    @Optional()
+    @Inject(forwardRef(() => OnlineService))
+    private readonly onlineService?: OnlineService,
+    @Optional()
+    @Inject(forwardRef(() => OnlineGateway))
+    private readonly onlineGateway?: OnlineGateway,
   ) {
     const wechat = this.configService.get<{ appId: string; appSecret: string }>('wechat');
     this.wxAppSecret = wechat?.appSecret || '';
@@ -170,14 +178,23 @@ export class AuthService {
     // return this.smsService.generateSmsCode(phone, cachekey);
   }
 
-  async forceLogout(id: string) {
-    await Promise.all([this.tokenService.kickOthers(id), this.rtTokenService.kickOthers(id)]);
+  async forceLogout(id: string, operatorId: string) {
+    if (!operatorId) {
+      throw new BadRequestException('缺少操作者信息');
+    }
+    if (!this.onlineService || !this.onlineGateway) {
+      throw new BadRequestException('在线用户模块不可用');
+    }
+    const jtis = await this.onlineService.terminateUserByOperator(operatorId, id);
+    this.onlineGateway.notifyForceLogout(jtis, 'forced');
+    this.onlineGateway.notifyForceLogoutByUser(id, 'forced');
 
     return { message: '强制用户下线成功', id };
   }
 
   async logout(id: string, jti: string, res?: Response) {
     await Promise.all([this.tokenService.logout(id, jti), this.rtTokenService.logout(id, jti)]);
+    await this.onlineService?.remove(jti);
     if (res) {
       this.rtTokenService.clearRtCookie(res);
     }
@@ -252,6 +269,8 @@ export class AuthService {
     }
     const { username, phone, id, roles } = user;
     const { accessToken } = await this.rtTokenService.signToken(userId, { username, phone, id, roles: roles.map(item => item.role) }, res, oldJti);
+    // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
+    await this.onlineService?.remove(oldJti);
     return { access_token: accessToken, message: '获取新的token成功' };
   }
 }

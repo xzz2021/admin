@@ -1,6 +1,8 @@
 <script lang="tsx">
-import { computed, defineComponent, unref } from 'vue'
+import { computed, defineComponent, onMounted, onBeforeUnmount, unref, watch } from 'vue'
 import { useAppStore } from '@/store/modules/app'
+import { useOnlinePresenceStore } from '@/store/modules/onlinePresence'
+import { useUserStore } from '@/store/modules/user'
 import { Backtop } from '@/components/Backtop'
 import { Setting } from '@/components/Setting'
 import { useRenderLayout } from './components/useRenderLayout'
@@ -11,6 +13,8 @@ const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('layout')
 
 const appStore = useAppStore()
+const userStore = useUserStore()
+const presenceStore = useOnlinePresenceStore()
 
 // 是否是移动端
 const mobile = computed(() => appStore.getMobile)
@@ -45,6 +49,24 @@ const renderLayout = () => {
 export default defineComponent({
   name: 'Layout',
   setup() {
+    onMounted(() => {
+      if (userStore.getToken) {
+        presenceStore.start()
+      }
+    })
+
+    watch(
+      () => userStore.getToken,
+      (token) => {
+        if (token) presenceStore.start()
+        else presenceStore.stop()
+      }
+    )
+
+    onBeforeUnmount(() => {
+      presenceStore.stop()
+    })
+
     return () => (
       <section class={[prefixCls, `${prefixCls}__${layout.value}`, 'w-[100%] h-[100%] relative']}>
         {mobile.value && !collapse.value ? (

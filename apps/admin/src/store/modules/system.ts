@@ -18,8 +18,8 @@ export const useSystemStore = defineStore('system', () => {
     return res?.data
   }
 
-  const forceLogout = async (id: number) => {
-    const res = await forceLogoutApi(id)
+  const forceLogout = async (userId: string) => {
+    const res = await forceLogoutApi(userId)
     return res
   }
 

@@ -114,9 +114,4 @@ export class RtTokenService {
     await this.revoke(userId, jti);
     return { ok: true };
   }
-
-  async kickOthers(userId: string, currentJti?: string) {
-    await this.revokeAll(userId, currentJti);
-    return { ok: true };
-  }
 }

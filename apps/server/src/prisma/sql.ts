@@ -581,6 +581,18 @@ const _permission = [
     resource: 'server',
     type: 'button',
   },
+  {
+    name: '查看',
+    code: 'view',
+    resource: 'onlineUser',
+    type: 'button',
+  },
+  {
+    name: '强制下线',
+    code: 'kick',
+    resource: 'onlineUser',
+    type: 'button',
+  },
 ];
 
 export { _menu, _permission, _role };

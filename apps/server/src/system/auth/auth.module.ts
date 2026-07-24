@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
@@ -8,6 +8,7 @@ import { JwtStrategy } from './jwt.strategy';
 // import { SmsModule } from '@/utils/sms/sms.module';
 // import { ConfigService } from '@nestjs/config';
 import { CaptchaModule } from '@/system/captcha/captcha.module';
+import { OnlineModule } from '@/system/online/online.module';
 import { JwtRefreshAuthGuard } from '@/processor/guard';
 import { RtTokenService } from './rt.token.service';
 import { TokenService } from './token.service';
@@ -16,22 +17,8 @@ import { TokenService } from './token.service';
   imports: [
     PassportModule,
     JwtModule, // 不用传递参数 一律在生成时传递
-    // .registerAsync({
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => {
-    //     // console.log(configService.get<string>('JWT_SECRET'));
-    //     // console.log(configService.get<string>('JWT_EXPIRES_IN', '3d'));
-    //     return {
-    //       // global: true,
-    //       secret: configService.get<string>('JWT_SECRET'),
-    //       // signOptions: {
-    //       //   expiresIn: Number(configService.get<string>('JWT_EXPIRES_TIME')), // 默认 7 天
-    //       // },
-    //     };
-    //   },
-    // }),
-    // SmsModule,
     CaptchaModule,
+    forwardRef(() => OnlineModule),
   ],
   controllers: [AuthController],
   providers: [AuthService, TokenService, RtTokenService, JwtStrategy, JwtRefreshStrategy, JwtRefreshAuthGuard],

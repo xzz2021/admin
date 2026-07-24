@@ -4,9 +4,11 @@ import { RbacPermissionCacheService } from '@/processor/rbac';
 import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils';
 import { RtTokenService } from '@/system/auth/rt.token.service';
 import { TokenService } from '@/system/auth/token.service';
+import { OnlineGateway } from '@/system/online/online.gateway';
+import { OnlineService } from '@/system/online/online.service';
 import { sanitizePathSegment } from '@/system/staticfile/multer.config';
 import { RedisService } from '@liaoliaots/nestjs-redis';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { AdminUpdatePwdDto, CreateUserDto, QueryUserParams, UpdatePersonalInfo, UpdatePwdDto, UpdateUserDto } from './dto/user.dto';
@@ -21,12 +23,25 @@ export class UserService {
     private readonly tokenService: TokenService,
     private readonly rtTokenService: RtTokenService,
     private readonly configService: ConfigService,
+    @Optional()
+    @Inject(forwardRef(() => OnlineService))
+    private readonly onlineService?: OnlineService,
+    @Optional()
+    @Inject(forwardRef(() => OnlineGateway))
+    private readonly onlineGateway?: OnlineGateway,
   ) {
     this.redis = this.redisService.getOrThrow();
   }
 
+  /** 改密 / 禁用：吊销全部会话并清理在线状态 */
   private async revokeAllSessions(userId: string) {
-    await Promise.all([this.tokenService.kickOthers(userId), this.rtTokenService.kickOthers(userId)]);
+    if (this.onlineService) {
+      const jtis = await this.onlineService.terminateUser(userId);
+      this.onlineGateway?.notifyForceLogout(jtis, 'revoked');
+      this.onlineGateway?.notifyForceLogoutByUser(userId, 'revoked');
+      return;
+    }
+    await Promise.all([this.tokenService.revokeAll(userId), this.rtTokenService.revokeAll(userId)]);
   }
 
   findOne(phone: string) {

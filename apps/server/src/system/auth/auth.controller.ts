@@ -56,7 +56,7 @@ export class AuthController {
   @Post('forceLogout')
   @RequiredPermission('user:update')
   @ApiOperation({ summary: '强制用户下线' })
-  forceLogout(@Body() body: ForceLogoutDto) {
-    return this.authService.forceLogout(body.id);
+  forceLogout(@Body() body: ForceLogoutDto, @Req() req: JwtReqDto) {
+    return this.authService.forceLogout(body.id, req.user.id);
   }
 }

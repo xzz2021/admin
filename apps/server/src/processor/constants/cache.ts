@@ -6,6 +6,8 @@ export enum RedisKeys {
   RBAC_PERMISSIONS_PREFIX = 'rbac:permissions:',
   AUTH_PASSWORD_V_PREFIX = 'auth:passwordVersion:',
   ONLINE_USER_PREFIX = 'online:user:',
+  ONLINE_SESSION_PREFIX = 'online:session:',
+  ONLINE_INDEX = 'online:index',
   TOKEN_BLACKLIST_PREFIX = 'token:blacklist:',
   MONITOR_METRICS = 'monitor:metrics',
   MONITOR_LATEST = 'monitor:latest',

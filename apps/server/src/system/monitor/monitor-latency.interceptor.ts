@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { MonitorLatencyTracker } from './monitor-latency.tracker';
 
-const SKIP_PATHS = ['/monitor', '/health', '/sse', '/auth/refresh'];
+const SKIP_PATHS = ['/monitor', '/health', '/sse', '/auth/refresh', '/online'];
 
 @Injectable()
 export class MonitorLatencyInterceptor implements NestInterceptor {
