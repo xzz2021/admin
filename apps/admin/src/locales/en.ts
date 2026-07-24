@@ -444,12 +444,6 @@ export default {
     iconPicker: 'Icon picker',
     iAgree: 'I agree'
   },
-  guideDemo: {
-    guide: 'Guide',
-    start: 'Start',
-    message:
-      'The guide page is very useful for some people who enter the project for the first time. You can briefly introduce the functions of the project. The boot page is based on driver.js'
-  },
   iconDemo: {
     icon: 'Icon',
     localIcon: 'Local Icon',

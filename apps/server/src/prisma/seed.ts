@@ -95,6 +95,12 @@ async function create_permissions(permission_data: any[], tx: Prisma.Transaction
 async function main() {
   await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
+      //  创建前先检查数据库mneu是否存在,有说明已经生成过,跳过
+      const menuCount = await tx.menu.count()
+      if (menuCount > 0) {
+        console.log(`ℹ️ Menu already contains ${menuCount} records; skipping seed.`)
+        return
+      }
       await create_menus(_menu, tx)
       console.log('🌱 Seeding menus data success...')
       await create_roles(_role, tx)
