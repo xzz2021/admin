@@ -9,7 +9,7 @@
     "dev:server": "pnpm --filter server start:dev",
     "dev": "pnpm --filter \"./apps/*\" --parallel dev",
     "build": "pnpm --filter server build && pnpm --filter admin build",
-    "lint": "pnpm --filter server lint:check && pnpm --filter admin lint",
+    "lint": "pnpm --filter server lint:check && pnpm --filter admin lint:check",
     "typecheck": "pnpm --filter server typecheck && pnpm --filter admin typecheck",
     "test": "pnpm --filter server test:ci",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
