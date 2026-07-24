@@ -1,12 +1,12 @@
 //  这里是捕获所未知异常  无法拿到源信息
 // 如果需要源信息   后期考虑 实现return next.handle().pipe() 来捕获
 
-import { MonitorService } from '@/system/monitor/monitor.service';
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject, Logger, NotFoundException, Optional } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { parseException } from './exception.util';
-import { checkPrismaError } from './prisma.exception';
+import { MonitorService } from '@/system/monitor/monitor.service'
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject, Logger, NotFoundException, Optional } from '@nestjs/common'
+import { Request, Response } from 'express'
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
+import { parseException } from './exception.util'
+import { checkPrismaError } from './prisma.exception'
 //  捕获 HttpException 异常 或 HttpException 子类 异常
 @Catch() // @Catch()参数留空  表示 捕获所有异常
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -16,32 +16,32 @@ export class AllExceptionsFilter implements ExceptionFilter {
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
-    const start = Date.now();
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const start = Date.now()
+    const ctx = host.switchToHttp()
+    const response = ctx.getResponse<Response>()
+    const request = ctx.getRequest<Request>()
     // 如果返回的是流文件 则不进行处理
-    if (response.headersSent) return;
+    if (response.headersSent) return
 
-    const path = request.url.split('?')[0];
-    if (path.includes('favicon.ico')) return response.status(HttpStatus.NO_CONTENT).send();
+    const path = request.url.split('?')[0]
+    if (path.includes('favicon.ico')) return response.status(HttpStatus.NO_CONTENT).send()
 
-    const parsed = parseException(exception);
-    let { status, message, meta } = parsed;
+    const parsed = parseException(exception)
+    let { status, message, meta } = parsed
 
     if (exception instanceof NotFoundException) {
-      status = exception.getStatus();
-      message = `接口不存在: ${path}`;
+      status = exception.getStatus()
+      message = `接口不存在: ${path}`
     }
 
-    const prismaError = checkPrismaError(exception);
+    const prismaError = checkPrismaError(exception)
     if (prismaError) {
-      status = HttpStatus.BAD_REQUEST;
-      message = prismaError.msg;
-      meta = prismaError.meta;
+      status = HttpStatus.BAD_REQUEST
+      message = prismaError.msg
+      meta = prismaError.meta
     }
 
-    const shouldLog = status !== 401 && !(exception instanceof NotFoundException);
+    const shouldLog = status !== 401 && !(exception instanceof NotFoundException)
     if (shouldLog) {
       this.logger.error({
         timestamp: new Date().toISOString(),
@@ -50,23 +50,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
         info: `${path}, ${request.method} ${Date.now() - start}ms`,
         status,
         message,
-      });
+      })
       void this.monitorService?.recordError({
         status,
         method: request.method,
         path,
         message,
-      });
+      })
     }
 
-    const isDev = process.env.NODE_ENV === 'development';
+    const isDev = process.env.NODE_ENV === 'development'
     response.status(status).json({
       code: status,
       timestamp: new Date(),
       path,
       message: message || '未捕获异常,请检查后端代码!',
       meta: isDev ? meta : undefined,
-    });
+    })
   }
 
   /*

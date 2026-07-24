@@ -1,6 +1,6 @@
-import { Global, Module } from '@nestjs/common';
-import { REDIS_MODULE } from './cache-ioredis';
-import { RedisHealthService } from './redis-health.service';
+import { Global, Module } from '@nestjs/common'
+import { REDIS_MODULE } from './cache-ioredis'
+import { RedisHealthService } from './redis-health.service'
 
 @Global()
 @Module({

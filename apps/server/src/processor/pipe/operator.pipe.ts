@@ -1,15 +1,15 @@
-import { ArgumentMetadata, Inject, Injectable, PipeTransform } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
+import { ArgumentMetadata, Inject, Injectable, PipeTransform } from '@nestjs/common'
+import { REQUEST } from '@nestjs/core'
 
 @Injectable()
 export class CreatorPipe implements PipeTransform {
   constructor(@Inject(REQUEST) private readonly request: any) {}
   transform(value: any, metadata: ArgumentMetadata) {
-    const user = this.request.user;
+    const user = this.request.user
 
-    value.createdBy = user.id;
+    value.createdBy = user.id
 
-    return value;
+    return value
   }
 }
 
@@ -17,10 +17,10 @@ export class CreatorPipe implements PipeTransform {
 export class UpdaterPipe implements PipeTransform {
   constructor(@Inject(REQUEST) private readonly request: any) {}
   transform(value: any, metadata: ArgumentMetadata) {
-    const user = this.request.user;
+    const user = this.request.user
 
-    value.updatedBy = user.id;
+    value.updatedBy = user.id
 
-    return value;
+    return value
   }
 }

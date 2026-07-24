@@ -1,6 +1,6 @@
-import { createZodDto } from 'nestjs-zod/dto';
-import * as z from 'zod';
-import { CompleteUser, RelatedUserModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteUser, RelatedUserModel } from "./index"
 
 export const DepartmentModel = z.object({
   id: z.string(),
@@ -10,16 +10,17 @@ export const DepartmentModel = z.object({
   sort: z.number().int().min(0).optional().meta({ description: '排序', example: 0 }),
   enabled: z.boolean().optional().meta({ description: '是否启用', example: true }),
   description: z.string().max(200).optional().meta({ description: '部门描述', example: '负责产品研发' }).nullish(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
 
-export class DepartmentDto extends createZodDto(DepartmentModel) {}
+export class DepartmentDto extends createZodDto(DepartmentModel) {
+}
 
 export interface CompleteDepartment extends z.infer<typeof DepartmentModel> {
-  parent?: CompleteDepartment | null;
-  children: CompleteDepartment[];
-  users: CompleteUser[];
+  parent?: CompleteDepartment | null
+  children: CompleteDepartment[]
+  users: CompleteUser[]
 }
 
 /**
@@ -27,10 +28,8 @@ export interface CompleteDepartment extends z.infer<typeof DepartmentModel> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedDepartmentModel: z.ZodType<CompleteDepartment> = z.lazy(() =>
-  DepartmentModel.extend({
-    parent: RelatedDepartmentModel.nullish(),
-    children: RelatedDepartmentModel.array(),
-    users: RelatedUserModel.array(),
-  }),
-);
+export const RelatedDepartmentModel: z.ZodType<CompleteDepartment> = z.lazy(() => DepartmentModel.extend({
+  parent: RelatedDepartmentModel.nullish(),
+  children: RelatedDepartmentModel.array(),
+  users: RelatedUserModel.array(),
+}))

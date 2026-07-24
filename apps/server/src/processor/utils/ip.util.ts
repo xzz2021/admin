@@ -1,24 +1,24 @@
-import type { IncomingMessage } from 'node:http';
-import { Request } from 'express';
+import type { IncomingMessage } from 'node:http'
+import { Request } from 'express'
 
 /* 判断IP是不是内网 */
 function isLAN(ip: string) {
-  ip.toLowerCase();
-  if (ip === 'localhost') return true;
-  let a_ip = 0;
-  if (ip === '') return false;
-  const aNum = ip.split('.');
-  if (aNum.length !== 4) return false;
-  a_ip += Number.parseInt(aNum[0]) << 24;
-  a_ip += Number.parseInt(aNum[1]) << 16;
-  a_ip += Number.parseInt(aNum[2]) << 8;
-  a_ip += Number.parseInt(aNum[3]) << 0;
-  a_ip = (a_ip >> 16) & 0xffff;
-  return a_ip >> 8 === 0x7f || a_ip >> 8 === 0xa || a_ip === 0xc0a8 || (a_ip >= 0xac10 && a_ip <= 0xac1f);
+  ip.toLowerCase()
+  if (ip === 'localhost') return true
+  let a_ip = 0
+  if (ip === '') return false
+  const aNum = ip.split('.')
+  if (aNum.length !== 4) return false
+  a_ip += Number.parseInt(aNum[0]) << 24
+  a_ip += Number.parseInt(aNum[1]) << 16
+  a_ip += Number.parseInt(aNum[2]) << 8
+  a_ip += Number.parseInt(aNum[3]) << 0
+  a_ip = (a_ip >> 16) & 0xffff
+  return a_ip >> 8 === 0x7f || a_ip >> 8 === 0xa || a_ip === 0xc0a8 || (a_ip >= 0xac10 && a_ip <= 0xac1f)
 }
 
 export function getIp(request: Request | IncomingMessage) {
-  const req = request as any;
+  const req = request as any
 
   let ip: string =
     request.headers['x-forwarded-for'] ||
@@ -28,24 +28,24 @@ export function getIp(request: Request | IncomingMessage) {
     req?.ip ||
     req?.raw?.connection?.remoteAddress ||
     req?.raw?.socket?.remoteAddress ||
-    undefined;
-  if (ip && ip.split(',').length > 0) ip = ip.split(',')[0];
+    undefined
+  if (ip && ip.split(',').length > 0) ip = ip.split(',')[0]
 
-  return ip;
+  return ip
 }
 
 export async function getIpAddress(ip: string) {
-  if (isLAN(ip)) return '内网IP';
+  if (isLAN(ip)) return '内网IP'
   try {
     // let { data } = await axios.get(`https://whois.pconline.com.cn/ipJson.jsp?ip=${ip}&json=true`, { responseType: 'arraybuffer' });
     let data = await fetch(`https://whois.pconline.com.cn/ipJson.jsp?ip=${ip}&json=true`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-    }).then(res => res.json());
-    data = new TextDecoder('gbk').decode(data as ArrayBuffer);
-    data = JSON.parse(data as string);
-    return data.addr.trim().split(' ').at(0);
+    }).then(res => res.json())
+    data = new TextDecoder('gbk').decode(data as ArrayBuffer)
+    data = JSON.parse(data as string)
+    return data.addr.trim().split(' ').at(0)
   } catch (error) {
-    return '第三方接口请求失败';
+    return '第三方接口请求失败'
   }
 }

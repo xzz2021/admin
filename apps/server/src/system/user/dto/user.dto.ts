@@ -1,6 +1,6 @@
-import { UserModel } from '@prisma/generated/zod';
-import { z } from 'zod';
-import { createZodDto } from 'nestjs-zod';
+import { UserModel } from '@prisma/generated/zod'
+import { z } from 'zod'
+import { createZodDto } from 'nestjs-zod'
 
 const QueryUserParamsSchema = z.object({
   id: z.string().min(1).optional().meta({ description: '部门id, 不传则查询所有用户' }),
@@ -13,7 +13,7 @@ const QueryUserParamsSchema = z.object({
     .optional()
     .transform(val => (val === undefined ? undefined : val === true || val === 'true'))
     .meta({ description: '用户状态' }),
-});
+})
 export class QueryUserParams extends createZodDto(QueryUserParamsSchema) {}
 
 const UserSchema = UserModel.pick({
@@ -28,7 +28,7 @@ const UserSchema = UserModel.pick({
   enabled: true,
   email: true,
   nickname: true,
-});
+})
 export class UserDto extends createZodDto(UserSchema) {}
 
 const UpdateUserSchema = UserSchema.extend({
@@ -39,36 +39,36 @@ const UpdateUserSchema = UserSchema.extend({
     .transform(val => (Array.isArray(val) ? [...new Set(val)] : val))
     .meta({ description: '角色ID', example: ['1', '2'] }),
   department: z.string().min(1),
-});
+})
 export class UpdateUserDto extends createZodDto(UpdateUserSchema) {}
 
 const CreateUserSchema = UpdateUserSchema.omit({ id: true }).extend({
   password: UserModel.shape.password.meta({ description: '初始密码', example: 'ChangeMe_Now!' }),
-});
+})
 export class CreateUserDto extends createZodDto(CreateUserSchema) {}
 
 const UpdatePersonalInfoSchema = UserSchema.extend({
   id: z.string().min(1).meta({ description: '用户ID', example: '1' }),
-});
+})
 export class UpdatePersonalInfo extends createZodDto(UpdatePersonalInfoSchema) {}
 
 const UserListResSchema = z.object({
   total: z.number().meta({ description: '总条数', example: 10 }),
   list: z.array(UserSchema).meta({ description: '列表数据' }),
-});
+})
 export class UserListRes extends createZodDto(UserListResSchema) {}
 
 const UpdatePwdSchema = z.object({
   id: z.string().min(1).meta({ description: '用户ID', example: '1' }),
   password: UserModel.shape.password.meta({ description: '旧密码', example: 'OldPass_123!' }),
   newPassword: UserModel.shape.password.meta({ description: '新密码', example: 'NewPass_123!' }),
-});
+})
 export class UpdatePwdDto extends createZodDto(UpdatePwdSchema) {}
 
 const AdminUpdatePwdSchema = z.object({
   id: z.string().min(1).meta({ description: '用户ID', example: '1' }),
   password: UserModel.shape.password.meta({ description: '新密码', example: 'NewPass_123!' }),
-});
+})
 export class AdminUpdatePwdDto extends createZodDto(AdminUpdatePwdSchema) {}
 
 const BatchDeleteUserSchema = z.object({
@@ -77,5 +77,5 @@ const BatchDeleteUserSchema = z.object({
     .nonempty()
     .transform(val => [...new Set(val)])
     .meta({ description: '用户ID', example: ['1', '2'] }),
-});
+})
 export class BatchDeleteUserDto extends createZodDto(BatchDeleteUserSchema) {}

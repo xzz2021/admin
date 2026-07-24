@@ -1,6 +1,6 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { CompleteUser, RelatedUserModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteUser, RelatedUserModel } from "./index"
 
 export const UserOperationLogModel = z.object({
   id: z.number().int(),
@@ -14,12 +14,13 @@ export const UserOperationLogModel = z.object({
   duration: z.coerce.number().int().min(0).meta({ description: '请求耗时（毫秒）', example: 120 }),
   userId: z.string().optional().meta({ description: '操作用户 ID', example: 'clxxx' }).nullish(),
   createdAt: z.date(),
-});
+})
 
-export class UserOperationLogDto extends createZodDto(UserOperationLogModel) {}
+export class UserOperationLogDto extends createZodDto(UserOperationLogModel) {
+}
 
 export interface CompleteUserOperationLog extends z.infer<typeof UserOperationLogModel> {
-  user?: CompleteUser | null;
+  user?: CompleteUser | null
 }
 
 /**
@@ -27,8 +28,6 @@ export interface CompleteUserOperationLog extends z.infer<typeof UserOperationLo
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedUserOperationLogModel: z.ZodType<CompleteUserOperationLog> = z.lazy(() =>
-  UserOperationLogModel.extend({
-    user: RelatedUserModel.nullish(),
-  }),
-);
+export const RelatedUserOperationLogModel: z.ZodType<CompleteUserOperationLog> = z.lazy(() => UserOperationLogModel.extend({
+  user: RelatedUserModel.nullish(),
+}))

@@ -1,12 +1,12 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Request } from 'express';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common'
+import { Request } from 'express'
 
 /** 从 request.user 提取当前登录用户，支持 @User('id') 提取单个字段 */
 export const User = createParamDecorator((data: string | undefined, ctx: ExecutionContext) => {
-  const request = ctx.switchToHttp().getRequest<Request>();
-  const user = (request as Request & { user?: Record<string, unknown> }).user;
-  return data ? user?.[data] : user;
-});
+  const request = ctx.switchToHttp().getRequest<Request>()
+  const user = (request as Request & { user?: Record<string, unknown> }).user
+  return data ? user?.[data] : user
+})
 
 /*
 @Get()

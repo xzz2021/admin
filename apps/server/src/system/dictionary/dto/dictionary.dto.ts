@@ -1,7 +1,7 @@
-import { DictionaryTypeModel } from '@/prisma/generated/zod/dictionarytype';
-import z from 'zod';
-import { createZodDto } from 'nestjs-zod';
-import { DictionaryItemSchema } from './entry.dto';
+import { DictionaryTypeModel } from '@/prisma/generated/zod/dictionarytype'
+import z from 'zod'
+import { createZodDto } from 'nestjs-zod'
+import { DictionaryItemSchema } from './entry.dto'
 
 const DictionaryItemResponseSchema = z.object({
   id: z.string(),
@@ -12,7 +12,7 @@ const DictionaryItemResponseSchema = z.object({
   enabled: z.boolean(),
   createdAt: z.coerce.string().optional(),
   updatedAt: z.coerce.string().optional(),
-});
+})
 const DictionarySchema = z.object({
   name: z.string().min(1).max(50).meta({
     description: '字典名称',
@@ -24,7 +24,7 @@ const DictionarySchema = z.object({
   }),
   description: z.string().optional().describe('字典描述'),
   status: z.boolean().optional().describe('字典状态'),
-});
+})
 
 export class DictionaryDto extends createZodDto(DictionarySchema) {}
 
@@ -36,7 +36,7 @@ const UpsertDictionarySchema = z.intersection(
     }),
   }),
   DictionarySchema,
-);
+)
 export class UpsertDictionaryDto extends createZodDto(UpsertDictionarySchema) {}
 
 const DeleteDictionarySchema = z.object({
@@ -48,13 +48,13 @@ const DeleteDictionarySchema = z.object({
       description: '字典ID',
       example: ['1'],
     }),
-});
+})
 export class DeleteDictionaryDto extends createZodDto(DeleteDictionarySchema) {}
 
 const DictionaryListItemSchema = DictionaryTypeModel.omit({ updatedAt: true }).extend({
   createdAt: z.coerce.string().optional(),
   items: z.array(DictionaryItemResponseSchema).optional(),
-});
+})
 
 export class DictionaryListRes extends createZodDto(DictionaryListItemSchema) {}
 
@@ -63,11 +63,11 @@ const DictionarySeedSchema = z.intersection(
   z.object({
     entries: z.array(DictionaryItemSchema).optional(),
   }),
-);
+)
 export class DictionarySeedDto extends createZodDto(DictionarySeedSchema) {}
 const DictionarySeedArraySchema = z.object({
   data: z.array(DictionarySeedSchema).meta({
     description: '字典种子数据',
   }),
-});
+})
 export class DictionarySeedArrayDto extends createZodDto(DictionarySeedArraySchema) {}

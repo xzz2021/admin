@@ -1,6 +1,6 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { CompleteUser, RelatedUserModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteUser, RelatedUserModel } from "./index"
 
 export const UserSessionModel = z.object({
   id: z.string(),
@@ -10,12 +10,13 @@ export const UserSessionModel = z.object({
   userAgent: z.string().max(500).optional().meta({ description: 'User-Agent', example: 'Mozilla/5.0' }).nullish(),
   expiresAt: z.coerce.date().meta({ description: '过期时间', example: '2026-01-02T12:00:00.000Z' }),
   createdAt: z.date(),
-});
+})
 
-export class UserSessionDto extends createZodDto(UserSessionModel) {}
+export class UserSessionDto extends createZodDto(UserSessionModel) {
+}
 
 export interface CompleteUserSession extends z.infer<typeof UserSessionModel> {
-  user: CompleteUser;
+  user: CompleteUser
 }
 
 /**
@@ -23,8 +24,6 @@ export interface CompleteUserSession extends z.infer<typeof UserSessionModel> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedUserSessionModel: z.ZodType<CompleteUserSession> = z.lazy(() =>
-  UserSessionModel.extend({
-    user: RelatedUserModel,
-  }),
-);
+export const RelatedUserSessionModel: z.ZodType<CompleteUserSession> = z.lazy(() => UserSessionModel.extend({
+  user: RelatedUserModel,
+}))

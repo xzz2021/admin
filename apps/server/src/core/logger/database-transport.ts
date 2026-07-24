@@ -1,5 +1,5 @@
 // import { PrismaService as pgService } from '@/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 
 // 自定义数据库传输器
 @Injectable()
@@ -18,4 +18,4 @@ class DatabaseTransport {
   }
 }
 
-export { DatabaseTransport };
+export { DatabaseTransport }

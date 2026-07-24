@@ -13,4 +13,4 @@ export enum RedisKeys {
   MONITOR_LATEST = 'monitor:latest',
   MONITOR_ERRORS = 'monitor:errors',
 }
-export const API_CACHE_PREFIX = 'api-cache:';
+export const API_CACHE_PREFIX = 'api-cache:'

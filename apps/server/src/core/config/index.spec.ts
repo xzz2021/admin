@@ -1,4 +1,4 @@
-import { validateEnvironment } from './index';
+import { validateEnvironment } from './index'
 
 describe('production environment validation', () => {
   const validEnvironment = {
@@ -12,7 +12,7 @@ describe('production environment validation', () => {
     REDIS_PASSWORD: 'strong-random-redis-secret',
     STATIC_FILE_ROOT_PATH: 'public',
     STATIC_FILE_SERVE_ROOT: 'api/public',
-  };
+  }
 
   it('allows Swagger to remain disabled without credentials', () => {
     expect(
@@ -20,8 +20,8 @@ describe('production environment validation', () => {
         ...validEnvironment,
         SWAGGER: 'false',
       }),
-    ).toMatchObject({ SWAGGER: 'false' });
-  });
+    ).toMatchObject({ SWAGGER: 'false' })
+  })
 
   it('requires explicit strong credentials when Swagger is enabled', () => {
     expect(() =>
@@ -29,7 +29,7 @@ describe('production environment validation', () => {
         ...validEnvironment,
         SWAGGER: 'true',
       }),
-    ).toThrow();
+    ).toThrow()
 
     expect(() =>
       validateEnvironment({
@@ -38,7 +38,7 @@ describe('production environment validation', () => {
         SWAGGER_USERNAME: 'docs-admin',
         SWAGGER_PASSWORD: 'short',
       }),
-    ).toThrow();
+    ).toThrow()
 
     expect(
       validateEnvironment({
@@ -50,6 +50,6 @@ describe('production environment validation', () => {
     ).toMatchObject({
       SWAGGER: 'true',
       SWAGGER_USERNAME: 'docs-admin',
-    });
-  });
-});
+    })
+  })
+})

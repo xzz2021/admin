@@ -1,6 +1,6 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { CompleteRoleMenu, RelatedRoleMenuModel, CompletePermission, RelatedPermissionModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteRoleMenu, RelatedRoleMenuModel, CompletePermission, RelatedPermissionModel } from "./index"
 
 export const MenuModel = z.object({
   id: z.string(),
@@ -27,15 +27,16 @@ export const MenuModel = z.object({
   link: z.string().url({ message: '外部链接格式不正确' }).max(100).optional().meta({ description: '外部链接地址', example: 'https://example.com' }).nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
-export class MenuDto extends createZodDto(MenuModel) {}
+export class MenuDto extends createZodDto(MenuModel) {
+}
 
 export interface CompleteMenu extends z.infer<typeof MenuModel> {
-  parent?: CompleteMenu | null;
-  children: CompleteMenu[];
-  roles: CompleteRoleMenu[];
-  permissions: CompletePermission[];
+  parent?: CompleteMenu | null
+  children: CompleteMenu[]
+  roles: CompleteRoleMenu[]
+  permissions: CompletePermission[]
 }
 
 /**
@@ -43,11 +44,9 @@ export interface CompleteMenu extends z.infer<typeof MenuModel> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedMenuModel: z.ZodType<CompleteMenu> = z.lazy(() =>
-  MenuModel.extend({
-    parent: RelatedMenuModel.nullish(),
-    children: RelatedMenuModel.array(),
-    roles: RelatedRoleMenuModel.array(),
-    permissions: RelatedPermissionModel.array(),
-  }),
-);
+export const RelatedMenuModel: z.ZodType<CompleteMenu> = z.lazy(() => MenuModel.extend({
+  parent: RelatedMenuModel.nullish(),
+  children: RelatedMenuModel.array(),
+  roles: RelatedRoleMenuModel.array(),
+  permissions: RelatedPermissionModel.array(),
+}))

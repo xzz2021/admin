@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common'
 
 /**
  * ValidationException used to throw validation errors with a custom error code and message.
@@ -6,6 +6,6 @@ import { BadRequestException } from '@nestjs/common';
  */
 export class ValidationException extends BadRequestException {
   constructor(errorCode: string = 'V000', message?: string) {
-    super({ errorCode, message: message ?? '校验失败' });
+    super({ errorCode, message: message ?? '校验失败' })
   }
 }

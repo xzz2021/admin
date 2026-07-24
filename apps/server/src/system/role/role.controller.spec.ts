@@ -1,9 +1,9 @@
-import { PERMISSION_KEY } from '@/processor/decorator';
-import { RoleController } from './role.controller';
+import { PERMISSION_KEY } from '@/processor/decorator'
+import { RoleController } from './role.controller'
 
 jest.mock('./role.service', () => ({
   RoleService: class RoleService {},
-}));
+}))
 
 describe('RoleController permission boundary', () => {
   it.each([
@@ -15,10 +15,10 @@ describe('RoleController permission boundary', () => {
     ['role:delete', 'remove'],
     ['role:seed', 'generateDictionarySeed'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, RoleController.prototype[methodName])).toBe(permission);
-  });
+    expect(Reflect.getMetadata(PERMISSION_KEY, RoleController.prototype[methodName])).toBe(permission)
+  })
 
   it('does not require management permission for current user menu bootstrap', () => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, RoleController.prototype['getMenu'])).toBeUndefined();
-  });
-});
+    expect(Reflect.getMetadata(PERMISSION_KEY, RoleController.prototype['getMenu'])).toBeUndefined()
+  })
+})

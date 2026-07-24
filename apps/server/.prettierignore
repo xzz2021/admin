@@ -1,0 +1,5 @@
+# Prisma 生成代码自带分号，不参与格式化
+src/prisma/generated/**
+dist
+coverage
+node_modules

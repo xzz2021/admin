@@ -1,7 +1,7 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { plainToInstance, type ClassConstructor } from 'class-transformer';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import { plainToInstance, type ClassConstructor } from 'class-transformer'
+import { Observable } from 'rxjs'
+import { map } from 'rxjs/operators'
 
 // 序列化拦截器   将此拦截器 提供给 装饰器 使用  简化代码
 @Injectable()
@@ -50,17 +50,17 @@ export class SerializeInterceptor<T> implements NestInterceptor {
           data.list = plainToInstance(this.dto, data.list, {
             excludeExtraneousValues: false,
             exposeUnsetFields: false,
-          });
+          })
         }
         if (data?.data) {
           data.data = plainToInstance(this.dto, data.data, {
             excludeExtraneousValues: false,
             exposeUnsetFields: false,
-          });
+          })
         }
-        return data;
+        return data
       }),
-    );
+    )
   }
 }
 

@@ -1,6 +1,6 @@
-import { UserModel } from '@prisma/generated/zod';
-import { z } from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
+import { UserModel } from '@prisma/generated/zod'
+import { z } from 'zod'
+import { createZodDto } from 'nestjs-zod/dto'
 
 const RegisterSchema = UserModel.pick({
   username: true,
@@ -8,7 +8,7 @@ const RegisterSchema = UserModel.pick({
   phone: true,
   email: true,
   avatar: true,
-});
+})
 
 export class RegisterDto extends createZodDto(RegisterSchema) {}
 
@@ -17,18 +17,18 @@ const RegisterResSchema = UserModel.omit({
 }).extend({
   updatedAt: z.string(),
   createdAt: z.string(),
-});
+})
 export class RegisterResDto extends createZodDto(RegisterResSchema) {}
 
 const LoginInfoSchema = UserModel.pick({
   phone: true,
   password: true,
-});
+})
 export class LoginInfoDto extends createZodDto(LoginInfoSchema) {}
 
 const ForceLogoutSchema = z.object({
   id: z.string().min(1),
-});
+})
 export class ForceLogoutDto extends createZodDto(ForceLogoutSchema) {}
 
 /** JWT payload 挂到 req.user 上的结构 */
@@ -42,7 +42,7 @@ const JwtUserSchema = z.object({
   jti: z.string(),
   iat: z.number(),
   exp: z.number(),
-});
-export type JwtUser = z.infer<typeof JwtUserSchema>;
+})
+export type JwtUser = z.infer<typeof JwtUserSchema>
 /** 仅作类型用，不要 createZodDto */
-export type JwtReqDto = Request & { user: z.infer<typeof JwtUserSchema> };
+export type JwtReqDto = Request & { user: z.infer<typeof JwtUserSchema> }

@@ -1,5 +1,5 @@
-import { Global, Module } from '@nestjs/common';
-import { RbacPermissionCacheService } from './rbac-permission-cache.service';
+import { Global, Module } from '@nestjs/common'
+import { RbacPermissionCacheService } from './rbac-permission-cache.service'
 
 @Global()
 @Module({

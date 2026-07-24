@@ -1,6 +1,6 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { CompleteUserRole, RelatedUserRoleModel, CompleteRoleMenu, RelatedRoleMenuModel, CompleteRolePermission, RelatedRolePermissionModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteUserRole, RelatedUserRoleModel, CompleteRoleMenu, RelatedRoleMenuModel, CompleteRolePermission, RelatedRolePermissionModel } from "./index"
 
 export const RoleModel = z.object({
   id: z.string(),
@@ -13,14 +13,15 @@ export const RoleModel = z.object({
   createdBy: z.string().optional().meta({ description: '创建人用户 ID', example: 'clxxx' }).nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
-export class RoleDto extends createZodDto(RoleModel) {}
+export class RoleDto extends createZodDto(RoleModel) {
+}
 
 export interface CompleteRole extends z.infer<typeof RoleModel> {
-  users: CompleteUserRole[];
-  menus: CompleteRoleMenu[];
-  permissions: CompleteRolePermission[];
+  users: CompleteUserRole[]
+  menus: CompleteRoleMenu[]
+  permissions: CompleteRolePermission[]
 }
 
 /**
@@ -28,10 +29,8 @@ export interface CompleteRole extends z.infer<typeof RoleModel> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedRoleModel: z.ZodType<CompleteRole> = z.lazy(() =>
-  RoleModel.extend({
-    users: RelatedUserRoleModel.array(),
-    menus: RelatedRoleMenuModel.array(),
-    permissions: RelatedRolePermissionModel.array(),
-  }),
-);
+export const RelatedRoleModel: z.ZodType<CompleteRole> = z.lazy(() => RoleModel.extend({
+  users: RelatedUserRoleModel.array(),
+  menus: RelatedRoleMenuModel.array(),
+  permissions: RelatedRolePermissionModel.array(),
+}))

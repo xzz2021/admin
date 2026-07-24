@@ -1,17 +1,18 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { CompleteRole, RelatedRoleModel, CompletePermission, RelatedPermissionModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteRole, RelatedRoleModel, CompletePermission, RelatedPermissionModel } from "./index"
 
 export const RolePermissionModel = z.object({
   roleId: z.string(),
   permissionId: z.string(),
-});
+})
 
-export class RolePermissionDto extends createZodDto(RolePermissionModel) {}
+export class RolePermissionDto extends createZodDto(RolePermissionModel) {
+}
 
 export interface CompleteRolePermission extends z.infer<typeof RolePermissionModel> {
-  role: CompleteRole;
-  permission: CompletePermission;
+  role: CompleteRole
+  permission: CompletePermission
 }
 
 /**
@@ -19,9 +20,7 @@ export interface CompleteRolePermission extends z.infer<typeof RolePermissionMod
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedRolePermissionModel: z.ZodType<CompleteRolePermission> = z.lazy(() =>
-  RolePermissionModel.extend({
-    role: RelatedRoleModel,
-    permission: RelatedPermissionModel,
-  }),
-);
+export const RelatedRolePermissionModel: z.ZodType<CompleteRolePermission> = z.lazy(() => RolePermissionModel.extend({
+  role: RelatedRoleModel,
+  permission: RelatedPermissionModel,
+}))

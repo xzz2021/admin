@@ -1,6 +1,6 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { NoticeLevel } from './enums';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { NoticeLevel } from "./enums"
 
 export const NoticeModel = z.object({
   id: z.string(),
@@ -12,6 +12,7 @@ export const NoticeModel = z.object({
   endsAt: z.coerce.date().optional().meta({ description: '生效结束时间', example: '2026-12-31T23:59:59.000Z' }).nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
-export class NoticeDto extends createZodDto(NoticeModel) {}
+export class NoticeDto extends createZodDto(NoticeModel) {
+}

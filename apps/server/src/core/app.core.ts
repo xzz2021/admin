@@ -1,19 +1,19 @@
-import { PrismaModule } from '@/prisma/prisma.module';
-import { GlobalThrottlerGuard, PermissionGuard, RtJwtAuthGuard } from '@/processor/guard';
-import { StaticfileModule } from '@/system/staticfile/staticfile.module';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { CONFIG_MODULE } from './config';
-import { SERVER_STATIC_MODULE } from './server.static';
+import { PrismaModule } from '@/prisma/prisma.module'
+import { GlobalThrottlerGuard, PermissionGuard, RtJwtAuthGuard } from '@/processor/guard'
+import { StaticfileModule } from '@/system/staticfile/staticfile.module'
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
+import { CONFIG_MODULE } from './config'
+import { SERVER_STATIC_MODULE } from './server.static'
 // import { ClsModule } from 'nestjs-cls';
-import { WinstonLoggerModule } from '@/core/logger/winston.module';
-import { AllExceptionsFilter } from '@/processor/filter/all-exceptions.filter';
-import { OperationLogInterceptor, TransformInterceptor } from '@/processor/interceptor';
-import { RedisService } from '@liaoliaots/nestjs-redis';
-import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { WinstonLoggerModule } from '@/core/logger/winston.module'
+import { AllExceptionsFilter } from '@/processor/filter/all-exceptions.filter'
+import { OperationLogInterceptor, TransformInterceptor } from '@/processor/interceptor'
+import { RedisService } from '@liaoliaots/nestjs-redis'
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis'
+import { ThrottlerModule } from '@nestjs/throttler'
 
-import { AppRedisModule } from '@/core/cache/redis.module';
-import { RbacModule } from '@/processor/rbac';
+import { AppRedisModule } from '@/core/cache/redis.module'
+import { RbacModule } from '@/processor/rbac'
 
 export const CORE_MODULE = [
   CONFIG_MODULE,
@@ -83,7 +83,7 @@ export const CORE_MODULE = [
 
     */
   WinstonLoggerModule,
-];
+]
 
 export const GLOBAL_GUARD = [
   // {
@@ -183,4 +183,4 @@ export class AppController {
   //   provide: APP_FILTER,
   //   useClass: HttpExceptionFilter,
   // },
-];
+]

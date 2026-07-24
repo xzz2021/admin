@@ -1,41 +1,41 @@
 export const parseUserAgent = (userAgent: string) => {
-  let os = 'Unknown OS';
-  let browser = 'Unknown Browser';
+  let os = 'Unknown OS'
+  let browser = 'Unknown Browser'
 
   // 解析操作系统
-  const osMatch = userAgent.match(/Windows NT 10.0|Mac OS X|iPhone OS (\d+_\d+)|Android|Linux/);
+  const osMatch = userAgent.match(/Windows NT 10.0|Mac OS X|iPhone OS (\d+_\d+)|Android|Linux/)
   if (osMatch) {
     if (osMatch[1]) {
-      os = `iOS ${osMatch[1].replace(/_/g, '.')}`;
+      os = `iOS ${osMatch[1].replace(/_/g, '.')}`
     } else {
-      os = osMatch[0].replace('Windows NT 10.0', 'Windows 10').replace('Mac OS X', 'Mac OS');
+      os = osMatch[0].replace('Windows NT 10.0', 'Windows 10').replace('Mac OS X', 'Mac OS')
     }
   }
 
   // 解析浏览器
-  const chromeMatch = userAgent.match(/Chrome\/(\d+)/);
-  const safariMatch = userAgent.match(/Safari\/(\d+)/);
-  const versionMatch = userAgent.match(/Version\/(\d+)/);
-  const firefoxMatch = userAgent.match(/Firefox\/(\d+)/);
-  const ieMatch = userAgent.match(/MSIE (\d+)|Trident.*rv:(\d+)/);
+  const chromeMatch = userAgent.match(/Chrome\/(\d+)/)
+  const safariMatch = userAgent.match(/Safari\/(\d+)/)
+  const versionMatch = userAgent.match(/Version\/(\d+)/)
+  const firefoxMatch = userAgent.match(/Firefox\/(\d+)/)
+  const ieMatch = userAgent.match(/MSIE (\d+)|Trident.*rv:(\d+)/)
 
   if (chromeMatch) {
-    browser = `Chrome ${chromeMatch[1]}`;
+    browser = `Chrome ${chromeMatch[1]}`
   } else if (safariMatch && versionMatch) {
-    browser = `Safari ${safariMatch[1]}`;
+    browser = `Safari ${safariMatch[1]}`
   } else if (firefoxMatch) {
-    browser = `Firefox ${firefoxMatch[1]}`;
+    browser = `Firefox ${firefoxMatch[1]}`
   } else if (ieMatch) {
-    browser = `Internet Explorer ${ieMatch[1] || ieMatch[2]}`;
+    browser = `Internet Explorer ${ieMatch[1] || ieMatch[2]}`
   }
 
-  return { os, browser };
-};
+  return { os, browser }
+}
 
 export const extractIP = (ipString: string) => {
-  const match = ipString.match(/::ffff:(\d+\.\d+\.\d+\.\d+)/);
-  return match ? match[1] : ipString;
-};
+  const match = ipString.match(/::ffff:(\d+\.\d+\.\d+\.\d+)/)
+  return match ? match[1] : ipString
+}
 
 // // 示例使用
 // const ua1 =
@@ -51,11 +51,11 @@ export const extractIP = (ipString: string) => {
 //  对比数据变化
 
 export const calculateDiff = (before: any, after: any) => {
-  const changes: any = {};
+  const changes: any = {}
   for (const key in after) {
     if (before?.[key] !== after?.[key]) {
-      changes[key] = { from: before?.[key], to: after?.[key] };
+      changes[key] = { from: before?.[key], to: after?.[key] }
     }
   }
-  return changes;
-};
+  return changes
+}

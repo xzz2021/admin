@@ -1,5 +1,5 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
 
 export const FileModel = z.object({
   id: z.number().int(),
@@ -10,6 +10,7 @@ export const FileModel = z.object({
   size: z.number().int().min(0).meta({ description: '文件大小（字节）', example: 1024 }),
   url: z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' }),
   createdAt: z.date(),
-});
+})
 
-export class FileDto extends createZodDto(FileModel) {}
+export class FileDto extends createZodDto(FileModel) {
+}

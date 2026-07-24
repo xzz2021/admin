@@ -1,9 +1,9 @@
-import { Prisma } from '@/prisma/generated/prisma/client';
-import { PgService } from '@/prisma/pg.service';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
-import { DeleteLogDto, QueryLogParams } from './dto/logger.dto';
+import { Prisma } from '@/prisma/generated/prisma/client'
+import { PgService } from '@/prisma/pg.service'
+import { Inject, Injectable, LoggerService } from '@nestjs/common'
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
+import { Logger } from 'winston'
+import { DeleteLogDto, QueryLogParams } from './dto/logger.dto'
 
 @Injectable()
 export class LogService implements LoggerService {
@@ -13,31 +13,31 @@ export class LogService implements LoggerService {
   ) {}
 
   log(message: string, context?: string) {
-    this.logger.info(message, context);
+    this.logger.info(message, context)
   }
 
   error(message: string, trace?: string) {
-    this.logger.error(message, trace);
+    this.logger.error(message, trace)
   }
 
   warn(message: string, context?: string) {
-    this.logger.warn(message, context);
+    this.logger.warn(message, context)
   }
 
   debug(message: string, context?: string) {
-    this.logger.debug(message, context);
+    this.logger.debug(message, context)
   }
 
   async addUserOperationLog(data: {
-    userId: string | null;
-    method: string;
-    ip: string;
-    userAgent: string;
-    requestUrl: string;
-    responseMsg?: string | null;
-    detailInfo?: Record<string, unknown> | null;
-    isSuccess: boolean;
-    duration: number;
+    userId: string | null
+    method: string
+    ip: string
+    userAgent: string
+    requestUrl: string
+    responseMsg?: string | null
+    detailInfo?: Record<string, unknown> | null
+    isSuccess: boolean
+    duration: number
   }) {
     try {
       await this.pgService.userOperationLog.create({
@@ -52,33 +52,33 @@ export class LogService implements LoggerService {
           detailInfo: data.detailInfo == null ? Prisma.DbNull : (data.detailInfo as Prisma.InputJsonValue),
           duration: data.duration,
         },
-      });
+      })
     } catch (error) {
-      this.logger.error('写入用户操作日志失败', error instanceof Error ? error.stack : String(error));
+      this.logger.error('写入用户操作日志失败', error instanceof Error ? error.stack : String(error))
     }
   }
 
   async getUserOperationLogList(searchParam: QueryLogParams) {
-    const { pageIndex, pageSize, isSuccess, method, requestUrl, dateRange } = searchParam;
-    const skip = (pageIndex - 1) * pageSize;
-    const take = pageSize;
-    const where: Prisma.UserOperationLogWhereInput = {};
+    const { pageIndex, pageSize, isSuccess, method, requestUrl, dateRange } = searchParam
+    const skip = (pageIndex - 1) * pageSize
+    const take = pageSize
+    const where: Prisma.UserOperationLogWhereInput = {}
 
     if (isSuccess !== undefined) {
-      where.isSuccess = isSuccess;
+      where.isSuccess = isSuccess
     }
     if (method) {
-      where.method = method;
+      where.method = method
     }
     if (requestUrl) {
-      where.requestUrl = { contains: requestUrl };
+      where.requestUrl = { contains: requestUrl }
     }
     if (dateRange) {
-      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [string, string];
+      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [string, string]
       where.createdAt = {
         gte: new Date(start),
         lte: new Date(end),
-      };
+      }
     }
 
     const list = await this.pgService.userOperationLog.findMany({
@@ -94,9 +94,9 @@ export class LogService implements LoggerService {
         },
       },
       orderBy: { id: 'desc' },
-    });
-    const total = await this.pgService.userOperationLog.count({ where });
-    return { list, total, message: '获取日志列表成功' };
+    })
+    const total = await this.pgService.userOperationLog.count({ where })
+    return { list, total, message: '获取日志列表成功' }
   }
 
   /*
@@ -135,27 +135,27 @@ export class LogService implements LoggerService {
 
   */
   createErrorLog(msgObj: any) {
-    this.logger.error(msgObj);
+    this.logger.error(msgObj)
   }
 
   createWarningLog(msgObj: any) {
-    this.logger.warn(msgObj);
+    this.logger.warn(msgObj)
   }
 
   createInfoLog(msgObj: { message: string; context: string; [key: string]: any }) {
-    const { message, context, ...rest } = msgObj;
+    const { message, context, ...rest } = msgObj
 
-    this.logger.log(message, context, rest);
+    this.logger.log(message, context, rest)
   }
 
   createDebugLog(msgObj: any) {
-    this.logger.debug(msgObj);
+    this.logger.debug(msgObj)
   }
 
   async deleteUserOperationLog(obj: DeleteLogDto) {
     await this.pgService.userOperationLog.deleteMany({
       where: { id: { in: obj.ids } },
-    });
-    return { message: '删除用户操作日志成功' };
+    })
+    return { message: '删除用户操作日志成功' }
   }
 }

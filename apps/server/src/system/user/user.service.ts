@@ -1,21 +1,21 @@
-import { Prisma } from '@/prisma/generated/prisma/client';
-import { PgService } from '@/prisma/pg.service';
-import { RbacPermissionCacheService } from '@/processor/rbac';
-import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils';
-import { RtTokenService } from '@/system/auth/rt.token.service';
-import { TokenService } from '@/system/auth/token.service';
-import { OnlineGateway } from '@/system/online/online.gateway';
-import { OnlineService } from '@/system/online/online.service';
-import { sanitizePathSegment } from '@/system/staticfile/multer.config';
-import { RedisService } from '@liaoliaots/nestjs-redis';
-import { BadRequestException, forwardRef, Inject, Injectable, Optional } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
-import { AdminUpdatePwdDto, CreateUserDto, QueryUserParams, UpdatePersonalInfo, UpdatePwdDto, UpdateUserDto } from './dto/user.dto';
+import { Prisma } from '@/prisma/generated/prisma/client'
+import { PgService } from '@/prisma/pg.service'
+import { RbacPermissionCacheService } from '@/processor/rbac'
+import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils'
+import { RtTokenService } from '@/system/auth/rt.token.service'
+import { TokenService } from '@/system/auth/token.service'
+import { OnlineGateway } from '@/system/online/online.gateway'
+import { OnlineService } from '@/system/online/online.service'
+import { sanitizePathSegment } from '@/system/staticfile/multer.config'
+import { RedisService } from '@liaoliaots/nestjs-redis'
+import { BadRequestException, forwardRef, Inject, Injectable, Optional } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import Redis from 'ioredis'
+import { AdminUpdatePwdDto, CreateUserDto, QueryUserParams, UpdatePersonalInfo, UpdatePwdDto, UpdateUserDto } from './dto/user.dto'
 
 @Injectable()
 export class UserService {
-  private readonly redis: Redis;
+  private readonly redis: Redis
   constructor(
     private readonly pgService: PgService,
     private readonly redisService: RedisService,
@@ -30,18 +30,18 @@ export class UserService {
     @Inject(forwardRef(() => OnlineGateway))
     private readonly onlineGateway?: OnlineGateway,
   ) {
-    this.redis = this.redisService.getOrThrow();
+    this.redis = this.redisService.getOrThrow()
   }
 
   /** 改密 / 禁用：吊销全部会话并清理在线状态 */
   private async revokeAllSessions(userId: string) {
     if (this.onlineService) {
-      const jtis = await this.onlineService.terminateUser(userId);
-      this.onlineGateway?.notifyForceLogout(jtis, 'revoked');
-      this.onlineGateway?.notifyForceLogoutByUser(userId, 'revoked');
-      return;
+      const jtis = await this.onlineService.terminateUser(userId)
+      this.onlineGateway?.notifyForceLogout(jtis, 'revoked')
+      this.onlineGateway?.notifyForceLogoutByUser(userId, 'revoked')
+      return
     }
-    await Promise.all([this.tokenService.revokeAll(userId), this.rtTokenService.revokeAll(userId)]);
+    await Promise.all([this.tokenService.revokeAll(userId), this.rtTokenService.revokeAll(userId)])
   }
 
   findOne(phone: string) {
@@ -49,24 +49,24 @@ export class UserService {
       where: {
         phone,
       },
-    });
+    })
   }
 
   async getUsersOfDeptAndChildren(deptId: string) {
-    const depts = await this.pgService.department.findMany({ select: { id: true, parentId: true } });
-    const children = new Set<string>([deptId]);
-    let grew = true;
+    const depts = await this.pgService.department.findMany({ select: { id: true, parentId: true } })
+    const children = new Set<string>([deptId])
+    let grew = true
     while (grew) {
-      grew = false;
+      grew = false
       for (const d of depts) {
         if (d.parentId && children.has(d.parentId) && !children.has(d.id)) {
-          children.add(d.id);
-          grew = true;
+          children.add(d.id)
+          grew = true
         }
       }
     }
-    const deptIds = Array.from(children);
-    return deptIds;
+    const deptIds = Array.from(children)
+    return deptIds
 
     // return this.pgService.user.findMany({
     //   where: { departments: { some: { departmentId: { in: deptIds } } }, isDeleted: false, status: true },
@@ -77,22 +77,22 @@ export class UserService {
   async findByDepartmentId(searchParam: QueryUserParams) {
     // 此处查询 只批量返回一般数据   查询效率会更好    详细数据应当通过单个ip去查询处理
 
-    const { id, pageIndex, pageSize, enabled, ...rest } = searchParam;
-    const skip = (pageIndex - 1) * pageSize;
-    const take = pageSize;
+    const { id, pageIndex, pageSize, enabled, ...rest } = searchParam
+    const skip = (pageIndex - 1) * pageSize
+    const take = pageSize
     // const newParams =
     // 遍历rest 构造 contains 对象
     const where = Object.entries(rest).reduce(
       (acc, [key, value]) => {
         if (value) {
-          acc[key] = { contains: value };
+          acc[key] = { contains: value }
         }
-        return acc;
+        return acc
       },
       {} as Record<string, any>,
-    );
-    where.enabled = enabled;
-    let deptIds: string[] = [];
+    )
+    where.enabled = enabled
+    let deptIds: string[] = []
     if (id) {
       const rows = await this.pgService.$queryRaw<{ id: string }[]>`
         WITH RECURSIVE dept_tree AS (
@@ -103,9 +103,9 @@ export class UserService {
           INNER JOIN dept_tree dt ON d."parentId" = dt.id
         )
         SELECT id FROM dept_tree;
-      `;
-      deptIds = rows.map(row => row.id);
-      where.departmentId = { in: deptIds };
+      `
+      deptIds = rows.map(row => row.id)
+      where.departmentId = { in: deptIds }
     }
     //  同时查询 部门 角色 数据
     const newQueryParams = {
@@ -137,33 +137,33 @@ export class UserService {
       // orderBy: { createdAt: 'asc' },
       skip: Number(skip),
       take: Number(take),
-    };
+    }
 
     const rawlist = await this.pgService.user.findMany({
       ...newQueryParams,
       distinct: ['id'],
-    });
+    })
 
     const list = rawlist.map(u => ({
       ...u,
       createdAt: formatDateToYMDHMS(u.createdAt),
       roles: u.roles.map(r => r.role.id), // 把 { role: {...} } 提取成 {...}
-    }));
+    }))
 
-    const total = await this.pgService.user.count({ where });
+    const total = await this.pgService.user.count({ where })
 
-    return { list, total, message: '部门用户列表查询成功' };
+    return { list, total, message: '部门用户列表查询成功' }
   }
 
   async addUser(addUserinfoDto: CreateUserDto) {
-    const { department, roles, phone, username, password: rawPassword } = addUserinfoDto;
+    const { department, roles, phone, username, password: rawPassword } = addUserinfoDto
     // 1. 查询手机号 是否存在,  存在抛出异常提示
-    const isExit = await this.pgService.user.findFirst({ where: { phone } });
+    const isExit = await this.pgService.user.findFirst({ where: { phone } })
     if (isExit?.id && phone) {
       // return { code: 400, message: '手机号已存在,无法添加!' };
-      throw new BadRequestException('手机号已存在,无法添加!');
+      throw new BadRequestException('手机号已存在,无法添加!')
     }
-    const password = await hashPayPassword(rawPassword);
+    const password = await hashPayPassword(rawPassword)
     return await this.pgService.$transaction(async tx => {
       const userSave = await tx.user.create({
         data: {
@@ -177,14 +177,14 @@ export class UserService {
             create: roles?.map(id => ({ role: { connect: { id } } })),
           },
         },
-      });
+      })
 
-      return { code: 200, message: '新增用户成功', id: userSave.id };
-    });
+      return { code: 200, message: '新增用户成功', id: userSave.id }
+    })
   }
 
   async update(updateUserinfoDto: UpdateUserDto) {
-    const { id, department, roles, ...rest } = updateUserinfoDto;
+    const { id, department, roles, ...rest } = updateUserinfoDto
     const res = await this.pgService.user.update({
       where: { id },
       data: {
@@ -197,24 +197,24 @@ export class UserService {
           create: roles?.map(id => ({ role: { connect: { id } } })),
         },
       },
-    });
-    await this.rbacPermissionCache.invalidateUsers([id]);
+    })
+    await this.rbacPermissionCache.invalidateUsers([id])
     if (rest.enabled === false) {
-      await this.revokeAllSessions(id);
+      await this.revokeAllSessions(id)
     }
-    return { message: '更新用户信息成功', id: res.id };
+    return { message: '更新用户信息成功', id: res.id }
   }
 
   async batchDeleteUser(ids: string[]) {
     //  使用事务 删除用户 同时删除用户角色及部门关联数据
     await this.pgService.$transaction(async tx => {
-      await tx.userRole.deleteMany({ where: { userId: { in: ids } } });
-      await tx.userSession.deleteMany({ where: { userId: { in: ids } } });
-      await tx.user.deleteMany({ where: { id: { in: ids } } });
-    });
-    await this.rbacPermissionCache.invalidateUsers(ids);
-    await Promise.all(ids.map(id => this.revokeAllSessions(id)));
-    return { message: '删除用户成功', count: ids.length };
+      await tx.userRole.deleteMany({ where: { userId: { in: ids } } })
+      await tx.userSession.deleteMany({ where: { userId: { in: ids } } })
+      await tx.user.deleteMany({ where: { id: { in: ids } } })
+    })
+    await this.rbacPermissionCache.invalidateUsers(ids)
+    await Promise.all(ids.map(id => this.revokeAllSessions(id)))
+    return { message: '删除用户成功', count: ids.length }
   }
 
   async getUserInfo(userId: string) {
@@ -230,49 +230,49 @@ export class UserService {
         department: { select: { id: true, name: true } },
         roles: { select: { role: { select: { id: true, name: true } } } },
       },
-    });
+    })
     const shaped = {
       ...userInfo,
       createdAt: formatDateToYMDHMS(userInfo?.createdAt),
-    };
-    return { userinfo: shaped, message: '获取个人信息成功' };
+    }
+    return { userinfo: shaped, message: '获取个人信息成功' }
   }
   async updateInfo(updateUserinfoDto: UpdatePersonalInfo) {
     // 用户更新自己的 一般信息
-    const { id, ...updateData } = updateUserinfoDto;
+    const { id, ...updateData } = updateUserinfoDto
     const res = await this.pgService.user.update({
       where: { id },
       data: updateData,
       select: {
         id: true,
       },
-    });
-    return { message: '更新个人信息成功', id: res.id };
+    })
+    return { message: '更新个人信息成功', id: res.id }
   }
 
   async updatePassword(updatePasswordDto: UpdatePwdDto) {
-    const { id, password, newPassword } = updatePasswordDto;
+    const { id, password, newPassword } = updatePasswordDto
     const user = await this.pgService.user.findUnique({
       where: { id },
       select: {
         id: true,
         password: true,
       },
-    });
+    })
     if (!user) {
-      throw new BadRequestException('用户不存在');
+      throw new BadRequestException('用户不存在')
     }
-    const isMatch = await verifyPayPassword(user.password, password);
+    const isMatch = await verifyPayPassword(user.password, password)
     if (!isMatch) {
-      throw new BadRequestException('修改失败, 旧密码不正确');
+      throw new BadRequestException('修改失败, 旧密码不正确')
     }
-    const hashPassword = await hashPayPassword(newPassword);
+    const hashPassword = await hashPayPassword(newPassword)
     const res = await this.pgService.user.update({
       where: { id },
       data: { password: hashPassword, passwordChangedAt: new Date() },
-    });
-    await this.revokeAllSessions(id);
-    return { code: 200, message: '更新个人密码成功', id: res.id };
+    })
+    await this.revokeAllSessions(id)
+    return { code: 200, message: '更新个人密码成功', id: res.id }
   }
 
   async resetPassword({ id, password, operateId }: AdminUpdatePwdDto & { operateId: string }) {
@@ -281,13 +281,13 @@ export class UserService {
     // const isAdmin = await this.pgService.user.findUnique({ where: { id: operateId } });
     // if (!isAdmin) return { code: 400, message: '没有权限' };
 
-    const hashPassword = await hashPayPassword(password);
+    const hashPassword = await hashPayPassword(password)
     const res = await this.pgService.user.update({
       where: { id },
       data: { password: hashPassword, passwordChangedAt: new Date() },
-    });
-    await this.revokeAllSessions(id);
-    return { message: '重置用户密码成功', id: res.id };
+    })
+    await this.revokeAllSessions(id)
+    return { message: '重置用户密码成功', id: res.id }
   }
 
   // //  校验短信 或邮箱 验证码
@@ -310,22 +310,22 @@ export class UserService {
 
   async findAll(searchParam: QueryUserParams) {
     // 此处查询 只批量返回一般数据   查询效率会更好    详细数据应当通过单个ip去查询处理
-    const { pageIndex, pageSize, username, phone, enabled, id } = searchParam;
-    const skip = (pageIndex - 1) * pageSize;
-    const take = pageSize;
-    const where: Prisma.UserWhereInput = {};
+    const { pageIndex, pageSize, username, phone, enabled, id } = searchParam
+    const skip = (pageIndex - 1) * pageSize
+    const take = pageSize
+    const where: Prisma.UserWhereInput = {}
 
     if (username) {
-      where.username = { contains: username };
+      where.username = { contains: username }
     }
     if (phone) {
-      where.phone = { contains: phone };
+      where.phone = { contains: phone }
     }
     if (enabled !== undefined) {
-      where.enabled = enabled;
+      where.enabled = enabled
     }
     if (id) {
-      where.departmentId = id;
+      where.departmentId = id
     }
 
     const list = await this.pgService.user.findMany({
@@ -336,22 +336,22 @@ export class UserService {
       omit: {
         password: true,
       },
-    });
-    const total = await this.pgService.user.count({ where });
-    return { list, total, message: '获取用户列表成功' };
+    })
+    const total = await this.pgService.user.count({ where })
+    return { list, total, message: '获取用户列表成功' }
   }
 
   async uploadAvatar(file: Express.Multer.File, userId: string, phone: string) {
     if (!file) {
-      throw new BadRequestException('文件不存在');
+      throw new BadRequestException('文件不存在')
     }
     if (!phone) {
-      throw new BadRequestException('用户手机号不存在');
+      throw new BadRequestException('用户手机号不存在')
     }
-    const serveRoot = this.configService.get<string>('staticFileServeRoot') || '';
-    const phoneSegment = sanitizePathSegment(phone);
-    const url = `${serveRoot}/avatar/${phoneSegment}/${file.filename}`;
-    await this.pgService.user.update({ where: { id: userId }, data: { avatar: url } });
-    return { url, message: '上传头像成功' };
+    const serveRoot = this.configService.get<string>('staticFileServeRoot') || ''
+    const phoneSegment = sanitizePathSegment(phone)
+    const url = `${serveRoot}/avatar/${phoneSegment}/${file.filename}`
+    await this.pgService.user.update({ where: { id: userId }, data: { avatar: url } })
+    return { url, message: '上传头像成功' }
   }
 }

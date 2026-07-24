@@ -1,9 +1,9 @@
-import { Controller, Get, Res } from '@nestjs/common';
-import { CaptchaService } from './captcha.service';
-import { ApiTags } from '@nestjs/swagger';
-import { Public } from '@/processor/decorator';
-import { Throttle } from '@nestjs/throttler';
-import type { Response } from 'express';
+import { Controller, Get, Res } from '@nestjs/common'
+import { CaptchaService } from './captcha.service'
+import { ApiTags } from '@nestjs/swagger'
+import { Public } from '@/processor/decorator'
+import { Throttle } from '@nestjs/throttler'
+import type { Response } from 'express'
 @Controller('captcha')
 @Public()
 @ApiTags('验证码')
@@ -16,9 +16,9 @@ export class CaptchaController {
    */
   @Get('/common')
   async getCaptcha(@Res({ passthrough: true }) res: Response) {
-    const result = await this.captchaService.getCommon();
-    this.captchaService.setCaptchaIdCookie(res, result.id);
-    return { svg: result.svg };
+    const result = await this.captchaService.getCommon()
+    this.captchaService.setCaptchaIdCookie(res, result.id)
+    return { svg: result.svg }
   }
 
   /**
@@ -26,8 +26,8 @@ export class CaptchaController {
    */
   @Get('/math_expr')
   async getMathExpr(@Res({ passthrough: true }) res: Response) {
-    const result = await this.captchaService.getMathExpr();
-    this.captchaService.setCaptchaIdCookie(res, result.id);
-    return { svg: result.svg };
+    const result = await this.captchaService.getMathExpr()
+    this.captchaService.setCaptchaIdCookie(res, result.id)
+    return { svg: result.svg }
   }
 }

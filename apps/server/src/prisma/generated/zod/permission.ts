@@ -1,7 +1,7 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { PermissionType } from './enums';
-import { CompleteMenu, RelatedMenuModel, CompleteRolePermission, RelatedRolePermissionModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { PermissionType } from "./enums"
+import { CompleteMenu, RelatedMenuModel, CompleteRolePermission, RelatedRolePermissionModel } from "./index"
 
 export const PermissionModel = z.object({
   id: z.string(),
@@ -13,13 +13,14 @@ export const PermissionModel = z.object({
   menuId: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
-export class PermissionDto extends createZodDto(PermissionModel) {}
+export class PermissionDto extends createZodDto(PermissionModel) {
+}
 
 export interface CompletePermission extends z.infer<typeof PermissionModel> {
-  menu: CompleteMenu;
-  roles: CompleteRolePermission[];
+  menu: CompleteMenu
+  roles: CompleteRolePermission[]
 }
 
 /**
@@ -27,9 +28,7 @@ export interface CompletePermission extends z.infer<typeof PermissionModel> {
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedPermissionModel: z.ZodType<CompletePermission> = z.lazy(() =>
-  PermissionModel.extend({
-    menu: RelatedMenuModel,
-    roles: RelatedRolePermissionModel.array(),
-  }),
-);
+export const RelatedPermissionModel: z.ZodType<CompletePermission> = z.lazy(() => PermissionModel.extend({
+  menu: RelatedMenuModel,
+  roles: RelatedRolePermissionModel.array(),
+}))

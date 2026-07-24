@@ -1,37 +1,37 @@
 export type TreeNode<T = any> = T & {
-  id: number;
-  parentId: number;
-  children?: TreeNode<T>[];
-};
+  id: number
+  parentId: number
+  children?: TreeNode<T>[]
+}
 
 export type ListNode<T extends object = any> = T & {
-  id: number;
-  parentId: number;
-};
+  id: number
+  parentId: number
+}
 
 // 推荐使用 时间复杂度O(n)
 export function listToTree<T extends { id: string; parentId: string | null }>(list: T[]): (T & { children: T[] })[] {
-  const map = new Map<string, T & { children: T[] }>();
-  const roots: (T & { children: T[] })[] = [];
+  const map = new Map<string, T & { children: T[] }>()
+  const roots: (T & { children: T[] })[] = []
 
   // 一次遍历：创建节点
   for (const item of list) {
     map.set(item.id, {
       ...item,
       children: [],
-    });
+    })
   }
 
   // 二次遍历：建立父子关系
   for (const node of map.values()) {
     if (node.parentId == null) {
-      roots.push(node);
+      roots.push(node)
     } else {
-      map.get(node.parentId)?.children.push(node);
+      map.get(node.parentId)?.children.push(node)
     }
   }
 
-  return roots;
+  return roots
 }
 
 //  不推荐使用 时间复杂度O(n^2)
@@ -39,12 +39,12 @@ export function list2Tree<T extends ListNode[]>(items: T, parentId: number | nul
   return items
     .filter(item => item.parentId === parentId)
     .map(item => {
-      const children = list2Tree(items, item.id as number);
+      const children = list2Tree(items, item.id as number)
       return {
         ...item,
         ...(children.length ? { children } : null),
-      };
-    });
+      }
+    })
 }
 
 /**
@@ -56,19 +56,19 @@ export function list2Tree<T extends ListNode[]>(items: T, parentId: number | nul
 export function filterTree2List(treeData: any, key: string, value: any) {
   const filterChildrenTree = (resTree: any, treeItem: any) => {
     if (treeItem[key].includes(value)) {
-      resTree.push(treeItem);
-      return resTree;
+      resTree.push(treeItem)
+      return resTree
     }
     if (Array.isArray(treeItem.children)) {
-      const children = treeItem.children.reduce(filterChildrenTree, []);
+      const children = treeItem.children.reduce(filterChildrenTree, [])
 
-      const data = { ...treeItem, children };
+      const data = { ...treeItem, children }
 
-      if (children.length) resTree.push({ ...data });
+      if (children.length) resTree.push({ ...data })
     }
-    return resTree;
-  };
-  return treeData.reduce(filterChildrenTree, []);
+    return resTree
+  }
+  return treeData.reduce(filterChildrenTree, [])
 }
 
 /**
@@ -78,22 +78,22 @@ export function filterTree2List(treeData: any, key: string, value: any) {
  */
 export function filterTree<T extends TreeNode>(treeData: TreeNode<T>[], predicate: (data: T) => boolean): TreeNode<T>[] {
   function filter(treeData: TreeNode<T>[]): TreeNode<T>[] {
-    if (!treeData?.length) return treeData;
+    if (!treeData?.length) return treeData
 
     return treeData.filter(data => {
-      if (!predicate(data)) return false;
+      if (!predicate(data)) return false
 
-      data.children = filter(data?.children || []);
-      return true;
-    });
+      data.children = filter(data?.children || [])
+      return true
+    })
   }
 
-  return filter(treeData) || [];
+  return filter(treeData) || []
 }
 
 export function deleteEmptyChildren(arr: any) {
   arr?.forEach((node: any) => {
-    if (node.children?.length === 0) delete node.children;
-    else deleteEmptyChildren(node.children);
-  });
+    if (node.children?.length === 0) delete node.children
+    else deleteEmptyChildren(node.children)
+  })
 }

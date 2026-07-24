@@ -1,24 +1,24 @@
 //  此处用于所有请求的异常结果返回  确保 捕获到的异常 都能有正常的错误响应给前端
 //   因为时nest内置封装的函数  所以可以拿到错误的源信息
 //  dto的错误也会走向这里
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
-import { formatDateToYMDHMS } from '../utils/date';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common'
+import { formatDateToYMDHMS } from '../utils/date'
 
 // 启用后不会再报错 而是返回定义好的数据
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
     // console.log('----------------------------', exception);
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
-    const status = exception.getStatus();
+    const ctx = host.switchToHttp()
+    const response = ctx.getResponse()
+    const status = exception.getStatus()
 
     response.status(status).json({
       code: status || 400, //  常规状态码 需在前端拦截处理   401  403 500 等  默认 400
       timestamp: formatDateToYMDHMS(new Date()),
       message: exception.message,
       meta: exception.getResponse(),
-    });
+    })
   }
 }
 

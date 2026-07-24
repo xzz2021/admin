@@ -1,11 +1,11 @@
-import { RedisHealthService } from '@/core/cache/redis-health.service';
-import { PgService } from '@/prisma/pg.service';
-import { IS_PUBLIC_KEY } from '@/processor/decorator';
-import { Controller, Get, Res, SetMetadata } from '@nestjs/common';
-import type { Response } from 'express';
-import { AppService } from './app.service';
+import { RedisHealthService } from '@/core/cache/redis-health.service'
+import { PgService } from '@/prisma/pg.service'
+import { IS_PUBLIC_KEY } from '@/processor/decorator'
+import { Controller, Get, Res, SetMetadata } from '@nestjs/common'
+import type { Response } from 'express'
+import { AppService } from './app.service'
 
-const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+const Public = () => SetMetadata(IS_PUBLIC_KEY, true)
 
 @Controller()
 export class AppController {
@@ -17,16 +17,16 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    return this.appService.getHello();
+    return this.appService.getHello()
   }
 
   @Public()
   @Get('health')
   async health(@Res({ passthrough: true }) res: Response) {
-    const [redisOk, dbOk] = await Promise.all([this.redisHealthService.ping(), this.pgService.$queryRaw`SELECT 1`.then(() => true).catch(() => false)]);
-    const ok = redisOk && dbOk;
+    const [redisOk, dbOk] = await Promise.all([this.redisHealthService.ping(), this.pgService.$queryRaw`SELECT 1`.then(() => true).catch(() => false)])
+    const ok = redisOk && dbOk
 
-    res.status(ok ? 200 : 503);
+    res.status(ok ? 200 : 503)
 
     return {
       code: ok ? 200 : 503,
@@ -36,6 +36,6 @@ export class AppController {
         database: dbOk ? 'up' : 'down',
       },
       message: ok ? '服务正常' : '部分依赖不可用',
-    };
+    }
   }
 }

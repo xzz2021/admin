@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express'
 
 // 函数式中间件
 export function logger(_req: Request, _res: Response, next: NextFunction) {
-  console.log(`Request...`);
-  next();
+  console.log(`Request...`)
+  next()
 }
 
 /*

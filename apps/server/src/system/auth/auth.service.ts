@@ -1,22 +1,22 @@
-import { PgService } from '@/prisma/pg.service';
-import { hashPayPassword, verifyPayPassword } from '@/processor/utils';
-import { OnlineGateway } from '@/system/online/online.gateway';
-import { OnlineService } from '@/system/online/online.service';
-import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { LoginInfoDto, RegisterDto } from './dto/auth.dto';
-import { RedisService } from '@liaoliaots/nestjs-redis';
-import { ConfigService } from '@nestjs/config';
-import { Response } from 'express';
-import Redis from 'ioredis';
-import { RtTokenService } from './rt.token.service';
-import { TokenService } from './token.service';
+import { PgService } from '@/prisma/pg.service'
+import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
+import { OnlineGateway } from '@/system/online/online.gateway'
+import { OnlineService } from '@/system/online/online.service'
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
+import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
+import { RedisService } from '@liaoliaots/nestjs-redis'
+import { ConfigService } from '@nestjs/config'
+import { Response } from 'express'
+import Redis from 'ioredis'
+import { RtTokenService } from './rt.token.service'
+import { TokenService } from './token.service'
 
 @Injectable()
 export class AuthService {
-  private readonly redis: Redis;
-  private wxAppSecret: string;
-  private wxAppId: string;
+  private readonly redis: Redis
+  private wxAppSecret: string
+  private wxAppId: string
   constructor(
     private readonly pgService: PgService,
     private readonly jwtService: JwtService,
@@ -31,17 +31,17 @@ export class AuthService {
     @Inject(forwardRef(() => OnlineGateway))
     private readonly onlineGateway?: OnlineGateway,
   ) {
-    const wechat = this.configService.get<{ appId: string; appSecret: string }>('wechat');
-    this.wxAppSecret = wechat?.appSecret || '';
-    this.wxAppId = wechat?.appId || '';
-    this.redis = this.redisService.getOrThrow();
+    const wechat = this.configService.get<{ appId: string; appSecret: string }>('wechat')
+    this.wxAppSecret = wechat?.appSecret || ''
+    this.wxAppId = wechat?.appId || ''
+    this.redis = this.redisService.getOrThrow()
   }
 
   async create(createUserDto: RegisterDto, checkCode: boolean = true): Promise<{ message: string; res?: { id: string } }> {
-    const { phone, password, username } = createUserDto;
-    const user = await this.isUserExist(phone);
+    const { phone, password, username } = createUserDto
+    const user = await this.isUserExist(phone)
     if (user) {
-      throw new ConflictException(phone + '手机号已存在');
+      throw new ConflictException(phone + '手机号已存在')
     }
 
     // 注册前需要请求验证码 请求时已经将验证码存入cache  此处比对验证码 是否正确
@@ -51,7 +51,7 @@ export class AuthService {
     //   if (!smsCheck.status) return smsCheck;
     // }
 
-    const hashedPassword = await hashPayPassword(password);
+    const hashedPassword = await hashPayPassword(password)
     const res = await this.pgService.user.create({
       data: {
         phone,
@@ -61,9 +61,9 @@ export class AuthService {
       select: {
         id: true,
       },
-    });
-    await this.redis.del('register_' + phone); // 删除缓存的 验证码
-    return { message: phone + '注册成功', res };
+    })
+    await this.redis.del('register_' + phone) // 删除缓存的 验证码
+    return { message: phone + '注册成功', res }
   }
 
   private async getUserForLogin(phone: string) {
@@ -88,48 +88,48 @@ export class AuthService {
         avatar: true,
         email: true,
       },
-    });
-    return user;
+    })
+    return user
   }
 
   async login(loginInfo: LoginInfoDto, ip: string) {
-    const user = await this.getUserForLogin(loginInfo.phone);
+    const user = await this.getUserForLogin(loginInfo.phone)
 
     if (!user) {
-      throw new BadRequestException('账号或密码错误');
+      throw new BadRequestException('账号或密码错误')
     }
 
-    const ok = await verifyPayPassword(user.password, loginInfo.password);
+    const ok = await verifyPayPassword(user.password, loginInfo.password)
     if (!ok) {
-      throw new BadRequestException('账号或密码错误');
+      throw new BadRequestException('账号或密码错误')
     }
 
-    const { password, ...result } = user;
-    const { username, phone, id, roles } = result;
-    const accessToken = await this.tokenService.signToken(id, { username, phone, id, roles: roles.map(item => item.role) });
+    const { password, ...result } = user
+    const { username, phone, id, roles } = result
+    const accessToken = await this.tokenService.signToken(id, { username, phone, id, roles: roles.map(item => item.role) })
 
     return {
       message: `${username}登录成功`,
       userinfo: result,
       access_token: accessToken,
-    };
+    }
   }
 
   async rtLogin(loginInfo: LoginInfoDto, ip: string, res: Response) {
-    const user = await this.getUserForLogin(loginInfo.phone);
+    const user = await this.getUserForLogin(loginInfo.phone)
 
     if (!user) {
-      throw new BadRequestException('账号或密码错误');
+      throw new BadRequestException('账号或密码错误')
     }
 
-    const ok = await verifyPayPassword(user.password, loginInfo.password);
+    const ok = await verifyPayPassword(user.password, loginInfo.password)
     if (!ok) {
-      throw new BadRequestException('账号或密码错误');
+      throw new BadRequestException('账号或密码错误')
     }
 
-    const { password, ...result } = user;
-    const { username, phone, id, roles } = result;
-    const { accessToken } = await this.rtTokenService.signToken(id, { username, phone, id, roles: roles.map(item => item.role) }, res);
+    const { password, ...result } = user
+    const { username, phone, id, roles } = result
+    const { accessToken } = await this.rtTokenService.signToken(id, { username, phone, id, roles: roles.map(item => item.role) }, res)
 
     /*
       注意使用res设置cookie后   直接返回数据是无效的
@@ -141,7 +141,7 @@ export class AuthService {
       message: `${username}登录成功`,
       userinfo: result,
       access_token: accessToken,
-    };
+    }
   }
 
   async isUserExist(phone: string) {
@@ -150,8 +150,8 @@ export class AuthService {
       select: {
         id: true,
       },
-    });
-    return !!user;
+    })
+    return !!user
   }
 
   // async updateTokenVersion(phone: string) {
@@ -169,36 +169,36 @@ export class AuthService {
 
   async getSmsCode(phone: string, cachekey: string) {
     if (cachekey === 'register') {
-      const user = await this.isUserExist(phone);
+      const user = await this.isUserExist(phone)
       if (user) {
-        throw new BadRequestException('用户已存在, 请直接登录!');
+        throw new BadRequestException('用户已存在, 请直接登录!')
       }
     }
-    return { code: 200, message: '演示模式, 模拟验证码已发送,请60秒后再试!' };
+    return { code: 200, message: '演示模式, 模拟验证码已发送,请60秒后再试!' }
     // return this.smsService.generateSmsCode(phone, cachekey);
   }
 
   async forceLogout(id: string, operatorId: string) {
     if (!operatorId) {
-      throw new BadRequestException('缺少操作者信息');
+      throw new BadRequestException('缺少操作者信息')
     }
     if (!this.onlineService || !this.onlineGateway) {
-      throw new BadRequestException('在线用户模块不可用');
+      throw new BadRequestException('在线用户模块不可用')
     }
-    const jtis = await this.onlineService.terminateUserByOperator(operatorId, id);
-    this.onlineGateway.notifyForceLogout(jtis, 'forced');
-    this.onlineGateway.notifyForceLogoutByUser(id, 'forced');
+    const jtis = await this.onlineService.terminateUserByOperator(operatorId, id)
+    this.onlineGateway.notifyForceLogout(jtis, 'forced')
+    this.onlineGateway.notifyForceLogoutByUser(id, 'forced')
 
-    return { message: '强制用户下线成功', id };
+    return { message: '强制用户下线成功', id }
   }
 
   async logout(id: string, jti: string, res?: Response) {
-    await Promise.all([this.tokenService.logout(id, jti), this.rtTokenService.logout(id, jti)]);
-    await this.onlineService?.remove(jti);
+    await Promise.all([this.tokenService.logout(id, jti), this.rtTokenService.logout(id, jti)])
+    await this.onlineService?.remove(jti)
     if (res) {
-      this.rtTokenService.clearRtCookie(res);
+      this.rtTokenService.clearRtCookie(res)
     }
-    return { message: '退出登录成功', id };
+    return { message: '退出登录成功', id }
   }
 
   /**
@@ -206,7 +206,7 @@ export class AuthService {
    * @param token
    */
   async verifyAccessToken(token: string): Promise<any> {
-    return await this.jwtService.verifyAsync(token);
+    return await this.jwtService.verifyAsync(token)
   }
 
   async login2(loginInfo: { phone: string; password: string }) {
@@ -221,24 +221,24 @@ export class AuthService {
         avatar: true,
         email: true,
       },
-    });
+    })
 
     if (!user) {
-      throw new BadRequestException('账号或密码错误');
+      throw new BadRequestException('账号或密码错误')
     }
 
-    const ok = await verifyPayPassword(user.password, loginInfo.password);
+    const ok = await verifyPayPassword(user.password, loginInfo.password)
     if (!ok) {
-      throw new BadRequestException('账号或密码错误');
+      throw new BadRequestException('账号或密码错误')
     }
 
-    const { password, ...result } = user;
-    const access_token = await this.tokenService.signToken(user.id, result);
+    const { password, ...result } = user
+    const access_token = await this.tokenService.signToken(user.id, result)
     return {
       message: `${user.username}登录成功`,
       userinfo: result,
       access_token,
-    };
+    }
   }
 
   async rtRefresh(userId: string, res: Response, oldJti: string) {
@@ -263,14 +263,14 @@ export class AuthService {
         avatar: true,
         email: true,
       },
-    });
+    })
     if (!user || !user.enabled) {
-      throw new UnauthorizedException('用户不存在或已禁用');
+      throw new UnauthorizedException('用户不存在或已禁用')
     }
-    const { username, phone, id, roles } = user;
-    const { accessToken } = await this.rtTokenService.signToken(userId, { username, phone, id, roles: roles.map(item => item.role) }, res, oldJti);
+    const { username, phone, id, roles } = user
+    const { accessToken } = await this.rtTokenService.signToken(userId, { username, phone, id, roles: roles.map(item => item.role) }, res, oldJti)
     // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
-    await this.onlineService?.remove(oldJti);
-    return { access_token: accessToken, message: '获取新的token成功' };
+    await this.onlineService?.remove(oldJti)
+    return { access_token: accessToken, message: '获取新的token成功' }
   }
 }

@@ -1,25 +1,25 @@
 export interface MenuTreeDto {
-  id: string;
-  parentId: string | null;
+  id: string
+  parentId: string | null
 
-  name: string;
-  title: string;
-  path: string;
-  component?: string;
+  name: string
+  title: string
+  path: string
+  component?: string
 
-  checked: boolean;
+  checked: boolean
 
-  permissions: PermissionDto[];
+  permissions: PermissionDto[]
 
-  children: MenuTreeDto[];
+  children: MenuTreeDto[]
 }
 
 export interface PermissionDto {
-  id: string;
+  id: string
 
-  code: string;
+  code: string
 
-  name: string;
+  name: string
 
-  checked: boolean;
+  checked: boolean
 }

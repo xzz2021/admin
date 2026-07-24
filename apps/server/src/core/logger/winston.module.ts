@@ -1,8 +1,8 @@
-import { Global, Module } from '@nestjs/common';
-import { WinstonModule, utilities } from 'nest-winston';
-import * as winston from 'winston';
-import { LoggerController } from './logger.controller';
-import { LogService } from './logger.service';
+import { Global, Module } from '@nestjs/common'
+import { WinstonModule, utilities } from 'nest-winston'
+import * as winston from 'winston'
+import { LoggerController } from './logger.controller'
+import { LogService } from './logger.service'
 @Global()
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { LogService } from './logger.service';
           appName: true,
         }),
         winston.format.printf(({ timestamp, level, message, context, ...rest }) => {
-          return JSON.stringify({ timestamp, level, message, context, ...rest });
+          return JSON.stringify({ timestamp, level, message, context, ...rest })
         }),
       ),
       transports: [

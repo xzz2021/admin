@@ -1,6 +1,6 @@
-import { MenuModel, PermissionModel, RoleModel } from '@prisma/generated/zod';
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+import { MenuModel, PermissionModel, RoleModel } from '@prisma/generated/zod'
+import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
 const RoleMenuSchema = z.object({
   id: z.string().min(1),
@@ -12,7 +12,7 @@ const RoleMenuSchema = z.object({
     .default([])
     .transform(val => [...new Set(val)])
     .meta({ description: '权限ID', example: ['2', '3'] }),
-});
+})
 const CreateRoleSchema = RoleModel.pick({
   name: true,
   code: true,
@@ -20,7 +20,7 @@ const CreateRoleSchema = RoleModel.pick({
   description: true,
 }).extend({
   menus: z.array(RoleMenuSchema).default([]),
-});
+})
 export class CreateRoleDto extends createZodDto(CreateRoleSchema) {}
 
 const QueryRoleParamsSchema = z.object({
@@ -33,19 +33,19 @@ const QueryRoleParamsSchema = z.object({
     .optional()
     .transform(val => (val === undefined ? undefined : val === true || val === 'true'))
     .meta({ description: '角色状态', example: true }),
-});
+})
 export class QueryRoleParams extends createZodDto(QueryRoleParamsSchema) {}
 
 const UpdateRoleSchema = CreateRoleSchema.and(
   z.object({
     id: z.string().min(1).meta({ description: '角色ID', example: '1' }),
   }),
-);
+)
 export class UpdateRoleDto extends createZodDto(UpdateRoleSchema) {}
 
 const DeleteRoleSchema = z.object({
   id: z.string().min(1).meta({ description: '角色ID', example: '1' }),
-});
+})
 export class DeleteRoleDto extends createZodDto(DeleteRoleSchema) {}
 
 const RoleSeedSchema = RoleModel.pick({
@@ -56,18 +56,18 @@ const RoleSeedSchema = RoleModel.pick({
 }).partial({
   enabled: true,
   description: true,
-});
+})
 export class RoleSeedDto extends createZodDto(RoleSeedSchema) {}
 
 const RoleSeedArraySchema = z.object({
   data: z.array(RoleSeedSchema),
-});
+})
 export class RoleSeedArrayDto extends createZodDto(RoleSeedArraySchema) {}
 
 const PermissionSchema = PermissionModel.pick({
   name: true,
   code: true,
-});
+})
 
 const RoleMenuListSchema = MenuModel.pick({
   id: true,
@@ -77,7 +77,7 @@ const RoleMenuListSchema = MenuModel.pick({
   parentId: true,
 }).extend({
   permissions: z.array(PermissionSchema),
-});
+})
 
 const RoleListSchema = RoleModel.pick({
   id: true,
@@ -89,12 +89,12 @@ const RoleListSchema = RoleModel.pick({
   enabled: true,
 }).extend({
   createdAt: z.string(),
-});
+})
 
 const RoleListResSchema = z.object({
   total: z.number().meta({ description: '总条数', example: 10 }),
   list: z.array(RoleListSchema).meta({ description: '列表数据' }),
-});
+})
 export class RoleListRes extends createZodDto(RoleListResSchema) {}
 
 const MetaPermissionSchema = MenuModel.pick({
@@ -110,7 +110,7 @@ const MetaPermissionSchema = MenuModel.pick({
   noTagsView: true,
 }).extend({
   permissions: z.array(z.string()).meta({ description: '权限code列表', example: ['add', 'edit', 'delete'] }),
-});
+})
 
 const MenuPermissionListSchema = MenuModel.pick({
   id: true,
@@ -124,9 +124,9 @@ const MenuPermissionListSchema = MenuModel.pick({
   parentId: true,
 }).extend({
   meta: MetaPermissionSchema,
-});
+})
 
 const MenuPermissionListResSchema = z.object({
   list: z.array(MenuPermissionListSchema).meta({ description: '列表数据' }),
-});
+})
 export class MenuPermissionListRes extends createZodDto(MenuPermissionListResSchema) {}

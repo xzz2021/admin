@@ -1,20 +1,20 @@
 export interface Options {
-  select?: unknown;
+  select?: unknown
 
-  include?: unknown;
+  include?: unknown
 
-  sort?: unknown;
+  sort?: unknown
 
-  pageNo?: number;
+  pageNo?: number
 
-  pageSize?: number;
+  pageSize?: number
 }
 
 export abstract class BaseService<T> {
-  protected abstract model: any;
+  protected abstract model: any
 
   public async create(data: Partial<T>): Promise<T> {
-    return await this.model.create({ data });
+    return await this.model.create({ data })
   }
   public async findAll(where: Partial<T>): Promise<T[]> {
     return await this.model.findMany({
@@ -22,14 +22,14 @@ export abstract class BaseService<T> {
         ...where,
         deleted: null,
       },
-    });
+    })
   }
 
   public async findPage(where: Partial<T>, options: Partial<Options>): Promise<{ list: T[]; total: number }> {
-    const { select, include, sort = { id: 'desc' }, pageNo = 1, pageSize = 20 } = options;
-    const orderBy = typeof sort === 'string' ? JSON.parse(sort) : sort;
-    const skip = (Number(pageNo) - 1) * Number(pageSize);
-    const take = Number(pageSize);
+    const { select, include, sort = { id: 'desc' }, pageNo = 1, pageSize = 20 } = options
+    const orderBy = typeof sort === 'string' ? JSON.parse(sort) : sort
+    const skip = (Number(pageNo) - 1) * Number(pageSize)
+    const take = Number(pageSize)
     const [list, count] = await Promise.all([
       this.model.findMany({
         where: {
@@ -56,24 +56,24 @@ export abstract class BaseService<T> {
           deleted: null,
         },
       }),
-    ]);
+    ])
     return {
       list,
       total: count,
-    };
+    }
   }
 
   public async findById(id: string, options?: Partial<Options>): Promise<T> {
-    const { select, include } = options || {};
+    const { select, include } = options || {}
     return await this.model.findUnique({
       where: { id, deleted: null },
       select,
       include,
-    });
+    })
   }
 
   public async findOne(where: Partial<T>, options: Partial<Options>): Promise<T> {
-    const { select, include } = options;
+    const { select, include } = options
     return await this.model.findFirst({
       where: {
         ...where,
@@ -81,7 +81,7 @@ export abstract class BaseService<T> {
       },
       select,
       include,
-    });
+    })
   }
 
   public async updateOne(where: Partial<T>, data: Partial<T>) {
@@ -91,11 +91,11 @@ export abstract class BaseService<T> {
         deleted: null,
       },
       data,
-    });
+    })
   }
 
   public async deleteById(id: string): Promise<T> {
-    return await this.model.delete({ where: { id } });
+    return await this.model.delete({ where: { id } })
   }
 }
 

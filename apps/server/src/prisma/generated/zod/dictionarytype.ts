@@ -1,6 +1,6 @@
-import * as z from 'zod';
-import { createZodDto } from 'nestjs-zod/dto';
-import { CompleteDictionaryItem, RelatedDictionaryItemModel } from './index';
+import * as z from "zod"
+import { createZodDto } from "nestjs-zod/dto"
+import { CompleteDictionaryItem, RelatedDictionaryItemModel } from "./index"
 
 export const DictionaryTypeModel = z.object({
   id: z.string(),
@@ -9,12 +9,13 @@ export const DictionaryTypeModel = z.object({
   enabled: z.boolean().optional().meta({ description: '是否启用', example: true }),
   createdAt: z.date(),
   updatedAt: z.date(),
-});
+})
 
-export class DictionaryTypeDto extends createZodDto(DictionaryTypeModel) {}
+export class DictionaryTypeDto extends createZodDto(DictionaryTypeModel) {
+}
 
 export interface CompleteDictionaryType extends z.infer<typeof DictionaryTypeModel> {
-  items: CompleteDictionaryItem[];
+  items: CompleteDictionaryItem[]
 }
 
 /**
@@ -22,8 +23,6 @@ export interface CompleteDictionaryType extends z.infer<typeof DictionaryTypeMod
  *
  * NOTE: Lazy required in case of potential circular dependencies within schema
  */
-export const RelatedDictionaryTypeModel: z.ZodType<CompleteDictionaryType> = z.lazy(() =>
-  DictionaryTypeModel.extend({
-    items: RelatedDictionaryItemModel.array(),
-  }),
-);
+export const RelatedDictionaryTypeModel: z.ZodType<CompleteDictionaryType> = z.lazy(() => DictionaryTypeModel.extend({
+  items: RelatedDictionaryItemModel.array(),
+}))

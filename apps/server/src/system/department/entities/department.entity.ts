@@ -1,5 +1,5 @@
-import { Exclude, Expose, Transform } from 'class-transformer';
-import { formatDateToYMDHMS } from '@/processor/utils/date';
+import { Exclude, Expose, Transform } from 'class-transformer'
+import { formatDateToYMDHMS } from '@/processor/utils/date'
 
 /*
 结合配置参数使用
@@ -15,48 +15,48 @@ import { formatDateToYMDHMS } from '@/processor/utils/date';
 export class Department1Entity {
   @Expose()
   // @Transform(({ value }) => value.toString())
-  id!: string;
+  id!: string
 
   @Expose()
-  name!: string;
+  name!: string
 
   @Expose()
-  status?: boolean;
+  status?: boolean
 
   @Expose()
-  remark?: string;
+  remark?: string
 
   @Expose()
-  isDeleted?: boolean;
+  isDeleted?: boolean
 
   @Expose()
-  parentId?: string;
+  parentId?: string
 
   //  转换成 2025-05-28 11:41:45
   // @Transform(({ value }) => value.toISOString().split('T').join(' '))
   @Expose()
-  createdAt!: Date;
+  createdAt!: Date
 
   // @Exclude()   //  指定时区 转换
   @Expose()
   @Transform(({ value }: { value: string }) => formatDateToYMDHMS(value))
-  updatedAt!: Date;
+  updatedAt!: Date
 
   @Exclude()
-  deletedAt?: Date;
+  deletedAt?: Date
 
   // 构造一个新的字段
   @Expose()
   @Transform(({ obj }) => obj.name + '111')
-  newName?: string;
+  newName?: string
 
   // 添加子部门字段
   @Expose()
-  children?: Department1Entity[];
+  children?: Department1Entity[]
 
   // 添加父部门字段
   @Expose()
-  parent?: Department1Entity;
+  parent?: Department1Entity
 
   /*
   // 加解密

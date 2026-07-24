@@ -1,6 +1,6 @@
-import { MenuModel, PermissionModel } from '@prisma/generated/zod';
-import { z } from 'zod';
-import { createZodDto } from 'nestjs-zod';
+import { MenuModel, PermissionModel } from '@prisma/generated/zod'
+import { z } from 'zod'
+import { createZodDto } from 'nestjs-zod'
 
 const MetaSchema = MenuModel.pick({
   title: true,
@@ -13,13 +13,13 @@ const MetaSchema = MenuModel.pick({
   hidden: true,
   noCache: true,
   noTagsView: true,
-});
+})
 export class MetaDto extends createZodDto(MetaSchema) {}
 
 const PermissionSchema = PermissionModel.pick({
   name: true,
   code: true,
-});
+})
 export class PermissionDto extends createZodDto(PermissionSchema) {}
 
 export class PermissionNoIdDto extends createZodDto(PermissionSchema) {}
@@ -49,7 +49,7 @@ const MenuSchema = MenuModel.pick({
 }).extend({
   id: z.string().min(1),
   parentId: z.string().min(1).nullish(),
-});
+})
 export class MenuDto extends createZodDto(MenuSchema) {}
 
 const MenuSortSchema = MenuModel.pick({
@@ -57,30 +57,30 @@ const MenuSortSchema = MenuModel.pick({
   sort: true,
 }).extend({
   id: z.string().min(1),
-});
+})
 export class MenuSortDto extends createZodDto(MenuSortSchema) {}
 
 const CreateMenuSchema = MenuSchema.omit({
   id: true,
-});
+})
 export class CreateMenuDto extends createZodDto(CreateMenuSchema) {}
 
 //  继承MenuSchema 并且 限制id 不能等于 parentId
 const UpdateMenuSchema = MenuSchema.refine(data => data.parentId == null || data.id !== data.parentId, {
   message: 'id 不能等于 parentId',
   path: ['parentId'], // 错误挂到 parentId 上，方便前端展示
-});
+})
 export class UpdateMenuDto extends createZodDto(UpdateMenuSchema) {}
 
 const MenuSortArraySchema = z.object({
   data: z.array(MenuSortSchema).nonempty(),
-});
+})
 export class MenuSortArrayDto extends createZodDto(MenuSortArraySchema) {}
 
 const MenuListSchema = MenuSchema.extend({
   permissionList: z.array(PermissionSchema),
   children: z.array(MenuSchema),
-});
+})
 export class MenuListRes extends createZodDto(MenuListSchema) {}
 
 const SeedMenuSchema = MenuSchema.omit({
@@ -89,10 +89,10 @@ const SeedMenuSchema = MenuSchema.omit({
 }).extend({
   children: z.array(MenuSchema),
   permissionList: z.array(PermissionSchema),
-});
+})
 export class SeedMenuDto extends createZodDto(SeedMenuSchema) {}
 
 const MenuSeedArraySchema = z.object({
   data: z.array(SeedMenuSchema),
-});
+})
 export class MenuSeedArrayDto extends createZodDto(MenuSeedArraySchema) {}

@@ -1,42 +1,42 @@
-import { ConfigModule } from '@nestjs/config';
-import { z } from 'zod';
+import { ConfigModule } from '@nestjs/config'
+import { z } from 'zod'
 
 interface AppConfig {
-  nodeEnv: string;
-  isProduction: boolean;
-  port: number;
-  pgDatabaseUrl: string;
+  nodeEnv: string
+  isProduction: boolean
+  port: number
+  pgDatabaseUrl: string
   token: {
-    secret: string;
-    refreshSecret: string;
-    expiresTime: number;
-    refreshExpiresTime: number;
-  };
+    secret: string
+    refreshSecret: string
+    expiresTime: number
+    refreshExpiresTime: number
+  }
   redis: {
-    host: string;
-    port: number;
-    password: string;
-    url: string;
-  };
-  ssoCount: number;
+    host: string
+    port: number
+    password: string
+    url: string
+  }
+  ssoCount: number
   swagger: {
-    enabled: boolean;
-    username: string;
-    password: string;
-  };
+    enabled: boolean
+    username: string
+    password: string
+  }
   // serverUrl: string;
   // frontendUrl: string;
   // n8nHost: string;
   // 静态文件目录
-  staticFileRootPath: string;
+  staticFileRootPath: string
   // 静态文件访问前缀
-  staticFileServeRoot: string;
+  staticFileServeRoot: string
 
   // 可以添加更多配置项
-  [key: string]: any;
+  [key: string]: any
 }
 
-const weakSecretPattern = /(change-me|replace-with|password|xzz20)/i;
+const weakSecretPattern = /(change-me|replace-with|password|xzz20)/i
 
 const productionEnvironmentSchema = z
   .object({
@@ -69,35 +69,35 @@ const productionEnvironmentSchema = z
   })
   .passthrough()
   .superRefine((environment, context) => {
-    if (environment.SWAGGER !== 'true') return;
+    if (environment.SWAGGER !== 'true') return
     if (!environment.SWAGGER_USERNAME) {
       context.addIssue({
         code: 'custom',
         path: ['SWAGGER_USERNAME'],
         message: 'SWAGGER_USERNAME is required when Swagger is enabled',
-      });
+      })
     }
     if (!environment.SWAGGER_PASSWORD) {
       context.addIssue({
         code: 'custom',
         path: ['SWAGGER_PASSWORD'],
         message: 'SWAGGER_PASSWORD is required when Swagger is enabled',
-      });
+      })
     }
-  });
+  })
 
 export function validateEnvironment(environment: Record<string, unknown>) {
   if (environment.NODE_ENV !== 'production') {
-    return environment;
+    return environment
   }
 
-  return productionEnvironmentSchema.parse(environment);
+  return productionEnvironmentSchema.parse(environment)
 }
 
 // 应用配置工厂函数
 export const appConfig = (): AppConfig => {
-  const processEnv = process.env;
-  const nodeEnv = processEnv.NODE_ENV || 'development';
+  const processEnv = process.env
+  const nodeEnv = processEnv.NODE_ENV || 'development'
   return {
     nodeEnv,
     isProduction: nodeEnv === 'production',
@@ -124,11 +124,11 @@ export const appConfig = (): AppConfig => {
     staticFileRootPath: processEnv.STATIC_FILE_ROOT_PATH || '',
     staticFileServeRoot: processEnv.STATIC_FILE_SERVE_ROOT || '',
     helmet: processEnv.HELMET ? processEnv.HELMET === 'true' : nodeEnv === 'production',
-  };
-};
+  }
+}
 
 // 默认导出保持向后兼容
-export default appConfig;
+export default appConfig
 
 // 完整的配置模块，集成所有配置
 export const CONFIG_MODULE = ConfigModule.forRoot({
@@ -156,7 +156,7 @@ export const CONFIG_MODULE = ConfigModule.forRoot({
   //   PORT: Joi.number().required(),
   //   // 可以添加更多验证规则
   // }),
-});
+})
 
 /*
 

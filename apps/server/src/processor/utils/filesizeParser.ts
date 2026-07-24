@@ -1,10 +1,10 @@
 const validAmount = function (n: any) {
-  return !isNaN(parseFloat(String(n))) && isFinite(Number(n));
-};
+  return !isNaN(parseFloat(String(n))) && isFinite(Number(n))
+}
 
 const parsableUnit = function (u: any) {
-  return u.match(/\D*/).pop() === u;
-};
+  return u.match(/\D*/).pop() === u
+}
 
 const incrementBases: any = {
   2: [
@@ -39,37 +39,37 @@ const incrementBases: any = {
     [['Eb'], 1.25e17],
     [['e', 'E', 'eb', 'EB', 'EiB', 'Ei', 'ei'], 1.0e18],
   ],
-};
+}
 
 export default function (input: any) {
   // eslint-disable-next-line prefer-rest-params
-  const options = arguments[1] || { base: 2 };
-  const base = parseInt(options.base as string);
+  const options = arguments[1] || { base: 2 }
+  const base = parseInt(options.base as string)
 
   // const parsed = input.toString().match(/^([0-9\.,]*)(?:\s*)?(.*)$/);
-  const parsed = input.toString().match(/^([0-9.,]*)(?:\s*)?(.*)$/);
+  const parsed = input.toString().match(/^([0-9.,]*)(?:\s*)?(.*)$/)
 
-  const amount = parsed[1].replace(',', '.');
-  const unit = parsed[2];
+  const amount = parsed[1].replace(',', '.')
+  const unit = parsed[2]
 
   const validUnit = function (sourceUnit: string) {
-    return sourceUnit === unit;
-  };
-
-  if (!validAmount(amount) || !parsableUnit(unit)) {
-    throw new Error(`Can't interpret ${input || 'a blank string'}`);
+    return sourceUnit === unit
   }
 
-  if (unit === '') return Math.round(Number(amount));
+  if (!validAmount(amount) || !parsableUnit(unit)) {
+    throw new Error(`Can't interpret ${input || 'a blank string'}`)
+  }
 
-  const increments = incrementBases[base];
+  if (unit === '') return Math.round(Number(amount))
+
+  const increments = incrementBases[base]
   for (let i = 0; i < increments.length; i++) {
-    const _increment = increments[i];
+    const _increment = increments[i]
 
     if (_increment[0].some(validUnit)) {
-      return Math.round(amount * _increment[1]);
+      return Math.round(amount * _increment[1])
     }
   }
 
-  throw new Error(`${unit} doesn't appear to be a valid unit`);
+  throw new Error(`${unit} doesn't appear to be a valid unit`)
 }

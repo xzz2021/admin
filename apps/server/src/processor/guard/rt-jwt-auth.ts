@@ -1,9 +1,9 @@
-import { IS_PUBLIC_KEY } from '@/processor/decorator';
-import { RtTokenService } from '@/system/auth/rt.token.service';
-import { TokenService } from '@/system/auth/token.service';
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
+import { IS_PUBLIC_KEY } from '@/processor/decorator'
+import { RtTokenService } from '@/system/auth/rt.token.service'
+import { TokenService } from '@/system/auth/token.service'
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { AuthGuard } from '@nestjs/passport'
 
 // 用于全局 配合 短token 拦截
 @Injectable()
@@ -13,34 +13,34 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
     private readonly tokenService: TokenService,
     private readonly rtTokenService: RtTokenService,
   ) {
-    super();
+    super()
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
-    if (isPublic) return true;
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
+    if (isPublic) return true
 
     // WebSocket 走各自 Gateway 鉴权，避免 HTTP Guard 误伤
     if (context.getType?.() === 'ws') {
-      return false;
+      return false
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest()
     // 允许对 `/public/` 开头的资源访问
     if (request?.url?.startsWith('/public/')) {
-      return true;
+      return true
     }
 
-    const ok = (await super.canActivate(context)) as boolean;
-    if (!ok) return false;
+    const ok = (await super.canActivate(context)) as boolean
+    if (!ok) return false
     // 验签后检查双通道黑名单，被踢的 access token 立刻 401
-    const jti = request.user?.jti as string | undefined;
-    if (!jti) return true;
+    const jti = request.user?.jti as string | undefined
+    if (!jti) return true
 
     if ((await this.tokenService.isBlacklisted(jti)) || (await this.rtTokenService.isBlacklisted(jti))) {
-      throw new UnauthorizedException('token 已失效');
+      throw new UnauthorizedException('token 已失效')
     }
 
-    return true;
+    return true
   }
 }

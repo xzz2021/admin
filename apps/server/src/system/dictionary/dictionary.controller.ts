@@ -1,9 +1,9 @@
-import { RequiredPermission, Serialize } from '@/processor/decorator';
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DictionaryService } from './dictionary.service';
-import { DeleteDictionaryDto, DictionaryListRes, DictionarySeedArrayDto, UpsertDictionaryDto } from './dto/dictionary.dto';
-import { DeleteItemDto, UpsertItemDto } from './dto/entry.dto';
+import { RequiredPermission, Serialize } from '@/processor/decorator'
+import { Body, Controller, Delete, Get, Post } from '@nestjs/common'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { DictionaryService } from './dictionary.service'
+import { DeleteDictionaryDto, DictionaryListRes, DictionarySeedArrayDto, UpsertDictionaryDto } from './dto/dictionary.dto'
+import { DeleteItemDto, UpsertItemDto } from './dto/entry.dto'
 
 // 此模块可以作为范本
 @ApiTags('字典')
@@ -17,35 +17,35 @@ export class DictionaryController {
   @Serialize(DictionaryListRes)
   @ApiResponse({ type: DictionaryListRes, isArray: true })
   findAll() {
-    return this.dictionaryService.findAll();
+    return this.dictionaryService.findAll()
   }
 
   @Post('upsert')
   @RequiredPermission('dictionary:update')
   @ApiOperation({ summary: '创建或更新字典' })
   upsertDictionary(@Body() upsertDictionaryDto: UpsertDictionaryDto) {
-    return this.dictionaryService.upsertDictionary(upsertDictionaryDto);
+    return this.dictionaryService.upsertDictionary(upsertDictionaryDto)
   }
 
   @Delete('delete')
   @RequiredPermission('dictionary:delete')
   @ApiOperation({ summary: '批量删除字典' })
   delete(@Body() obj: DeleteDictionaryDto) {
-    return this.dictionaryService.batchRemove(obj.ids);
+    return this.dictionaryService.batchRemove(obj.ids)
   }
 
   @Post('entry/upsert')
   @RequiredPermission('dictionary:update')
   @ApiOperation({ summary: '创建字典项' })
   createEntry(@Body() upsertEntryData: UpsertItemDto) {
-    return this.dictionaryService.upsertEntry(upsertEntryData);
+    return this.dictionaryService.upsertEntry(upsertEntryData)
   }
 
   @Delete('entry/delete')
   @RequiredPermission('dictionary:delete')
   @ApiOperation({ summary: '批量删除字典项' })
   deleteEntry(@Body() deleteEntryData: DeleteItemDto) {
-    return this.dictionaryService.batchRemoveEntry(deleteEntryData.ids);
+    return this.dictionaryService.batchRemoveEntry(deleteEntryData.ids)
   }
 
   @Post('generateDictionarySeed')
@@ -57,6 +57,6 @@ export class DictionaryController {
   });
   */
   generateDictionarySeed(@Body() data: DictionarySeedArrayDto) {
-    return this.dictionaryService.generateDictionarySeed(data);
+    return this.dictionaryService.generateDictionarySeed(data)
   }
 }

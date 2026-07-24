@@ -1,43 +1,43 @@
-import { INestApplication, Logger } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { INestApplication, Logger } from '@nestjs/common'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
-import auth from 'basic-auth';
-import { timingSafeEqual } from 'crypto';
-import { NextFunction, Request, Response } from 'express';
+import auth from 'basic-auth'
+import { timingSafeEqual } from 'crypto'
+import { NextFunction, Request, Response } from 'express'
 
 export interface SwaggerCredentials {
-  username: string;
-  password: string;
+  username: string
+  password: string
 }
 
 function safeEqual(actual: string, expected: string): boolean {
-  const actualBuffer = Buffer.from(actual);
-  const expectedBuffer = Buffer.from(expected);
-  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
+  const actualBuffer = Buffer.from(actual)
+  const expectedBuffer = Buffer.from(expected)
+  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer)
 }
 
 function isBasicCredentials(value: unknown): value is { name: string; pass: string } {
-  return typeof value === 'object' && value !== null && 'name' in value && typeof value.name === 'string' && 'pass' in value && typeof value.pass === 'string';
+  return typeof value === 'object' && value !== null && 'name' in value && typeof value.name === 'string' && 'pass' in value && typeof value.pass === 'string'
 }
 
 function swaggerAuth(username: string, password: string) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const credentials: unknown = auth(req);
+    const credentials: unknown = auth(req)
     if (!isBasicCredentials(credentials) || !safeEqual(credentials.name, username) || !safeEqual(credentials.pass, password)) {
-      res.set('WWW-Authenticate', 'Basic realm="Swagger"');
-      return res.status(401).send('Authentication required.');
+      res.set('WWW-Authenticate', 'Basic realm="Swagger"')
+      return res.status(401).send('Authentication required.')
     }
-    next();
-  };
+    next()
+  }
 }
 
 export function createSwagger(app: INestApplication, credentials: SwaggerCredentials) {
   if (!credentials.username || credentials.password.length < 6) {
-    throw new Error('Swagger credentials are missing or too weak');
+    throw new Error('Swagger credentials are missing or too weak')
   }
 
-  Logger.log('Swagger documentation enabled at /docs', 'Bootstrap');
-  app.use('/docs', swaggerAuth(credentials.username, credentials.password));
+  Logger.log('Swagger documentation enabled at /docs', 'Bootstrap')
+  app.use('/docs', swaggerAuth(credentials.username, credentials.password))
   const config = new DocumentBuilder()
     .setTitle('后台管理')
     .setDescription('design by xzz2021')
@@ -62,10 +62,10 @@ export function createSwagger(app: INestApplication, credentials: SwaggerCredent
       type: 'http',
     })
     // .addServer(`http://127.0.0.1:3000`, 'Base URL')
-    .build();
+    .build()
 
-  const document = SwaggerModule.createDocument(app, config);
-  document.security = [{ bearer: [] }]; //  给api请求添加token
+  const document = SwaggerModule.createDocument(app, config)
+  document.security = [{ bearer: [] }] //  给api请求添加token
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       docExpansion: 'list', // 展开所有操作，但折叠模型
@@ -85,5 +85,5 @@ export function createSwagger(app: INestApplication, credentials: SwaggerCredent
       },
       persistAuthorization: false, // 禁止在浏览器存储 Bearer Token
     },
-  });
+  })
 }

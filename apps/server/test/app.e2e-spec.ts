@@ -1,14 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppController } from './../src/app.controller';
-import { AppService } from './../src/app.service';
-import { PgService } from './../src/prisma/pg.service';
-import { RedisHealthService } from './../src/core/cache/redis-health.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { INestApplication } from '@nestjs/common'
+import request from 'supertest'
+import { App } from 'supertest/types'
+import { AppController } from './../src/app.controller'
+import { AppService } from './../src/app.service'
+import { PgService } from './../src/prisma/pg.service'
+import { RedisHealthService } from './../src/core/cache/redis-health.service'
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication<App>
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,17 +27,17 @@ describe('AppController (e2e)', () => {
           useValue: { ping: jest.fn().mockResolvedValue(true) },
         },
       ],
-    }).compile();
+    }).compile()
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
+    app = moduleFixture.createNestApplication()
+    await app.init()
+  })
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
-  });
+    return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!')
+  })
 
   afterEach(async () => {
-    await app.close();
-  });
-});
+    await app.close()
+  })
+})

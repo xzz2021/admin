@@ -1,16 +1,16 @@
-import { RedisModule, type RedisModuleOptions } from '@liaoliaots/nestjs-redis';
-import { ConfigService } from '@nestjs/config';
+import { RedisModule, type RedisModuleOptions } from '@liaoliaots/nestjs-redis'
+import { ConfigService } from '@nestjs/config'
 
 /** 断线后重连间隔（毫秒） */
-export const REDIS_RECONNECT_INTERVAL_MS = 15000;
+export const REDIS_RECONNECT_INTERVAL_MS = 15000
 
 // 使用模块方式  可以设置多个实例
 export const REDIS_MODULE = RedisModule.forRootAsync({
   // isGlobal: true,
   inject: [ConfigService],
   useFactory: (...args: unknown[]): RedisModuleOptions => {
-    const configService = args[0] as ConfigService;
-    const redis = configService.get('redis');
+    const configService = args[0] as ConfigService
+    const redis = configService.get('redis')
     return {
       // 可声明多个命名实例
       config: [
@@ -37,6 +37,6 @@ export const REDIS_MODULE = RedisModule.forRootAsync({
         //   password: 'authpassword'
         // }
       ],
-    };
+    }
   },
-});
+})

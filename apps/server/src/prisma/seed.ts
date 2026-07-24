@@ -3,33 +3,33 @@
 
 */
 
-import { prisma, Prisma } from './lib/prisma';
-import { createSeedAdmin } from './seed-admin';
-import { _menu, _permission, _role } from './sql';
+import { prisma, Prisma } from './lib/prisma'
+import { createSeedAdmin } from './seed-admin'
+import { _menu, _permission, _role } from './sql'
 
 async function create_menus_batch(menu_data: any[], tx: Prisma.TransactionClient, parentId?: string) {
   for (const menu_item of menu_data) {
-    const { children, ...menu_fields } = menu_item;
+    const { children, ...menu_fields } = menu_item
     const menu = await tx.menu.create({
       data: {
         ...menu_fields,
         parentId: parentId || null,
       },
-    });
+    })
     if (Array.isArray(children) && children.length > 0) {
-      await create_menus_batch(children, tx, menu.id);
+      await create_menus_batch(children, tx, menu.id)
     }
   }
 }
 async function create_menus(menu_data: any[], tx: Prisma.TransactionClient) {
-  await create_menus_batch(menu_data, tx);
+  await create_menus_batch(menu_data, tx)
 }
 
 async function create_roles(role_data: any[], tx: Prisma.TransactionClient) {
   for (const role_item of role_data) {
     await tx.role.create({
       data: role_item,
-    });
+    })
   }
 }
 
@@ -39,9 +39,9 @@ async function create_users(user_data: { username: string; password: string; pho
     where: {
       code: 'super_admin',
     },
-  });
+  })
   if (!super_admin_role) {
-    throw new Error('Super admin role not found');
+    throw new Error('Super admin role not found')
   }
   await tx.user.create({
     data: {
@@ -55,8 +55,8 @@ async function create_users(user_data: { username: string; password: string; pho
         },
       },
     },
-  });
-  console.log(`🌱 Created user: ${user_data.username}`);
+  })
+  console.log(`🌱 Created user: ${user_data.username}`)
 }
 
 const PERMISSION_TYPE_MAP = {
@@ -64,11 +64,11 @@ const PERMISSION_TYPE_MAP = {
   data: 'DATA',
   api: 'API',
   other: 'OTHER',
-};
+}
 //  创建权限  先查找menu表path字段= resource的menuId,进行关联, code的值取resource:code
 async function create_permissions(permission_data: any[], tx: Prisma.TransactionClient) {
   for (const permission_item of permission_data) {
-    const { resource, code, name, type } = permission_item;
+    const { resource, code, name, type } = permission_item
     const menu = await tx.menu.findFirst({
       where: {
         path: resource,
@@ -76,36 +76,36 @@ async function create_permissions(permission_data: any[], tx: Prisma.Transaction
       select: {
         id: true,
       },
-    });
+    })
     if (!menu) {
-      throw new Error(`Menu ${resource} not found`);
+      throw new Error(`Menu ${resource} not found`)
     }
     await tx.permission.create({
       data: { name, code: `${resource}:${code}`, menuId: menu.id, type: PERMISSION_TYPE_MAP[type] },
-    });
+    })
   }
 }
 async function main() {
   await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
-      await create_menus(_menu, tx);
-      console.log('🌱 Seeding menus data success...');
-      await create_roles(_role, tx);
-      console.log('🌱 Seeding roles data success...');
-      await create_permissions(_permission, tx);
-      console.log('🌱 Seeding permissions data success...');
-      const seedAdmin = await createSeedAdmin(process.env);
-      await create_users(seedAdmin, tx);
-      console.log('✅ Seeding finished.');
+      await create_menus(_menu, tx)
+      console.log('🌱 Seeding menus data success...')
+      await create_roles(_role, tx)
+      console.log('🌱 Seeding roles data success...')
+      await create_permissions(_permission, tx)
+      console.log('🌱 Seeding permissions data success...')
+      const seedAdmin = await createSeedAdmin(process.env)
+      await create_users(seedAdmin, tx)
+      console.log('✅ Seeding finished.')
     },
     { timeout: 60_000 },
-  );
+  )
 }
 
 main()
   .then(() => prisma.$disconnect())
   .catch(async e => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

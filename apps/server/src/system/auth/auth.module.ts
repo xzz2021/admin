@@ -1,17 +1,17 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { JwtRefreshStrategy } from './jwt.refresh.strategy';
-import { JwtStrategy } from './jwt.strategy';
+import { Module, forwardRef } from '@nestjs/common'
+import { JwtModule } from '@nestjs/jwt'
+import { PassportModule } from '@nestjs/passport'
+import { AuthController } from './auth.controller'
+import { AuthService } from './auth.service'
+import { JwtRefreshStrategy } from './jwt.refresh.strategy'
+import { JwtStrategy } from './jwt.strategy'
 // import { SmsModule } from '@/utils/sms/sms.module';
 // import { ConfigService } from '@nestjs/config';
-import { CaptchaModule } from '@/system/captcha/captcha.module';
-import { OnlineModule } from '@/system/online/online.module';
-import { JwtRefreshAuthGuard } from '@/processor/guard';
-import { RtTokenService } from './rt.token.service';
-import { TokenService } from './token.service';
+import { CaptchaModule } from '@/system/captcha/captcha.module'
+import { OnlineModule } from '@/system/online/online.module'
+import { JwtRefreshAuthGuard } from '@/processor/guard'
+import { RtTokenService } from './rt.token.service'
+import { TokenService } from './token.service'
 
 @Module({
   imports: [
