@@ -638,7 +638,15 @@ export default {
     menuPermissionDetail: '菜单及权限详情',
     owned: '拥有',
     notOwned: '未拥有',
-    ownedPermissions: '拥有权限'
+    ownedPermissions: '拥有权限',
+    copyMenuPermission: '复制菜单权限表',
+    copyMenuPermissionEmpty: '当前角色暂无可复制的菜单权限',
+    importMenuPermission: '一键导入',
+    importPermissionEmpty: '剪贴板为空，请先在角色详情页复制菜单权限表',
+    importPermissionInvalid: '剪贴板内容不是有效的菜单权限表',
+    importPermissionConfirm: '导入将覆盖当前已选菜单与权限，是否继续？',
+    importPermissionNoMatch: '未匹配到可导入的菜单权限，请确认数据来源',
+    importPermissionSuccess: '导入成功：匹配 {menuCount} 个菜单、{permissionCount} 个权限'
   },
   inputPasswordDemo: {
     title: '密码输入框',

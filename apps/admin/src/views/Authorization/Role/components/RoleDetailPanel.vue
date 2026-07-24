@@ -2,10 +2,12 @@
 import type { RoleDetail } from '@/api/role/type'
 import { BaseButton } from '@/components/Button'
 import { Icon } from '@/components/Icon'
+import { useClipboard } from '@/hooks/web/useClipboard'
 import { useI18n } from '@/hooks/web/useI18n'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { ElTable, ElTableColumn, ElTag } from 'element-plus'
+import { ElMessage, ElTable, ElTableColumn, ElTag } from 'element-plus'
 import { computed, PropType } from 'vue'
+import { buildRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
 
 interface PermissionItem {
   id: string
@@ -44,6 +46,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { copy } = useClipboard()
 
 const roleInfoItems = computed<Array<{ label: string; value: string; tagType?: TagType }>>(() => {
   const detail = props.roleDetail
@@ -98,6 +101,15 @@ const overviewCards = computed(() => [
 const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
   return !!menu.checked && !!permission.checked
 }
+
+const handleCopyMenuPermission = () => {
+  const snapshot = buildRoleMenuPermissionSnapshot(props.menuTree)
+  if (!snapshot.menus.length) {
+    ElMessage.warning(t('role.copyMenuPermissionEmpty'))
+    return
+  }
+  copy(JSON.stringify(snapshot, null, 2))
+}
 </script>
 
 <template>
@@ -133,15 +145,21 @@ const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
     <div class="detail-card">
       <div class="card-header mb-16px">
         <span class="card-title">{{ t('role.menuPermissionDetail') }}</span>
-        <div class="legend">
-          <span class="legend-item">
-            <Icon icon="circle-check" class="legend-owned" :size="16" />
-            {{ t('role.owned') }}
-          </span>
-          <span class="legend-item">
-            <Icon icon="ban" class="legend-unowned" :size="16" />
-            {{ t('role.notOwned') }}
-          </span>
+        <div class="card-header-actions">
+          <div class="legend">
+            <span class="legend-item">
+              <Icon icon="circle-check" class="legend-owned" :size="16" />
+              {{ t('role.owned') }}
+            </span>
+            <span class="legend-item">
+              <Icon icon="ban" class="legend-unowned" :size="16" />
+              {{ t('role.notOwned') }}
+            </span>
+          </div>
+          <BaseButton @click="handleCopyMenuPermission" type="success">
+            <Icon icon="copy" class="mr-4px" />
+            {{ t('role.copyMenuPermission') }}
+          </BaseButton>
         </div>
       </div>
 
@@ -293,6 +311,12 @@ const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
     font-size: 16px;
     font-weight: 600;
     color: var(--el-text-color-primary);
+  }
+
+  .card-header-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
   }
 
   .legend {

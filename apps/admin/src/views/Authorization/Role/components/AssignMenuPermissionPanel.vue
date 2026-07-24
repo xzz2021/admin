@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { BaseButton } from '@/components/Button'
 import { Icon } from '@/components/Icon'
+import { useClipboard } from '@/hooks/web/useClipboard'
 import { useI18n } from '@/hooks/web/useI18n'
 import { eachTree } from '@/utils/tree'
-import { ElCheckbox, ElForm, ElFormItem, ElInput, ElSwitch, ElTag, ElTree } from 'element-plus'
+import { ElCheckbox, ElForm, ElFormItem, ElInput, ElMessage, ElMessageBox, ElSwitch, ElTag, ElTree } from 'element-plus'
 import { computed, nextTick, PropType, ref, watch } from 'vue'
+import { applyRoleMenuPermissionSnapshot, parseRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
 
 const emit = defineEmits<{
   cancel: []
@@ -18,6 +20,7 @@ const isExpandAll = ref(true)
 const permissionChangeTick = ref(0)
 
 const { t } = useI18n()
+const { getText } = useClipboard()
 
 export interface RoleFormModel {
   id?: string
@@ -103,8 +106,10 @@ const bumpPermissionChange = () => {
   permissionChangeTick.value++
 }
 
-const getMenuCheckedPermissionCount = (node: MenuTreeNode) => {
-  return node.permissions?.filter((permission) => permission.checked).length ?? 0
+const getMenuPermissionCount = (node: MenuTreeNode) => {
+  const total = node.permissions?.length ?? 0
+  const selected = node.permissions?.filter((permission) => permission.checked).length ?? 0
+  return { selected, total }
 }
 
 const clearMenuPermissions = (node: MenuTreeNode) => {
@@ -180,13 +185,14 @@ const selectedPermissionCount = computed(() => {
   return count
 })
 
-const menuCheckedPermissionCountMap = computed(() => {
+const menuPermissionCountMap = computed(() => {
   permissionChangeTick.value
-  const map: Record<string, number> = {}
+  const map: Record<string, { text: string; selected: number }> = {}
   eachTree(props.menuTree, (node) => {
-    const count = getMenuCheckedPermissionCount(node)
-    if (count > 0) {
-      map[node.id] = count
+    const { selected, total } = getMenuPermissionCount(node)
+    map[node.id] = {
+      selected,
+      text: total > 0 ? `${selected}/${total}` : '0'
     }
   })
   return map
@@ -241,6 +247,55 @@ const toggleExpandAll = () => {
   })
 }
 
+const syncTreeCheckedKeys = () => {
+  const checkedIds: string[] = []
+  eachTree(props.menuTree, (node) => {
+    if (node.checked) checkedIds.push(node.id)
+  })
+  treeRef.value?.setCheckedKeys(checkedIds, false)
+  bumpPermissionChange()
+}
+
+const handleImportPermissions = async () => {
+  const clipboardText = await getText()
+  if (!clipboardText?.trim()) {
+    ElMessage.warning(t('role.importPermissionEmpty'))
+    return
+  }
+
+  const snapshot = parseRoleMenuPermissionSnapshot(clipboardText.trim())
+  if (!snapshot) {
+    ElMessage.error(t('role.importPermissionInvalid'))
+    return
+  }
+
+  try {
+    await ElMessageBox.confirm(t('role.importPermissionConfirm'), t('common.reminder'), {
+      confirmButtonText: t('common.ok'),
+      cancelButtonText: t('common.cancel'),
+      type: 'warning'
+    })
+  } catch {
+    return
+  }
+
+  const { matchedMenuCount, matchedPermissionCount } = applyRoleMenuPermissionSnapshot(props.menuTree, snapshot)
+  await nextTick()
+  syncTreeCheckedKeys()
+
+  if (!matchedMenuCount && !matchedPermissionCount) {
+    ElMessage.warning(t('role.importPermissionNoMatch'))
+    return
+  }
+
+  ElMessage.success(
+    t('role.importPermissionSuccess', {
+      menuCount: matchedMenuCount,
+      permissionCount: matchedPermissionCount
+    })
+  )
+}
+
 const collectSubmitData = (): RoleSubmitData => {
   const menus: RoleSubmitData['menus'] = []
 
@@ -273,6 +328,13 @@ defineExpose({
 <template>
   <div v-loading="loading" class="assign-menu-permission">
     <div class="role-info-card mb-20px">
+      <div class="role-info-toolbar mb-12px">
+        <span class="role-info-title">{{ t('role.assignMenuPermission') }}</span>
+        <BaseButton @click="handleImportPermissions" type="danger">
+          <Icon icon="clipboard-paste" class="mr-4px" />
+          {{ t('role.importMenuPermission') }}
+        </BaseButton>
+      </div>
       <ElForm inline label-width="80px">
         <ElFormItem :label="t('role.roleName')">
           <ElInput v-model="roleFormModel.name" class="!w-220px" :placeholder="t('role.roleNamePlaceholder')" />
@@ -320,8 +382,11 @@ defineExpose({
             <template #default="{ data }">
               <span class="tree-node-content">
                 <span class="tree-node-label">{{ t(data.title) }}</span>
-                <span v-if="menuCheckedPermissionCountMap[data.id]" class="tree-node-permission-count">
-                  {{ menuCheckedPermissionCountMap[data.id] }}
+                <span
+                  class="tree-node-permission-count"
+                  :class="{ 'is-zero': !(menuPermissionCountMap[data.id]?.selected > 0) }"
+                >
+                  {{ menuPermissionCountMap[data.id]?.text ?? '0' }}
                 </span>
               </span>
             </template>
@@ -416,6 +481,18 @@ defineExpose({
     border-radius: 8px;
   }
 
+  .role-info-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .role-info-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
   .permission-layout {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -466,6 +543,11 @@ defineExpose({
         font-size: 12px;
         font-weight: 600;
         color: var(--el-color-primary);
+
+        &.is-zero {
+          font-weight: 500;
+          color: var(--el-text-color-placeholder);
+        }
       }
     }
   }

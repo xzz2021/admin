@@ -100,7 +100,7 @@ const saveAvatar = async () => {
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>手机号码：</div>
+        <div>手机号：</div>
         <div>{{ userInfo?.phone ?? '-' }}</div>
       </div>
       <ElDivider />
@@ -130,7 +130,7 @@ const saveAvatar = async () => {
         <ElTabPane label="基本信息" name="first">
           <EditInfo :user-info="userInfo" @success="fetchDetailUserApi" />
         </ElTabPane>
-        <ElTabPane label="修改密码" name="second">
+        <ElTabPane label="修改密码" name="second" lazy>
           <EditPassword />
         </ElTabPane>
       </ElTabs>

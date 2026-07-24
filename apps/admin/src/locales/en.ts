@@ -645,7 +645,15 @@ export default {
     menuPermissionDetail: 'Menu and permission details',
     owned: 'Owned',
     notOwned: 'Not owned',
-    ownedPermissions: 'Owned permissions'
+    ownedPermissions: 'Owned permissions',
+    copyMenuPermission: 'Copy menu permissions',
+    copyMenuPermissionEmpty: 'No menu permissions available to copy',
+    importMenuPermission: 'Import',
+    importPermissionEmpty: 'Clipboard is empty. Copy menu permissions from the role detail page first',
+    importPermissionInvalid: 'Clipboard content is not a valid menu permission snapshot',
+    importPermissionConfirm: 'Importing will overwrite the current menu and permission selection. Continue?',
+    importPermissionNoMatch: 'No matching menu permissions found. Please check the data source',
+    importPermissionSuccess: 'Imported successfully: {menuCount} menus, {permissionCount} permissions'
   },
   inputPasswordDemo: {
     title: 'InputPassword',
