@@ -15,7 +15,7 @@ interface AppConfig {
   redis: {
     host: string
     port: number
-    password: string
+    password?: string
     url: string
   }
   ssoCount: number
@@ -112,7 +112,8 @@ export const appConfig = (): AppConfig => {
     redis: {
       host: processEnv.REDIS_HOST || '',
       port: parseInt(processEnv.REDIS_PORT || '6379', 10),
-      password: processEnv.REDIS_PASSWORD || '',
+      // 空字符串勿写入：ioredis 仍会 AUTH，本地无密码 Redis 会刷 WARN
+      password: processEnv.REDIS_PASSWORD?.trim() || undefined,
       url: processEnv.REDIS_URL || '',
     },
     ssoCount: parseInt(processEnv.SSO_COUNT || '3', 10),

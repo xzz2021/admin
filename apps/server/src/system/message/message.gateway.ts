@@ -1,11 +1,12 @@
+import { buildRedisOptions, type AppRedisConfig } from '@/core/cache/redis-options'
 import { Public } from '@/processor/decorator'
 import { TokenService } from '@/system/auth/token.service'
 import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
-import type { IncomingMessage } from 'node:http'
 import Redis from 'ioredis'
+import type { IncomingMessage } from 'node:http'
 import type { Server } from 'ws'
 import WebSocket from 'ws'
 import { MESSAGE_PUSH_CHANNEL } from './message.constants'
@@ -39,17 +40,16 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect,
 
   async onModuleInit() {
     try {
-      const redisCfg = this.configService.get<{ host?: string; port?: number; password?: string; db?: number }>('redis') ?? {}
-      // 独立 Pub/Sub 连接（duplicate 会继承 enableOfflineQueue:false，subscribe 易失败）
-      this.subscriber = new Redis({
-        host: redisCfg.host || '127.0.0.1',
-        port: redisCfg.port || 6379,
-        password: redisCfg.password || undefined,
-        db: redisCfg.db ?? 0,
-        enableOfflineQueue: true,
-        maxRetriesPerRequest: null,
-        lazyConnect: false,
-      })
+      //  Redis 协议 + BullMQ 约束 决定了不能全挤在一条连接上。所以需要单独连接一个 ioredis 实例。
+      const redisCfg = this.configService.get<AppRedisConfig>('redis')
+      // Pub/Sub 须独立连接；无密码时不传 password，避免重复 AUTH WARN
+      this.subscriber = new Redis(
+        buildRedisOptions(redisCfg, {
+          enableOfflineQueue: true,
+          maxRetriesPerRequest: null,
+          lazyConnect: false,
+        }),
+      )
       await this.subscriber.subscribe(MESSAGE_PUSH_CHANNEL)
       this.subscriber.on('message', (channel, raw) => {
         if (channel !== MESSAGE_PUSH_CHANNEL) return
