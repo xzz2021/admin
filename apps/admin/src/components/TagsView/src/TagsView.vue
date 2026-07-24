@@ -277,7 +277,7 @@ watch(
       @click="move(-200)"
     >
       <Icon
-        icon="vi-ep:d-arrow-left"
+        icon="chevrons-left"
         color="var(--el-text-color-placeholder)"
         :hover-color="isDark ? '#fff' : 'var(--el-color-black)'"
       />
@@ -289,7 +289,7 @@ watch(
             :ref="itemRefs.set"
             :schema="[
               {
-                icon: 'vi-ant-design:sync-outlined',
+                icon: 'refresh-cw',
                 label: t('common.reload'),
                 disabled: selectedTag?.fullPath !== item.fullPath,
                 command: () => {
@@ -297,7 +297,7 @@ watch(
                 }
               },
               {
-                icon: 'vi-ant-design:close-outlined',
+                icon: 'x',
                 label: t('common.closeTab'),
                 disabled: !!visitedViews?.length && selectedTag?.meta.affix,
                 command: () => {
@@ -306,7 +306,7 @@ watch(
               },
               {
                 divided: true,
-                icon: 'vi-ant-design:vertical-right-outlined',
+                icon: 'chevrons-left',
                 label: t('common.closeTheLeftTab'),
                 disabled:
                   !!visitedViews?.length &&
@@ -316,7 +316,7 @@ watch(
                 }
               },
               {
-                icon: 'vi-ant-design:vertical-left-outlined',
+                icon: 'chevrons-right',
                 label: t('common.closeTheRightTab'),
                 disabled:
                   !!visitedViews?.length &&
@@ -328,7 +328,7 @@ watch(
               },
               {
                 divided: true,
-                icon: 'vi-ant-design:tag-outlined',
+                icon: 'tag',
                 label: t('common.closeOther'),
                 disabled: selectedTag?.fullPath !== item.fullPath,
                 command: () => {
@@ -336,7 +336,7 @@ watch(
                 }
               },
               {
-                icon: 'vi-ant-design:line-outlined',
+                icon: 'minus',
                 label: t('common.closeAll'),
                 command: () => {
                   closeAllTags()
@@ -368,7 +368,7 @@ watch(
                   <Icon
                     :class="`${prefixCls}__item--close`"
                     color="#333"
-                    icon="vi-ant-design:close-outlined"
+                    icon="x"
                     :size="12"
                     @click.prevent.stop="closeSelectedTag(item)"
                   />
@@ -385,7 +385,7 @@ watch(
       @click="move(200)"
     >
       <Icon
-        icon="vi-ep:d-arrow-right"
+        icon="chevrons-right"
         color="var(--el-text-color-placeholder)"
         :hover-color="isDark ? '#fff' : 'var(--el-color-black)'"
       />
@@ -396,7 +396,7 @@ watch(
       @click="refreshSelectedTag(selectedTag)"
     >
       <Icon
-        icon="vi-ant-design:reload-outlined"
+        icon="rotate-cw"
         color="var(--el-text-color-placeholder)"
         :hover-color="isDark ? '#fff' : 'var(--el-color-black)'"
       />
@@ -405,14 +405,14 @@ watch(
       trigger="click"
       :schema="[
         {
-          icon: 'vi-ant-design:sync-outlined',
+          icon: 'refresh-cw',
           label: t('common.reload'),
           command: () => {
             refreshSelectedTag(selectedTag)
           }
         },
         {
-          icon: 'vi-ant-design:close-outlined',
+          icon: 'x',
           label: t('common.closeTab'),
           disabled: !!visitedViews?.length && selectedTag?.meta.affix,
           command: () => {
@@ -421,7 +421,7 @@ watch(
         },
         {
           divided: true,
-          icon: 'vi-ant-design:vertical-right-outlined',
+          icon: 'chevrons-left',
           label: t('common.closeTheLeftTab'),
           disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[0].fullPath,
           command: () => {
@@ -429,7 +429,7 @@ watch(
           }
         },
         {
-          icon: 'vi-ant-design:vertical-left-outlined',
+          icon: 'chevrons-right',
           label: t('common.closeTheRightTab'),
           disabled: !!visitedViews?.length && selectedTag?.fullPath === visitedViews[visitedViews.length - 1].fullPath,
           command: () => {
@@ -438,14 +438,14 @@ watch(
         },
         {
           divided: true,
-          icon: 'vi-ant-design:tag-outlined',
+          icon: 'tag',
           label: t('common.closeOther'),
           command: () => {
             closeOthersTags()
           }
         },
         {
-          icon: 'vi-ant-design:line-outlined',
+          icon: 'minus',
           label: t('common.closeAll'),
           command: () => {
             closeAllTags()
@@ -458,7 +458,7 @@ watch(
         class="w-[var(--tags-view-height)] h-[var(--tags-view-height)] flex items-center justify-center cursor-pointer block"
       >
         <Icon
-          icon="vi-ant-design:setting-outlined"
+          icon="settings"
           color="var(--el-text-color-placeholder)"
           :hover-color="isDark ? '#fff' : 'var(--el-color-black)'"
         />

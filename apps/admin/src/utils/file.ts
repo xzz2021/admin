@@ -83,17 +83,17 @@ export const getFileIcon2 = (extension: string) => {
   // console.log('xzz2021: type', type)
   switch (type) {
     case 'image':
-      return { icon: 'material-icon-theme:folder-aws-open', type: 'image' }
+      return { icon: 'image', type: 'image' }
     case 'video':
-      return { icon: 'material-icon-theme:video', type: 'video' }
+      return { icon: 'video', type: 'video' }
     case 'doc':
-      return { icon: 'material-icon-theme:document', type: 'doc' }
+      return { icon: 'file-text', type: 'doc' }
     case 'audio':
-      return { icon: 'material-icon-theme:audio', type: 'audio' }
+      return { icon: 'headphones', type: 'audio' }
     case 'zip':
-      return { icon: 'material-icon-theme:zip', type: 'zip' }
+      return { icon: 'folder-open', type: 'zip' }
     default:
-      return { icon: 'material-icon-theme:bun-light', type: 'other' }
+      return { icon: 'file-text', type: 'other' }
   }
 }
 

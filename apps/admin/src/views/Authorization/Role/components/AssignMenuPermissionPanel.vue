@@ -299,7 +299,7 @@ defineExpose({
         <div class="panel-header">{{ t('role.menuList') }}</div>
         <ElInput v-model="menuSearch" class="mb-12px" :placeholder="t('role.menuSearchPlaceholder')" clearable>
           <template #prefix>
-            <Icon icon="vi-ep:search" />
+            <Icon icon="search" />
           </template>
         </ElInput>
         <!-- title需要使用i18n -->

@@ -1,33 +1,7 @@
 import transformerVariantGroup from '@unocss/transformer-variant-group'
 import { defineConfig, toEscapedSelector as e, presetIcons, presetUno } from 'unocss'
-import { loadEnv } from 'vite'
-import { ICON_PREFIX } from './src/constants'
-
-const root = process.cwd()
-
-const createPresetIcons = () => {
-  const isBuild = !!process.argv[4]
-  let env = {} as any
-  if (!isBuild) {
-    env = loadEnv(process.argv[3], root)
-  } else {
-    env = loadEnv(process.argv[4], root)
-  }
-  // @ts-ignore
-  if (env.VITE_USE_ONLINE_ICON === 'true') {
-    return []
-  } else {
-    return [
-      presetIcons({
-        autoInstall: false,
-        prefix: ICON_PREFIX
-      })
-    ]
-  }
-}
 
 export default defineConfig({
-  // ...UnoCSS options
   rules: [
     [
       /^overflow-ellipsis$/,
@@ -53,7 +27,6 @@ ${selector} {
   align-items: center;
   transition: background var(--transition-time-02);
 }
-/* you can have multiple rules */
 ${selector}:hover {
   background-color: var(--top-header-hover-color);
 }
@@ -136,13 +109,21 @@ ${selector}:after {
       }
     ]
   ],
-  presets: [presetUno({ dark: 'class', attributify: false }), ...createPresetIcons()],
+  presets: [
+    presetUno({ dark: 'class', attributify: false }),
+    // 静态图标：模板里写 class="i-lucide-user"；业务 Icon 组件走 @iconify-json/lucide 短名，不依赖 safelist
+    presetIcons({
+      collections: {
+        lucide: () => import('@iconify-json/lucide/icons.json').then((i) => i.default)
+      },
+      autoInstall: false,
+      warn: true
+    })
+  ],
   transformers: [transformerVariantGroup()],
   content: {
     pipeline: {
-      // include: [/\.(vue|svelte|[jt]sx|mdx?|astro|elm|php|phtml|html|ts)($|\?)/]
-      include: [/\.(vue|[jt]sx|html)($|\?)/], // 去掉纯 .ts，或显式 exclude icons.*.ts
-      exclude: [/IconPicker\/src\/data\/icons\..*\.ts$/]
+      include: [/\.(vue|[jt]sx|html)($|\?)/]
     }
   }
 })

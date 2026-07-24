@@ -21,6 +21,6 @@ const toggleFullscreen = () => {
 
 <template>
   <div :class="prefixCls" @click="toggleFullscreen">
-    <Icon :size="18" :icon="isFullscreen ? 'vi-zmdi:fullscreen-exit' : 'vi-zmdi:fullscreen'" :color="color" />
+    <Icon :size="18" :icon="isFullscreen ? 'minimize' : 'maximize'" :color="color" />
   </div>
 </template>

@@ -28,21 +28,21 @@ const RenderPreview = defineComponent({
       case 'audio':
         return (
           <div onClick={() => createAudioViewer({ url, filename })} class="w-full flex items-center">
-            <Icon icon="vi-tdesign:music" style={{ color: '#0dc70b' }} />
+            <Icon icon="headphones" style={{ color: '#0dc70b' }} />
             <div class="ml-2 w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
           </div>
         )
       case 'video':
         return (
           <div onClick={() => createVideoViewer({ url })} class="w-full flex items-center">
-            <Icon icon="vi-tdesign:video-camera-music" style={{ color: '#ff6b12' }} />
+            <Icon icon="film" style={{ color: '#ff6b12' }} />
             <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
           </div>
         )
       case 'doc':
         return (
           <div class="w-full flex items-center">
-            <Icon icon="vi-ep:document" style={{ color: '#0070ff' }} />
+            <Icon icon="file-text" style={{ color: '#0070ff' }} />
             <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
           </div>
         )

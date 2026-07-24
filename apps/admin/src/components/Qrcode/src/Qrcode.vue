@@ -229,7 +229,7 @@ const disabledClick = () => {
       @click="disabledClick"
     >
       <div class="absolute top-[50%] left-[50%] font-bold">
-        <Icon icon="vi-ep:refresh-right" :size="30" color="var(--el-color-primary)" />
+        <Icon icon="rotate-cw" :size="30" color="var(--el-color-primary)" />
         <div>{{ disabledText }}</div>
       </div>
     </div>

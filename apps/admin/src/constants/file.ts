@@ -4,41 +4,41 @@ export interface FileTypeListItem {
   icon: string
 }
 
-/** 文件分类 */
+/** 文件分类（icon 为 lucide 短名） */
 export const FileTypeList: FileTypeListItem[] = [
-  { name: '全部', value: 0, icon: 'menu-file' },
-  { name: '图片', value: 2, icon: 'file-image-color' },
-  { name: '文档', value: 3, icon: 'file-txt' },
-  { name: '视频', value: 4, icon: 'file-video-color' },
-  { name: '音频', value: 5, icon: 'file-music' },
-  { name: '其他', value: 1, icon: 'file-other' }
+  { name: '全部', value: 0, icon: 'folder' },
+  { name: '图片', value: 2, icon: 'image' },
+  { name: '文档', value: 3, icon: 'file-text' },
+  { name: '视频', value: 4, icon: 'video' },
+  { name: '音频', value: 5, icon: 'headphones' },
+  { name: '其他', value: 1, icon: 'files' }
 ]
 
 export interface FileExtendNameIconMap {
   [key: string]: string
 }
 
-/** 文件类型图标 Map 映射 */
+/** 文件类型图标 Map 映射（lucide 短名） */
 export const FileIcon: FileExtendNameIconMap = {
-  mp3: 'file-music',
-  mp4: 'file-video',
-  dir: 'file-dir',
-  ppt: 'file-ppt',
-  doc: 'file-wps',
-  docx: 'file-wps',
-  xls: 'file-excel',
-  xlsx: 'file-excel',
-  txt: 'file-txt',
-  rar: 'file-rar',
-  zip: 'file-zip',
-  html: 'file-html',
-  css: 'file-css',
-  js: 'file-js',
-  jpg: 'file-image-color',
-  png: 'file-image-color',
-  gif: 'file-image-color',
-  jpeg: 'file-image-color',
-  other: 'file-other'
+  mp3: 'headphones',
+  mp4: 'video',
+  dir: 'folder',
+  ppt: 'file-text',
+  doc: 'file-text',
+  docx: 'file-text',
+  xls: 'file-text',
+  xlsx: 'file-text',
+  txt: 'file-text',
+  rar: 'folder-open',
+  zip: 'folder-open',
+  html: 'file-text',
+  css: 'file-text',
+  js: 'file-text',
+  jpg: 'image',
+  png: 'image',
+  gif: 'image',
+  jpeg: 'image',
+  other: 'files'
 }
 
 /** 图片类型 */

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, unref } from 'vue'
+import { useDesign } from '@/hooks/web/useDesign'
 import { useAppStore } from '@/store/modules/app'
 import { propTypes } from '@/utils/propTypes'
-import { useDesign } from '@/hooks/web/useDesign'
+import { computed, unref } from 'vue'
 
 const { getPrefixCls } = useDesign()
 
@@ -24,11 +24,6 @@ const toggleCollapse = () => {
 
 <template>
   <div :class="prefixCls" @click="toggleCollapse">
-    <Icon
-      :size="18"
-      :icon="collapse ? 'vi-ant-design:menu-unfold-outlined' : 'vi-ant-design:menu-fold-outlined'"
-      :color="color"
-      class="cursor-pointer"
-    />
+    <Icon :size="18" :icon="collapse ? 'panel-left-open' : 'panel-left-close'" :color="color" class="cursor-pointer" />
   </div>
 </template>

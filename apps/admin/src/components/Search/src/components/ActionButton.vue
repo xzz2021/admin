@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useI18n } from '@/hooks/web/useI18n'
 import { useIcon } from '@/hooks/web/useIcon'
 import { propTypes } from '@/utils/propTypes'
-import { useI18n } from '@/hooks/web/useI18n'
 
 const emit = defineEmits(['search', 'reset', 'expand'])
 
@@ -34,26 +34,15 @@ const onExpand = () => {
     v-if="showSearch"
     type="primary"
     :loading="searchLoading"
-    :icon="useIcon({ icon: 'vi-ep:search' })"
+    :icon="useIcon({ icon: 'search' })"
     @click="onSearch"
   >
     {{ t('common.query') }}
   </BaseButton>
-  <BaseButton
-    v-if="showReset"
-    :loading="resetLoading"
-    plain
-    :icon="useIcon({ icon: 'vi-ep:refresh-right' })"
-    @click="onReset"
-  >
+  <BaseButton v-if="showReset" :loading="resetLoading" plain :icon="useIcon({ icon: 'rotate-cw' })" @click="onReset">
     {{ t('common.reset') }}
   </BaseButton>
-  <BaseButton
-    v-if="showExpand"
-    :icon="useIcon({ icon: visible ? 'vi-ep:arrow-up' : 'vi-ep:arrow-down' })"
-    text
-    @click="onExpand"
-  >
+  <BaseButton v-if="showExpand" :icon="useIcon({ icon: visible ? 'arrow-up' : 'arrow-down' })" text @click="onExpand">
     {{ t(visible ? 'common.shrink' : 'common.expand') }}
   </BaseButton>
 </template>

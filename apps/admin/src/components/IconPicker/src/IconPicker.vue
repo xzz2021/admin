@@ -1,42 +1,35 @@
 <script setup lang="ts">
-import epIcons from './data/icons.ep'
-import antIcons from './data/icons.ant-design'
-import tIcons from './data/icons.tdesign'
+import { Icon } from '@/components/Icon'
 import { useDesign } from '@/hooks/web/useDesign'
-import { ElInput, ElPopover, ElScrollbar, ElTabs, ElTabPane, ElPagination } from 'element-plus'
 import { useAppStore } from '@/store/modules/app'
+import { toLucideIconName } from '@/utils/icon'
+import { icons as lucideIconSet } from '@iconify-json/lucide'
+import { ElInput, ElLink, ElPagination, ElPopover, ElScrollbar } from 'element-plus'
 import { computed, CSSProperties, ref, unref, watch } from 'vue'
-import { nextTick } from 'vue'
 
-const findIconSetIndex = (icon: string) => {
-  return icons.findIndex((item) => icon.startsWith(`${item.prefix}:`))
-}
-
-const init = async (icon?: string) => {
-  if (!icon) return
-
-  const wrapIndex = findIconSetIndex(icon)
-  if (wrapIndex < 0) {
-    iconName.value = icons[0].prefix
-    currentPage.value = 1
-    return
-  }
-
-  iconName.value = icons[wrapIndex].prefix
-  const index = filterItemIcons(icons[wrapIndex].icons).findIndex((item) => item === icon)
-  await nextTick()
-  currentPage.value = index >= 0 ? Math.max(1, Math.ceil((index + 1) / unref(pageSize))) : 1
-}
-
-const resetPickerState = () => {
-  search.value = ''
-  iconName.value = icons[0].prefix
-  currentPage.value = 1
-}
+const ALL_ICONS = Object.keys(lucideIconSet.icons).sort()
 
 const modelValue = defineModel<string>()
 
 const appStore = useAppStore()
+const { getPrefixCls } = useDesign()
+const prefixCls = getPrefixCls('icon-picker')
+
+const draft = ref(modelValue.value ?? '')
+const popoverVisible = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(48)
+
+watch(
+  () => modelValue.value,
+  (val) => {
+    draft.value = val ?? ''
+  }
+)
+
+watch(draft, () => {
+  currentPage.value = 1
+})
 
 const size = computed(() => appStore.getCurrentSize)
 
@@ -55,6 +48,7 @@ const iconWrapStyle = computed((): CSSProperties => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
     boxShadow: '0 0 0 1px var(--el-input-border-color,var(--el-border-color)) inset',
     position: 'relative',
     left: '-1px',
@@ -62,150 +56,139 @@ const iconWrapStyle = computed((): CSSProperties => {
   }
 })
 
-const { getPrefixCls } = useDesign()
+const previewIcon = computed(() => toLucideIconName(draft.value))
 
-const prefixCls = getPrefixCls('icon-picker')
-
-const icons = [epIcons, antIcons, tIcons]
-
-const iconName = ref(icons[0].prefix)
-
-const currentIconNameIndex = computed(() => {
-  const index = icons.findIndex((item) => item.prefix === unref(iconName))
-  return index < 0 ? 0 : index
-})
-
-const tabChange = () => {
-  currentPage.value = 1
+const fuzzyMatch = (query: string, name: string): boolean => {
+  const q = query.toLowerCase().trim()
+  if (!q) return true
+  const n = name.toLowerCase()
+  if (n.includes(q)) return true
+  let qi = 0
+  for (const ch of n) {
+    if (ch === q[qi]) qi++
+    if (qi === q.length) return true
+  }
+  return false
 }
 
-const pageSize = ref(49)
+const matchScore = (query: string, name: string): number => {
+  const q = query.toLowerCase().trim()
+  if (!q) return 0
+  const n = name.toLowerCase()
+  if (n === q) return 100
+  if (n.startsWith(q)) return 80
+  if (n.includes(q)) return 60
+  return 20
+}
 
-const currentPage = ref(1)
+const filteredIcons = computed(() => {
+  const q = draft.value.trim()
+  if (!q) return ALL_ICONS
+  return ALL_ICONS.filter((name) => fuzzyMatch(q, name)).sort(
+    (a, b) => matchScore(q, b) - matchScore(q, a) || a.localeCompare(b)
+  )
+})
 
-const filterIcons = (icons: string[]) => {
+const pageIcons = computed(() => {
   const start = (unref(currentPage) - 1) * unref(pageSize)
-  const end = unref(currentPage) * unref(pageSize)
-  return icons.slice(start, end)
-}
-
-watch(
-  () => modelValue.value,
-  async (val) => {
-    await nextTick()
-    val && init(val)
-  },
-  {
-    immediate: true
-  }
-)
-
-const popoverShow = () => {
-  resetPickerState()
-  init(unref(modelValue))
-}
-
-const iconSelect = (icon: string) => {
-  // 如果是同一个icon则不做处理，则相当于点击了清空按钮
-  if (icon === unref(modelValue)) {
-    modelValue.value = ''
-    return
-  }
-  modelValue.value = icon
-}
-
-const search = ref('')
-
-const filterItemIcons = (iconList: string[]) => {
-  return iconList.filter((item) => item.includes(unref(search)))
-}
-
-const findFirstMatchingIconSetIndex = (keyword: string) => {
-  const trimmed = keyword.trim()
-  if (!trimmed) return -1
-  return icons.findIndex((item) => item.icons.some((icon) => icon.includes(trimmed)))
-}
-
-const syncTabBySearch = (keyword: string) => {
-  currentPage.value = 1
-  const trimmed = keyword.trim()
-  if (!trimmed) return
-
-  const currentIndex = icons.findIndex((item) => item.prefix === unref(iconName))
-  const currentHasMatch = currentIndex >= 0 && icons[currentIndex].icons.some((icon) => icon.includes(trimmed))
-  if (currentHasMatch) return
-
-  const matchIndex = findFirstMatchingIconSetIndex(trimmed)
-  if (matchIndex >= 0) {
-    iconName.value = icons[matchIndex].prefix
-  }
-}
-
-watch(search, (keyword) => {
-  syncTabBySearch(keyword)
+  return unref(filteredIcons).slice(start, start + unref(pageSize))
 })
 
-const inputClear = () => {
-  resetPickerState()
+const commit = () => {
+  const next = draft.value.trim() ? toLucideIconName(draft.value) : ''
+  draft.value = next
+  modelValue.value = next
+}
+
+const clear = () => {
+  draft.value = ''
+  modelValue.value = ''
+  currentPage.value = 1
+}
+
+const selectIcon = (name: string) => {
+  draft.value = name
+  modelValue.value = name
+  popoverVisible.value = false
+}
+
+/** 输入时保持面板打开（不与 click 开关冲突） */
+const onInput = () => {
+  popoverVisible.value = true
 }
 </script>
 
 <template>
-  <div :class="prefixCls" class="flex justify-center items-center box">
-    <ElInput disabled v-model="modelValue" clearable />
+  <div :class="prefixCls" class="w-full">
     <ElPopover
-      placement="bottom"
+      v-model:visible="popoverVisible"
+      placement="bottom-start"
+      :width="420"
       trigger="click"
-      :width="450"
-      popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; height: 380px;"
-      @show="popoverShow"
+      :show-arrow="false"
+      :hide-after="0"
+      popper-class="icon-picker-popper"
     >
+      <!-- 输入框 + 预览图标同属 reference，避免点预览被当成外部点击而闪关 -->
       <template #reference>
-        <div :style="iconWrapStyle">
-          <Icon v-if="modelValue" :icon="modelValue" />
+        <div class="flex items-center w-full">
+          <ElInput
+            v-model="draft"
+            clearable
+            placeholder="输入关键字模糊搜索，如 user、set"
+            @input="onInput"
+            @clear="clear"
+            @keyup.enter="commit"
+            @change="commit"
+          />
+          <div :style="iconWrapStyle">
+            <Icon v-if="previewIcon" :icon="previewIcon" />
+          </div>
         </div>
       </template>
-      <ElScrollbar class="h-[calc(100%-50px)]!">
-        <ElInput v-model="search" class="mb-20px" clearable placeholder="搜索图标" @clear="inputClear" />
-        <ElTabs tab-position="left" v-model="iconName" @tab-change="tabChange">
-          <ElTabPane v-for="item in icons" :key="item.name" :label="item.name" :name="item.prefix">
-            <div class="flex flex-wrap box-border">
-              <div
-                v-for="icon in filterIcons(filterItemIcons(item.icons))"
-                :key="icon"
-                :style="{
-                  width: iconSize,
-                  height: iconSize,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  border: `1px solid ${icon === modelValue ? 'var(--el-color-primary)' : 'var(--el-border-color)'}`,
-                  boxSizing: 'border-box',
-                  margin: '2px',
-                  transition: 'all 0.3s'
-                }"
-                class="hover:border-color-[var(--el-color-primary)]!"
-                @click="iconSelect(icon)"
-              >
-                <Icon :icon="icon" :color="icon === modelValue ? 'var(--el-color-primary)' : 'inherit'" />
-              </div>
-            </div>
-          </ElTabPane>
-        </ElTabs>
-      </ElScrollbar>
-      <div
-        class="h-50px absolute bottom-0 left-0 flex items-center pl-[var(--el-popover-padding)] pr-[var(--el-popover-padding)]"
-      >
-        <ElPagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :pager-count="5"
-          size="small"
-          :page-sizes="[100, 200, 300, 400]"
-          layout="total, prev, pager, next, jumper"
-          :total="filterItemIcons(icons[currentIconNameIndex].icons).length"
-        />
+
+      <div class="icon-picker-panel">
+        <div class="mb-8px text-12px text-[var(--el-text-color-secondary)]">
+          共 {{ filteredIcons.length }} 个匹配
+          <ElLink
+            type="primary"
+            href="https://icon-sets.iconify.design/lucide/"
+            target="_blank"
+            :underline="false"
+            class="ml-6px align-baseline!"
+          >
+            Lucide 图库
+          </ElLink>
+        </div>
+
+        <ElScrollbar max-height="260px">
+          <div v-if="pageIcons.length" class="icon-grid">
+            <button
+              v-for="name in pageIcons"
+              :key="name"
+              type="button"
+              class="icon-cell"
+              :class="{ 'is-active': name === previewIcon }"
+              :title="name"
+              @click="selectIcon(name)"
+            >
+              <Icon :icon="name" :size="18" />
+              <span class="icon-name">{{ name }}</span>
+            </button>
+          </div>
+          <div v-else class="py-24px text-center text-13px text-[var(--el-text-color-secondary)]">无匹配图标</div>
+        </ElScrollbar>
+
+        <div class="mt-8px flex justify-end">
+          <ElPagination
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
+            size="small"
+            layout="total, prev, pager, next"
+            :pager-count="5"
+            :total="filteredIcons.length"
+          />
+        </div>
       </div>
     </ElPopover>
   </div>
@@ -218,6 +201,52 @@ const inputClear = () => {
   :deep(.@{elNamespace}-input__wrapper) {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+  }
+}
+
+.icon-picker-panel {
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .icon-cell {
+    display: flex;
+    min-height: 56px;
+    padding: 6px 4px;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--el-border-color);
+    border-radius: 4px;
+    transition:
+      border-color 0.2s,
+      color 0.2s;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+
+    &:hover,
+    &.is-active {
+      color: var(--el-color-primary);
+      border-color: var(--el-color-primary);
+    }
+  }
+
+  .icon-name {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 1.2;
+    color: var(--el-text-color-secondary);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .icon-cell:hover .icon-name,
+  .icon-cell.is-active .icon-name {
+    color: var(--el-color-primary);
   }
 }
 </style>

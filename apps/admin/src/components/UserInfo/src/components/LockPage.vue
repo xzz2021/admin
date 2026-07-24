@@ -78,7 +78,7 @@ const { userInfo } = storeToRefs(userStore)
       @click="handleShowForm(false)"
       v-show="showDate"
     >
-      <Icon icon="vi-ep:lock" />
+      <Icon icon="lock" />
       <span>{{ t('lock.unlock') }}</span>
     </div>
 

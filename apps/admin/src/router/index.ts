@@ -119,7 +119,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     redirect: '/dashboard/analysis',
     name: 'Dashboard',
     title: 'router.dashboard',
-    icon: 'vi-ant-design:dashboard-filled',
+    icon: 'gauge',
     alwaysShow: true,
     children: [
       {
@@ -145,7 +145,7 @@ export const asyncRouterMap: AppRouteRecordRaw[] = [
     redirect: '/authorization/user',
     name: 'Authorization',
     title: 'router.authorization',
-    icon: 'vi-eos-icons:role-binding',
+    icon: 'key',
     alwaysShow: true,
     children: [
       {

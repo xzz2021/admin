@@ -113,17 +113,17 @@ watch(
               <div class="flex items-center">
                 <ElRadioGroup size="small" v-model="item.fixed">
                   <ElRadioButton value="left">
-                    <Icon icon="vi-ep:arrow-left" />
+                    <Icon icon="arrow-left" />
                   </ElRadioButton>
                   <ElRadioButton :value="false">
-                    <Icon icon="vi-ep:close" />
+                    <Icon icon="x" />
                   </ElRadioButton>
                   <ElRadioButton value="right">
-                    <Icon icon="vi-ep:arrow-right" />
+                    <Icon icon="arrow-right" />
                   </ElRadioButton>
                 </ElRadioGroup>
 
-                <div class="ml-12px cursor-move handle"><Icon icon="vi-ep:rank" /></div>
+                <div class="ml-12px cursor-move handle"><Icon icon="grip-vertical" /></div>
               </div>
             </div>
           </ElCheckboxGroup>

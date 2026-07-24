@@ -13,42 +13,42 @@ export const getProjectApi = (): Promise<IResponse<Project[]>> => {
   return ok([
     {
       name: 'Github',
-      icon: 'akar-icons:github-fill',
+      icon: 'github',
       message: 'workplace.introduction',
       personal: 'Archer',
       time: Date.now() - 1000 * 60 * 60 * 2
     },
     {
       name: 'Vue',
-      icon: 'logos:vue',
+      icon: 'code',
       message: 'workplace.introduction',
       personal: 'Archer',
       time: Date.now() - 1000 * 60 * 60 * 5
     },
     {
       name: 'Angular',
-      icon: 'logos:angular-icon',
+      icon: 'cpu',
       message: 'workplace.introduction',
       personal: 'Archer',
       time: Date.now() - 1000 * 60 * 60 * 10
     },
     {
       name: 'React',
-      icon: 'logos:react',
+      icon: 'refresh-cw',
       message: 'workplace.introduction',
       personal: 'Archer',
       time: Date.now() - 1000 * 60 * 60 * 24
     },
     {
       name: 'Webpack',
-      icon: 'logos:webpack',
+      icon: 'box',
       message: 'workplace.introduction',
       personal: 'Archer',
       time: Date.now() - 1000 * 60 * 60 * 30
     },
     {
       name: 'Vite',
-      icon: 'vscode-icons:file-type-vite',
+      icon: 'zap',
       message: 'workplace.introduction',
       personal: 'Archer',
       time: Date.now() - 1000 * 60 * 60 * 40
@@ -69,12 +69,12 @@ export const getDynamicApi = (): Promise<IResponse<Dynamic[]>> => {
 
 export const getTeamApi = (): Promise<IResponse<Team[]>> => {
   return ok([
-    { name: 'Github', icon: 'akar-icons:github-fill' },
-    { name: 'Vue', icon: 'logos:vue' },
-    { name: 'Angular', icon: 'logos:angular-icon' },
-    { name: 'React', icon: 'logos:react' },
-    { name: 'Webpack', icon: 'logos:webpack' },
-    { name: 'Vite', icon: 'vscode-icons:file-type-vite' }
+    { name: 'Github', icon: 'github' },
+    { name: 'Vue', icon: 'code' },
+    { name: 'Angular', icon: 'cpu' },
+    { name: 'React', icon: 'refresh-cw' },
+    { name: 'Webpack', icon: 'box' },
+    { name: 'Vite', icon: 'zap' }
   ])
 }
 

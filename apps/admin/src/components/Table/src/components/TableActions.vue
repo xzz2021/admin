@@ -1,9 +1,9 @@
 <script lang="tsx">
-import { defineComponent, unref, computed, PropType, ref } from 'vue'
-import { ElDropdown, ElDropdownMenu, ElDropdownItem, ComponentSize } from 'element-plus'
 import { Icon } from '@/components/Icon'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useAppStore } from '@/store/modules/app'
+import { ComponentSize, ElDropdown, ElDropdownItem, ElDropdownMenu } from 'element-plus'
+import { computed, defineComponent, PropType, ref, unref } from 'vue'
 import { TableColumn } from '../types'
 import ColumnSetting from './ColumnSetting.vue'
 
@@ -45,7 +45,7 @@ export default defineComponent({
       <>
         <div class="text-right h-28px flex items-center justify-end">
           <div title="刷新" class="w-30px h-20px flex items-center justify-end" onClick={refresh}>
-            <Icon icon="vi-ant-design:sync-outlined" class="cursor-pointer" hover-color="var(--el-color-primary)" />
+            <Icon icon="refresh-cw" class="cursor-pointer" hover-color="var(--el-color-primary)" />
           </div>
 
           <ElDropdown trigger="click" onCommand={changSize}>
@@ -53,11 +53,7 @@ export default defineComponent({
               default: () => {
                 return (
                   <div title="尺寸" class="w-30px h-20px flex items-center justify-end">
-                    <Icon
-                      icon="vi-ant-design:column-height-outlined"
-                      class="cursor-pointer"
-                      hover-color="var(--el-color-primary)"
-                    />
+                    <Icon icon="chevron-down" class="cursor-pointer" hover-color="var(--el-color-primary)" />
                   </div>
                 )
               },
@@ -82,7 +78,7 @@ export default defineComponent({
           </ElDropdown>
 
           <div title="列设置" class="w-30px h-20px flex items-center justify-end" onClick={showColumnSetting}>
-            <Icon icon="vi-ant-design:setting-outlined" class="cursor-pointer" hover-color="var(--el-color-primary)" />
+            <Icon icon="settings" class="cursor-pointer" hover-color="var(--el-color-primary)" />
           </div>
         </div>
         <ColumnSetting v-model={showSetting.value} columns={props.columns} onConfirm={confirm} />

@@ -73,7 +73,7 @@ const overviewCards = computed(() => [
     key: 'menuCount',
     label: t('role.menuCount'),
     value: props.roleDetail?.menuCount ?? 0,
-    icon: 'vi-ep:grid',
+    icon: 'layout-grid',
     color: '#409eff',
     bg: 'rgba(64, 158, 255, 0.1)'
   },
@@ -81,7 +81,7 @@ const overviewCards = computed(() => [
     key: 'permissionCount',
     label: t('role.buttonPermissionCount'),
     value: props.roleDetail?.permissionCount ?? 0,
-    icon: 'vi-ep:lock',
+    icon: 'lock',
     color: '#67c23a',
     bg: 'rgba(103, 194, 58, 0.1)'
   },
@@ -89,7 +89,7 @@ const overviewCards = computed(() => [
     key: 'userCount',
     label: t('role.ownedUserCount'),
     value: props.roleDetail?.userCount ?? 0,
-    icon: 'vi-ep:user',
+    icon: 'user',
     color: '#9c27b0',
     bg: 'rgba(156, 39, 176, 0.1)'
   }
@@ -106,7 +106,7 @@ const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
       <div class="role-info-header">
         <span class="section-title">{{ t('role.roleInfo') }}</span>
         <BaseButton type="primary" @click="emit('edit')">
-          <Icon icon="vi-ep:edit-pen" class="mr-4px" />
+          <Icon icon="pen-line" class="mr-4px" />
           {{ t('role.editRole') }}
         </BaseButton>
       </div>
@@ -135,11 +135,11 @@ const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
         <span class="card-title">{{ t('role.menuPermissionDetail') }}</span>
         <div class="legend">
           <span class="legend-item">
-            <Icon icon="vi-ep:circle-check-filled" class="legend-owned" :size="16" />
+            <Icon icon="circle-check" class="legend-owned" :size="16" />
             {{ t('role.owned') }}
           </span>
           <span class="legend-item">
-            <Icon icon="vi-ep:remove" class="legend-unowned" :size="16" />
+            <Icon icon="ban" class="legend-unowned" :size="16" />
             {{ t('role.notOwned') }}
           </span>
         </div>
@@ -157,7 +157,7 @@ const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
           <template #default="{ row }">
             <div class="menu-name-cell">
               <Icon
-                :icon="row.checked ? 'vi-ep:circle-check-filled' : 'vi-ep:remove'"
+                :icon="row.checked ? 'circle-check' : 'ban'"
                 :class="row.checked ? 'menu-owned-icon' : 'menu-unowned-icon'"
                 :size="16"
               />

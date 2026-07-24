@@ -166,7 +166,7 @@ const schema = reactive<FormSchema[]>([
               <div class="flex justify-around w-[100%]">
                 <div onClick={toSms}>
                   <Icon
-                    icon="vi-ant-design:message-outlined"
+                    icon="messages-square"
                     size={iconSize}
                     class="cursor-pointer ant-icon"
                     color={iconColor}
@@ -175,7 +175,7 @@ const schema = reactive<FormSchema[]>([
                 </div>
                 <div onClick={toWechat}>
                   <Icon
-                    icon="vi-ant-design:wechat-filled"
+                    icon="message-circle"
                     size={iconSize}
                     class="cursor-pointer ant-icon"
                     color={iconColor}
@@ -184,7 +184,7 @@ const schema = reactive<FormSchema[]>([
                 </div>
                 {/* <div>
                   <Icon
-                    icon="vi-ant-design:alipay-circle-filled"
+                    icon="coins"
                     size={iconSize}
                     color={iconColor}
                     hoverColor={hoverColor}
@@ -193,7 +193,7 @@ const schema = reactive<FormSchema[]>([
                 </div>
                 <div>
                   <Icon
-                    icon="vi-ant-design:weibo-circle-filled"
+                    icon="share-2"
                     size={iconSize}
                     color={iconColor}
                     hoverColor={hoverColor}

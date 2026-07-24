@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<AudioPlayerProps>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'close'): void
+  (e: 'x'): void
 }>()
 
 const audioEl = ref<HTMLAudioElement>()
@@ -75,7 +75,7 @@ const setStorage = () => {
 const close = () => {
   setStorage()
   unref(audioEl)?.pause()
-  emit('close')
+  emit('x')
 }
 
 onBeforeUnmount(() => {
@@ -94,7 +94,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <Icon
-          icon="ep:close"
+          icon="x"
           @click="close"
           class="cursor-pointer hover:bg-#30a19d rounded-full"
           style="width: 24px; height: 24px"

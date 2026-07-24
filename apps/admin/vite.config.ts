@@ -9,7 +9,6 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import progress from 'vite-plugin-progress'
 import EslintPlugin from 'vite-plugin-eslint'
 import { ViteEjsPlugin } from 'vite-plugin-ejs'
-import PurgeIcons from 'vite-plugin-purge-icons'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import UnoCSS from 'unocss/vite'
@@ -79,7 +78,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         symbolId: 'icon-[dir]-[name]',
         svgoOptions: true
       }),
-      PurgeIcons(),
       ViteEjsPlugin({
         title: env.VITE_APP_TITLE
       }),
@@ -156,7 +154,6 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         'vue-types',
         'element-plus/es/locale/lang/zh-cn',
         'element-plus/es/locale/lang/en',
-        '@iconify/iconify',
         '@vueuse/core',
         'axios',
         'qs',

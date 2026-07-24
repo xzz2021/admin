@@ -198,43 +198,31 @@ defineExpose({
               :show-file-list="false"
               :on-change="uploadChange"
             >
-              <BaseButton size="small" type="primary" class="mt-2px"><Icon icon="vi-ep:upload-filled" /></BaseButton>
+              <BaseButton size="small" type="primary" class="mt-2px"><Icon icon="upload" /></BaseButton>
             </ElUpload>
           </ElTooltip>
         </div>
         <div class="flex items-center justify-end flex-1">
           <ElTooltip content="重置" placement="bottom">
-            <BaseButton size="small" type="primary" @click="reset"><Icon icon="vi-ep:refresh" /></BaseButton>
+            <BaseButton size="small" type="primary" @click="reset"><Icon icon="refresh-cw" /></BaseButton>
           </ElTooltip>
           <ElTooltip content="逆时针旋转" placement="bottom">
-            <BaseButton size="small" type="primary" @click="rotate(-45)"
-              ><Icon icon="vi-ant-design:rotate-left-outlined"
-            /></BaseButton>
+            <BaseButton size="small" type="primary" @click="rotate(-45)"><Icon icon="rotate-ccw" /></BaseButton>
           </ElTooltip>
           <ElTooltip content="顺时针旋转" placement="bottom">
-            <BaseButton size="small" type="primary" @click="rotate(45)"
-              ><Icon icon="vi-ant-design:rotate-right-outlined"
-            /></BaseButton>
+            <BaseButton size="small" type="primary" @click="rotate(45)"><Icon icon="rotate-cw" /></BaseButton>
           </ElTooltip>
           <ElTooltip content="水平翻转" placement="bottom">
-            <BaseButton size="small" type="primary" @click="scale('scaleX')"
-              ><Icon icon="vi-vaadin:arrows-long-h"
-            /></BaseButton>
+            <BaseButton size="small" type="primary" @click="scale('scaleX')"><Icon icon="arrow-up-down" /></BaseButton>
           </ElTooltip>
           <ElTooltip content="垂直翻转" placement="bottom">
-            <BaseButton size="small" type="primary" @click="scale('scaleY')"
-              ><Icon icon="vi-vaadin:arrows-long-v"
-            /></BaseButton>
+            <BaseButton size="small" type="primary" @click="scale('scaleY')"><Icon icon="chevron-down" /></BaseButton>
           </ElTooltip>
           <ElTooltip content="放大" placement="bottom">
-            <BaseButton size="small" type="primary" @click="zoom(0.1)"
-              ><Icon icon="vi-ant-design:zoom-in-outlined"
-            /></BaseButton>
+            <BaseButton size="small" type="primary" @click="zoom(0.1)"><Icon icon="zoom-in" /></BaseButton>
           </ElTooltip>
           <ElTooltip content="缩小" placement="bottom">
-            <BaseButton size="small" type="primary" @click="zoom(-0.1)"
-              ><Icon icon="vi-ant-design:zoom-out-outlined"
-            /></BaseButton>
+            <BaseButton size="small" type="primary" @click="zoom(-0.1)"><Icon icon="zoom-out" /></BaseButton>
           </ElTooltip>
         </div>
       </div>
