@@ -20,7 +20,10 @@ export class TokenGuard extends AuthGuard('token') {
     if (request.url.startsWith('/public/')) {
       return true
     }
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
     // 先跑 JWT 校验（签名/过期/解析 payload）
     const ok = isPublic || ((await super.canActivate(context)) as boolean)
     if (!ok) return false

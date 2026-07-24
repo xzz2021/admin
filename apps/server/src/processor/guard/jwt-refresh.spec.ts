@@ -26,7 +26,9 @@ describe('JwtRefreshAuthGuard', () => {
     const guard = new JwtRefreshAuthGuard(rtTokenService)
     isBlacklisted.mockResolvedValue(true)
 
-    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).rejects.toBeInstanceOf(UnauthorizedException)
+    await expect(
+      guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' })),
+    ).rejects.toBeInstanceOf(UnauthorizedException)
     expect(isBlacklisted).toHaveBeenCalledWith('jti-1')
     expect(listSessions).not.toHaveBeenCalled()
   })
@@ -36,7 +38,9 @@ describe('JwtRefreshAuthGuard', () => {
     isBlacklisted.mockResolvedValue(false)
     listSessions.mockResolvedValue(['other-jti'])
 
-    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).rejects.toThrow('rt token not active')
+    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).rejects.toThrow(
+      'rt token not active',
+    )
   })
 
   it('allows active non-blacklisted refresh tokens', async () => {
@@ -44,6 +48,8 @@ describe('JwtRefreshAuthGuard', () => {
     isBlacklisted.mockResolvedValue(false)
     listSessions.mockResolvedValue(['jti-1'])
 
-    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).resolves.toBe(true)
+    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).resolves.toBe(
+      true,
+    )
   })
 })

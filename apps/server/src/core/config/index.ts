@@ -46,7 +46,10 @@ const productionEnvironmentSchema = z
       .string()
       .url()
       .startsWith('postgresql://')
-      .refine(value => value.length >= 40 && !weakSecretPattern.test(value), 'PG_DATABASE_URL contains a placeholder or weak password'),
+      .refine(
+        value => value.length >= 40 && !weakSecretPattern.test(value),
+        'PG_DATABASE_URL contains a placeholder or weak password',
+      ),
     TOKEN_SECRET: z.string().min(6),
     TOKEN_REFRESH_SECRET: z.string().min(6),
     TOKEN_EXPIRES_TIME: z.coerce.number().int().positive().default(300),
@@ -56,7 +59,10 @@ const productionEnvironmentSchema = z
     REDIS_PASSWORD: z
       .string()
       .min(6)
-      .refine(value => !weakSecretPattern.test(value), 'REDIS_PASSWORD is a placeholder or weak value'),
+      .refine(
+        value => !weakSecretPattern.test(value),
+        'REDIS_PASSWORD is a placeholder or weak value',
+      ),
     STATIC_FILE_ROOT_PATH: z.string().min(1),
     STATIC_FILE_SERVE_ROOT: z.string().min(1),
     SWAGGER: z.enum(['true', 'false']).default('false'),
@@ -64,7 +70,10 @@ const productionEnvironmentSchema = z
     SWAGGER_PASSWORD: z
       .string()
       .min(6)
-      .refine(value => !weakSecretPattern.test(value), 'SWAGGER_PASSWORD is a placeholder or weak value')
+      .refine(
+        value => !weakSecretPattern.test(value),
+        'SWAGGER_PASSWORD is a placeholder or weak value',
+      )
       .optional(),
   })
   .passthrough()

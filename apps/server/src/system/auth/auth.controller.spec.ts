@@ -24,6 +24,8 @@ describe('AuthController authentication boundary', () => {
   })
 
   it('requires user update permission for force logout', () => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, AuthController.prototype['forceLogout'])).toBe('user:update')
+    expect(Reflect.getMetadata(PERMISSION_KEY, AuthController.prototype['forceLogout'])).toBe(
+      'user:update',
+    )
   })
 })

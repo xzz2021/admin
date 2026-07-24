@@ -2,7 +2,12 @@ import { RequiredPermission, Serialize } from '@/processor/decorator'
 import { Body, Controller, Delete, Get, Post } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { DictionaryService } from './dictionary.service'
-import { DeleteDictionaryDto, DictionaryListRes, DictionarySeedArrayDto, UpsertDictionaryDto } from './dto/dictionary.dto'
+import {
+  DeleteDictionaryDto,
+  DictionaryListRes,
+  DictionarySeedArrayDto,
+  UpsertDictionaryDto,
+} from './dto/dictionary.dto'
 import { DeleteItemDto, UpsertItemDto } from './dto/entry.dto'
 
 // 此模块可以作为范本

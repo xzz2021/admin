@@ -25,5 +25,9 @@ export const formatDateToYMDHMS = (time?: Date | string | null) => {
     time = new Date(time)
   }
   if (!time) return ''
-  return time.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }).split('T').join(' ').replaceAll('/', '-')
+  return time
+    .toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })
+    .split('T')
+    .join(' ')
+    .replaceAll('/', '-')
 }

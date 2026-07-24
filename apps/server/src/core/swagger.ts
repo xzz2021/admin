@@ -13,17 +13,30 @@ export interface SwaggerCredentials {
 function safeEqual(actual: string, expected: string): boolean {
   const actualBuffer = Buffer.from(actual)
   const expectedBuffer = Buffer.from(expected)
-  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer)
+  return (
+    actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer)
+  )
 }
 
 function isBasicCredentials(value: unknown): value is { name: string; pass: string } {
-  return typeof value === 'object' && value !== null && 'name' in value && typeof value.name === 'string' && 'pass' in value && typeof value.pass === 'string'
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    typeof value.name === 'string' &&
+    'pass' in value &&
+    typeof value.pass === 'string'
+  )
 }
 
 function swaggerAuth(username: string, password: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     const credentials: unknown = auth(req)
-    if (!isBasicCredentials(credentials) || !safeEqual(credentials.name, username) || !safeEqual(credentials.pass, password)) {
+    if (
+      !isBasicCredentials(credentials) ||
+      !safeEqual(credentials.name, username) ||
+      !safeEqual(credentials.pass, password)
+    ) {
       res.set('WWW-Authenticate', 'Basic realm="Swagger"')
       return res.status(401).send('Authentication required.')
     }

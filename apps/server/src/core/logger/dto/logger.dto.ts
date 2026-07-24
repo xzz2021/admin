@@ -16,8 +16,21 @@ const LogSchema = UserOperationLogModel.pick({
 export class LogDto extends createZodDto(LogSchema) {}
 
 const QueryLogParamsSchema = z.object({
-  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
-  pageSize: z.coerce.number().int().min(1).max(100).optional().default(10).meta({ description: '每页条数', example: 10 }),
+  pageIndex: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .default(1)
+    .meta({ description: '页码', example: 1 }),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .default(10)
+    .meta({ description: '每页条数', example: 10 }),
   isSuccess: z.boolean().optional().meta({ description: '状态' }),
   method: z.string().optional().meta({ description: '方法' }),
   requestUrl: z.string().optional().meta({ description: '请求URL' }),

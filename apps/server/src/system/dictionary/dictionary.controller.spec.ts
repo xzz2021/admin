@@ -7,7 +7,9 @@ jest.mock('./dictionary.service', () => ({
 
 describe('DictionaryController permission boundary', () => {
   it('no longer exposes the dictionary list publicly', () => {
-    expect(Reflect.getMetadata(IS_PUBLIC_KEY, DictionaryController.prototype['findAll'])).toBeUndefined()
+    expect(
+      Reflect.getMetadata(IS_PUBLIC_KEY, DictionaryController.prototype['findAll']),
+    ).toBeUndefined()
   })
 
   it.each([
@@ -18,6 +20,8 @@ describe('DictionaryController permission boundary', () => {
     ['dictionary:delete', 'deleteEntry'],
     ['dictionary:seed', 'generateDictionarySeed'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, DictionaryController.prototype[methodName])).toBe(permission)
+    expect(Reflect.getMetadata(PERMISSION_KEY, DictionaryController.prototype[methodName])).toBe(
+      permission,
+    )
   })
 })

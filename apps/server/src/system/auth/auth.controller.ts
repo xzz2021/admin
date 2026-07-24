@@ -33,7 +33,11 @@ export class AuthController {
   @Public()
   @ApiOperation({ summary: '用户登录(refreshToken版本)' })
   @UseGuards(CaptchaGuard)
-  rtLogin(@Body() loginInfo: LoginInfoDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  rtLogin(
+    @Body() loginInfo: LoginInfoDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     return this.authService.rtLogin(loginInfo, extractIP((req as any)['ip'] as string) ?? '', res)
   }
 
@@ -48,7 +52,11 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({ summary: '用户主动退出登录' })
-  logout(@Body() body: ForceLogoutDto, @Req() req: JwtReqDto, @Res({ passthrough: true }) res: Response) {
+  logout(
+    @Body() body: ForceLogoutDto,
+    @Req() req: JwtReqDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const jti: string = req.user.jti
     return this.authService.logout(body.id, jti, res)
   }

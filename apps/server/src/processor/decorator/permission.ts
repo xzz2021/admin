@@ -11,7 +11,8 @@ export const RequiredPermission2 = (key: string, permission: string) => {
   return (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
     const reflector = new Reflector()
     if (descriptor && descriptor.value) {
-      const permissionList = reflector.get<string[]>(key, descriptor.value as (...args: any[]) => any) || []
+      const permissionList =
+        reflector.get<string[]>(key, descriptor.value as (...args: any[]) => any) || []
       SetMetadata(key, [...permissionList, permission])(target, propertyKey, descriptor)
     } else {
       // 类装饰器上的权限数据

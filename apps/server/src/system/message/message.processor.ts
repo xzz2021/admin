@@ -36,7 +36,8 @@ export class MessageProcessor extends WorkerHost {
       return { count: 0 }
     }
 
-    const level = data.level ?? (data.type === MessageType.ALERT ? NoticeLevel.WARNING : NoticeLevel.INFO)
+    const level =
+      data.level ?? (data.type === MessageType.ALERT ? NoticeLevel.WARNING : NoticeLevel.INFO)
     const now = new Date()
     const rows: Prisma.MessageCreateManyInput[] = receiverIds.map(receiverId => ({
       dispatchId: data.dispatchId,
@@ -101,7 +102,9 @@ export class MessageProcessor extends WorkerHost {
       try {
         await this.redis.publish(MESSAGE_PUSH_CHANNEL, JSON.stringify(payload))
       } catch (error) {
-        this.logger.warn(`消息推送发布失败 user=${userId}: ${error instanceof Error ? error.message : String(error)}`)
+        this.logger.warn(
+          `消息推送发布失败 user=${userId}: ${error instanceof Error ? error.message : String(error)}`,
+        )
       }
     }
 

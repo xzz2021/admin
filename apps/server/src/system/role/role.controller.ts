@@ -2,7 +2,14 @@ import { RequiredPermission } from '@/processor/decorator'
 import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { CreateRoleDto, MenuPermissionListRes, QueryRoleParams, RoleListRes, RoleSeedArrayDto, UpdateRoleDto } from './dto/role.dto'
+import {
+  CreateRoleDto,
+  MenuPermissionListRes,
+  QueryRoleParams,
+  RoleListRes,
+  RoleSeedArrayDto,
+  UpdateRoleDto,
+} from './dto/role.dto'
 import { RoleService } from './role.service'
 
 @ApiTags('角色')

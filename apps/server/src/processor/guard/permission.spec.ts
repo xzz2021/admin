@@ -19,8 +19,14 @@ describe('PermissionGuard', () => {
   }
 
   const createGuard = () => {
-    const cache = new RbacPermissionCacheService({ getOrThrow: () => redis } as unknown as RedisService)
-    return new PermissionGuard({ user: { findUnique } } as unknown as PgService, cache, new Reflector())
+    const cache = new RbacPermissionCacheService({
+      getOrThrow: () => redis,
+    } as unknown as RedisService)
+    return new PermissionGuard(
+      { user: { findUnique } } as unknown as PgService,
+      cache,
+      new Reflector(),
+    )
   }
 
   const createContext = (permission?: string, userId?: string): ExecutionContext => {
@@ -57,7 +63,9 @@ describe('PermissionGuard', () => {
   it('uses cached permissions without querying the database', async () => {
     redis.get.mockResolvedValue(JSON.stringify(['user:update']))
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
+      true,
+    )
     expect(findUnique).not.toHaveBeenCalled()
   })
 
@@ -74,8 +82,15 @@ describe('PermissionGuard', () => {
       ],
     })
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
-    expect(redis.set).toHaveBeenCalledWith('rbac:permissions:user-1', JSON.stringify(['user:update']), 'EX', 300)
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
+      true,
+    )
+    expect(redis.set).toHaveBeenCalledWith(
+      'rbac:permissions:user-1',
+      JSON.stringify(['user:update']),
+      'EX',
+      300,
+    )
   })
 
   it('grants all permissions to an enabled super admin role', async () => {
@@ -91,6 +106,8 @@ describe('PermissionGuard', () => {
       ],
     })
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
+      true,
+    )
   })
 })

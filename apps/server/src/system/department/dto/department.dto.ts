@@ -2,7 +2,10 @@ import { DepartmentModel } from '@prisma/generated/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 
-const DepartmentIdSchema = z.string().min(1).meta({ description: '部门ID', example: 'department-1' })
+const DepartmentIdSchema = z
+  .string()
+  .min(1)
+  .meta({ description: '部门ID', example: 'department-1' })
 
 const DepartmentBaseSchema = DepartmentModel.pick({
   name: true,
@@ -20,10 +23,13 @@ const DepartmentSchema = DepartmentBaseSchema.extend({
 const CreateDepartmentSchema = DepartmentBaseSchema
 export class CreateDepartmentDto extends createZodDto(CreateDepartmentSchema) {}
 
-const UpdateDepartmentSchema = DepartmentSchema.refine(data => data.parentId == null || data.id !== data.parentId, {
-  message: '部门不能设置为自己的父部门',
-  path: ['parentId'],
-})
+const UpdateDepartmentSchema = DepartmentSchema.refine(
+  data => data.parentId == null || data.id !== data.parentId,
+  {
+    message: '部门不能设置为自己的父部门',
+    path: ['parentId'],
+  },
+)
 export class UpdateDepartmentDto extends createZodDto(UpdateDepartmentSchema) {}
 
 const FindDepartmentSchema = z.object({

@@ -14,10 +14,17 @@ describe('UserController permission boundary', () => {
     ['user:delete', 'delete'],
     ['user:view', 'allList'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, UserController.prototype[methodName])).toBe(permission)
+    expect(Reflect.getMetadata(PERMISSION_KEY, UserController.prototype[methodName])).toBe(
+      permission,
+    )
   })
 
-  it.each(['detailInfo', 'updatePersonalInfo', 'updatePassword', 'uploadFile'] as const)('does not require management permission for %s', methodName => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, UserController.prototype[methodName])).toBeUndefined()
-  })
+  it.each(['detailInfo', 'updatePersonalInfo', 'updatePassword', 'uploadFile'] as const)(
+    'does not require management permission for %s',
+    methodName => {
+      expect(
+        Reflect.getMetadata(PERMISSION_KEY, UserController.prototype[methodName]),
+      ).toBeUndefined()
+    },
+  )
 })

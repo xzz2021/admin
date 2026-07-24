@@ -5,7 +5,13 @@ import { RedisService } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import type Redis from 'ioredis'
 import { ONLINE_AWAY_MS, ONLINE_PRESENCE_TTL_SEC, ONLINE_REDIS } from './online.constants'
-import type { OnlineListResult, OnlineSession, OnlineStatus, OnlineUserItem, UpsertOnlineInput } from './online.types'
+import type {
+  OnlineListResult,
+  OnlineSession,
+  OnlineStatus,
+  OnlineUserItem,
+  UpsertOnlineInput,
+} from './online.types'
 import { parseUserAgent } from './online.ua'
 
 const SUPER_ADMIN_ROLE = 'super_admin'
@@ -136,7 +142,11 @@ export class OnlineService {
   /**
    * 强制下线保护：不可踢自己、不可踢超级管理员。
    */
-  async assertCanKick(operatorUserId: string, targetUserId: string, options?: { targetJti?: string; operatorJti?: string }): Promise<void> {
+  async assertCanKick(
+    operatorUserId: string,
+    targetUserId: string,
+    options?: { targetJti?: string; operatorJti?: string },
+  ): Promise<void> {
     if (!operatorUserId || !targetUserId) {
       throw new BadRequestException('无效的下线目标')
     }
@@ -167,7 +177,10 @@ export class OnlineService {
   }
 
   /** 校验 jti 归属后，吊销指定会话并清理 presence，返回需通知的 jti 列表 */
-  async terminateSessionByOperator(operator: { id: string; jti?: string }, target: { userId: string; jti: string }): Promise<string[]> {
+  async terminateSessionByOperator(
+    operator: { id: string; jti?: string },
+    target: { userId: string; jti: string },
+  ): Promise<string[]> {
     const session = await this.getByJti(target.jti)
     if (!session) {
       throw new BadRequestException('会话不存在或已下线')
@@ -180,7 +193,10 @@ export class OnlineService {
       operatorJti: operator.jti,
     })
 
-    await Promise.all([this.tokenService.revoke(session.userId, session.jti), this.rtTokenService.revoke(session.userId, session.jti)])
+    await Promise.all([
+      this.tokenService.revoke(session.userId, session.jti),
+      this.rtTokenService.revoke(session.userId, session.jti),
+    ])
     await this.remove(session.jti)
     return [session.jti]
   }
@@ -206,7 +222,9 @@ export class OnlineService {
     try {
       jtis = await this.redis.smembers(ONLINE_REDIS.INDEX)
     } catch (error) {
-      this.logger.warn(`读取在线索引失败: ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.warn(
+        `读取在线索引失败: ${error instanceof Error ? error.message : String(error)}`,
+      )
       return []
     }
     if (!jtis.length) return []

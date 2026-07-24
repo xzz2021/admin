@@ -9,7 +9,12 @@ export interface ParentLink {
  * 校验将 nodeId 挂到 candidateParentId 后不会形成环。
  * links 必须包含当前树中所有相关节点。
  */
-export function assertAcyclicParent(links: ParentLink[], nodeId: string, candidateParentId: string | null, entityName: string): void {
+export function assertAcyclicParent(
+  links: ParentLink[],
+  nodeId: string,
+  candidateParentId: string | null,
+  entityName: string,
+): void {
   if (candidateParentId === null) return
   if (candidateParentId === nodeId) {
     throw new BadRequestException(`${entityName}不能设置为自己的父节点`)

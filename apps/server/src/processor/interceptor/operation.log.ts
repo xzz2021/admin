@@ -6,7 +6,15 @@ import { Request } from 'express'
 import { Observable, throwError } from 'rxjs'
 import { catchError, tap } from 'rxjs/operators'
 
-const LOG_SKIP_PATHS = ['/log/getUserOperationLogList', '/log/deleteUserOperationLog', '/sse', '/auth/refresh', '/monitor', '/online', '/message']
+const LOG_SKIP_PATHS = [
+  '/log/getUserOperationLogList',
+  '/log/deleteUserOperationLog',
+  '/sse',
+  '/auth/refresh',
+  '/monitor',
+  '/online',
+  '/message',
+]
 
 interface JwtUser {
   id: string

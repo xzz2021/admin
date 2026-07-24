@@ -19,7 +19,9 @@ export class RedisHealthService implements OnModuleInit {
 
     redis.on('close', () => {
       wasDisconnected = true
-      this.logger.warn(`Redis 连接已断开 (${target})，${REDIS_RECONNECT_INTERVAL_MS / 1000}s 后自动重连...`)
+      this.logger.warn(
+        `Redis 连接已断开 (${target})，${REDIS_RECONNECT_INTERVAL_MS / 1000}s 后自动重连...`,
+      )
     })
     redis.on('reconnecting', () => {
       this.logger.log(`Redis 正在重连 (${target})...`)

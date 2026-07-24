@@ -4,8 +4,12 @@ import { MenuService } from './menu.service'
 describe('MenuService tree updates', () => {
   const findMany = jest.fn()
   const update = jest.fn()
-  const transaction = jest.fn(async (callback: (tx: { menu: { findMany: typeof findMany; update: typeof update } }) => Promise<unknown>) =>
-    callback({ menu: { findMany, update } }),
+  const transaction = jest.fn(
+    async (
+      callback: (tx: {
+        menu: { findMany: typeof findMany; update: typeof update }
+      }) => Promise<unknown>,
+    ) => callback({ menu: { findMany, update } }),
   )
 
   const service = new MenuService({ $transaction: transaction } as unknown as PgService)

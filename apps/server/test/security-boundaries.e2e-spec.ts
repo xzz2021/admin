@@ -86,7 +86,9 @@ describe('Security boundaries (e2e)', () => {
 
     app = moduleFixture.createNestApplication()
     app.use((req: Request, _res: Response, next: NextFunction) => {
-      const authenticatedRequest = req as Request & { user?: { id: string; jti?: string; phone: string } }
+      const authenticatedRequest = req as Request & {
+        user?: { id: string; jti?: string; phone: string }
+      }
       authenticatedRequest.user = {
         id: req.header('x-user-id') ?? 'user-1',
         jti: req.header('x-token-jti') ?? undefined,
@@ -119,17 +121,27 @@ describe('Security boundaries (e2e)', () => {
   it('rejects a blacklisted refresh token over HTTP', async () => {
     isBlacklisted.mockResolvedValue(true)
 
-    await request(app.getHttpServer()).post('/security-test/refresh').set('x-token-jti', 'revoked-jti').expect(401)
+    await request(app.getHttpServer())
+      .post('/security-test/refresh')
+      .set('x-token-jti', 'revoked-jti')
+      .expect(401)
   })
 
   it('rejects a refresh token missing from the active session list', async () => {
     listSessions.mockResolvedValue(['other-jti'])
 
-    await request(app.getHttpServer()).post('/security-test/refresh').set('x-token-jti', 'inactive-jti').expect(401)
+    await request(app.getHttpServer())
+      .post('/security-test/refresh')
+      .set('x-token-jti', 'inactive-jti')
+      .expect(401)
   })
 
   it('allows an active refresh token', async () => {
-    await request(app.getHttpServer()).post('/security-test/refresh').set('x-token-jti', 'active-jti').expect(201).expect({ refreshed: true })
+    await request(app.getHttpServer())
+      .post('/security-test/refresh')
+      .set('x-token-jti', 'active-jti')
+      .expect(201)
+      .expect({ refreshed: true })
   })
 
   it('returns 403 when a management permission is missing', async () => {
@@ -139,7 +151,10 @@ describe('Security boundaries (e2e)', () => {
   it('allows a request with the required management permission', async () => {
     permissions = ['fileList:view']
 
-    await request(app.getHttpServer()).get('/security-test/permission').expect(200).expect({ allowed: true })
+    await request(app.getHttpServer())
+      .get('/security-test/permission')
+      .expect(200)
+      .expect({ allowed: true })
   })
 
   it('rejects a dangerous upload type before calling the service', async () => {

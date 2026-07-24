@@ -7,7 +7,11 @@ import { prisma, Prisma } from './lib/prisma'
 import { createSeedAdmin } from './seed-admin'
 import { _menu, _permission, _role } from './sql'
 
-async function create_menus_batch(menu_data: any[], tx: Prisma.TransactionClient, parentId?: string) {
+async function create_menus_batch(
+  menu_data: any[],
+  tx: Prisma.TransactionClient,
+  parentId?: string,
+) {
   for (const menu_item of menu_data) {
     const { children, ...menu_fields } = menu_item
     const menu = await tx.menu.create({
@@ -33,7 +37,10 @@ async function create_roles(role_data: any[], tx: Prisma.TransactionClient) {
   }
 }
 
-async function create_users(user_data: { username: string; password: string; phone: string }, tx: Prisma.TransactionClient) {
+async function create_users(
+  user_data: { username: string; password: string; phone: string },
+  tx: Prisma.TransactionClient,
+) {
   // 1. 查出超管角色id 2. 创建用户并关联角色
   const super_admin_role = await tx.role.findFirst({
     where: {

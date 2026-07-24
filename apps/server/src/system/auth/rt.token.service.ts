@@ -39,7 +39,12 @@ export class RtTokenService {
     })
   }
 
-  async issue(userId: string, extraPayload: Record<string, unknown> = {}, res: Response, oldJti?: string) {
+  async issue(
+    userId: string,
+    extraPayload: Record<string, unknown> = {},
+    res: Response,
+    oldJti?: string,
+  ) {
     const jti = randomUUID()
     const refreshExp = Math.floor(Date.now() / 1000) + this.tokenConfig.refreshExpiresTime
     const [accessToken, refreshToken] = await Promise.all([
@@ -85,7 +90,12 @@ export class RtTokenService {
     })
   }
 
-  async signToken(userId: string, extraPayload: Record<string, unknown> = {}, res: Response, oldJti?: string) {
+  async signToken(
+    userId: string,
+    extraPayload: Record<string, unknown> = {},
+    res: Response,
+    oldJti?: string,
+  ) {
     const { accessToken, refreshToken } = await this.issue(userId, extraPayload, res, oldJti)
     return { accessToken, refreshToken }
   }

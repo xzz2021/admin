@@ -23,7 +23,10 @@ export class AppController {
   @Public()
   @Get('health')
   async health(@Res({ passthrough: true }) res: Response) {
-    const [redisOk, dbOk] = await Promise.all([this.redisHealthService.ping(), this.pgService.$queryRaw`SELECT 1`.then(() => true).catch(() => false)])
+    const [redisOk, dbOk] = await Promise.all([
+      this.redisHealthService.ping(),
+      this.pgService.$queryRaw`SELECT 1`.then(() => true).catch(() => false),
+    ])
     const ok = redisOk && dbOk
 
     res.status(ok ? 200 : 503)

@@ -24,8 +24,21 @@ const CreateRoleSchema = RoleModel.pick({
 export class CreateRoleDto extends createZodDto(CreateRoleSchema) {}
 
 const QueryRoleParamsSchema = z.object({
-  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
-  pageSize: z.coerce.number().int().min(1).max(100).optional().default(10).meta({ description: '每页条数', example: 10 }),
+  pageIndex: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .default(1)
+    .meta({ description: '页码', example: 1 }),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .default(10)
+    .meta({ description: '每页条数', example: 10 }),
   keyword: z.string().optional().meta({ description: '角色名称或编码（模糊匹配）' }),
   // query 中拿到的都是序列化后的字符串
   enabled: z
@@ -109,7 +122,9 @@ const MetaPermissionSchema = MenuModel.pick({
   noCache: true,
   noTagsView: true,
 }).extend({
-  permissions: z.array(z.string()).meta({ description: '权限code列表', example: ['add', 'edit', 'delete'] }),
+  permissions: z
+    .array(z.string())
+    .meta({ description: '权限code列表', example: ['add', 'edit', 'delete'] }),
 })
 
 const MenuPermissionListSchema = MenuModel.pick({

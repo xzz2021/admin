@@ -17,7 +17,13 @@ export class ExcludeFieldsInterceptor implements NestInterceptor {
 
   private process(value: any): any {
     // 基本类型：直接返回
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null || value === undefined) {
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean' ||
+      value === null ||
+      value === undefined
+    ) {
       return value
     }
 

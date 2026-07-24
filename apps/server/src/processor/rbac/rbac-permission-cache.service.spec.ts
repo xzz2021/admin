@@ -11,7 +11,8 @@ describe('RbacPermissionCacheService', () => {
   const userRoleFindMany = jest.fn()
   const rolePermissionFindMany = jest.fn()
 
-  const createService = () => new RbacPermissionCacheService({ getOrThrow: () => redis } as unknown as RedisService)
+  const createService = () =>
+    new RbacPermissionCacheService({ getOrThrow: () => redis } as unknown as RedisService)
 
   const pgService = {
     userRole: { findMany: userRoleFindMany },
@@ -30,12 +31,21 @@ describe('RbacPermissionCacheService', () => {
     await expect(service.get('user-1')).resolves.toEqual(['user:update'])
     await service.set('user-1', ['user:update'])
 
-    expect(redis.set).toHaveBeenCalledWith('rbac:permissions:user-1', JSON.stringify(['user:update']), 'EX', 300)
+    expect(redis.set).toHaveBeenCalledWith(
+      'rbac:permissions:user-1',
+      JSON.stringify(['user:update']),
+      'EX',
+      300,
+    )
   })
 
   it('invalidates users by role membership', async () => {
     const service = createService()
-    userRoleFindMany.mockResolvedValue([{ userId: 'user-1' }, { userId: 'user-1' }, { userId: 'user-2' }])
+    userRoleFindMany.mockResolvedValue([
+      { userId: 'user-1' },
+      { userId: 'user-1' },
+      { userId: 'user-2' },
+    ])
     redis.del.mockResolvedValue(2)
 
     await service.invalidateByRoleIds(['role-1'], pgService)

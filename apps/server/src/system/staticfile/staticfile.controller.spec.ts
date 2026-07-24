@@ -26,10 +26,14 @@ describe('StaticfileController permission boundary', () => {
     ['fileList:add', 'uploadFile'],
     ['fileList:delete', 'deleteFile'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, StaticfileController.prototype[methodName])).toBe(permission)
+    expect(Reflect.getMetadata(PERMISSION_KEY, StaticfileController.prototype[methodName])).toBe(
+      permission,
+    )
   })
 
   it('does not require management permission for personal avatar upload', () => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, StaticfileController.prototype['uploadAvatar'])).toBeUndefined()
+    expect(
+      Reflect.getMetadata(PERMISSION_KEY, StaticfileController.prototype['uploadAvatar']),
+    ).toBeUndefined()
   })
 })

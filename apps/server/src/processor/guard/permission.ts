@@ -63,11 +63,22 @@ export class PermissionGuard implements CanActivate {
       return [PermissionGuard.ALL_PERMISSIONS]
     }
 
-    return [...new Set(enabledRoles.flatMap(role => role.permissions.filter(item => item.permission.enabled).map(item => item.permission.code)))]
+    return [
+      ...new Set(
+        enabledRoles.flatMap(role =>
+          role.permissions
+            .filter(item => item.permission.enabled)
+            .map(item => item.permission.code),
+        ),
+      ),
+    ]
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermission = this.reflector.getAllAndOverride<string>(PERMISSION_KEY, [context.getHandler(), context.getClass()])
+    const requiredPermission = this.reflector.getAllAndOverride<string>(PERMISSION_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
     if (!requiredPermission) return true
 
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
@@ -80,6 +91,9 @@ export class PermissionGuard implements CanActivate {
       await this.rbacPermissionCache.set(userId, permissions)
     }
 
-    return permissions.includes(PermissionGuard.ALL_PERMISSIONS) || permissions.includes(requiredPermission)
+    return (
+      permissions.includes(PermissionGuard.ALL_PERMISSIONS) ||
+      permissions.includes(requiredPermission)
+    )
   }
 }

@@ -1,6 +1,10 @@
 import { DynamicModule, Module } from '@nestjs/common'
 import { CaptchaController } from './captcha.controller'
-import { ASYNC_OPTIONS_TYPE, ConfigurableModuleClass, OPTIONS_TYPE } from './captcha.module-definition'
+import {
+  ASYNC_OPTIONS_TYPE,
+  ConfigurableModuleClass,
+  OPTIONS_TYPE,
+} from './captcha.module-definition'
 import { CaptchaService } from './captcha.service'
 
 @Module({

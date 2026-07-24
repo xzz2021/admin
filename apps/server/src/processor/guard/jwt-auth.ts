@@ -25,7 +25,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (request.url.startsWith('/public/')) {
       return true
     }
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
     // 先跑 JWT 校验（签名/过期/解析 payload）
     if (isPublic) {
       return true

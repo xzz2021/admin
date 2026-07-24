@@ -19,7 +19,9 @@ describe('assertAcyclicParent', () => {
   })
 
   it('rejects moving a node below its descendant', () => {
-    expect(() => assertAcyclicParent(links, 'root', 'grandchild', '部门')).toThrow('不能将部门移动到自己的后代节点下')
+    expect(() => assertAcyclicParent(links, 'root', 'grandchild', '部门')).toThrow(
+      '不能将部门移动到自己的后代节点下',
+    )
   })
 
   it('rejects missing parent nodes and pre-existing cycles', () => {

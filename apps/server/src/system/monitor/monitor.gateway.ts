@@ -1,7 +1,15 @@
 import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets'
 import type { IncomingMessage } from 'node:http'
 import type { Server } from 'ws'
 import WebSocket from 'ws'
@@ -41,7 +49,9 @@ export class MonitorGateway implements OnGatewayConnection, OnGatewayDisconnect 
 
     try {
       const secret = this.configService.getOrThrow<string>('token.secret')
-      const payload = await this.jwtService.verifyAsync<{ id?: string; sub?: string }>(token, { secret })
+      const payload = await this.jwtService.verifyAsync<{ id?: string; sub?: string }>(token, {
+        secret,
+      })
       client.userId = payload.sub ?? payload.id
       client.isAlive = true
       client.send(JSON.stringify({ event: 'connected', data: { ok: true } }))

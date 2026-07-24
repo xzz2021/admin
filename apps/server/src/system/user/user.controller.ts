@@ -1,7 +1,18 @@
 import { RequiredPermission } from '@/processor/decorator'
 import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
 import { multerConfigForAvatar } from '@/system/staticfile/multer.config'
-import { BadRequestException, Body, Controller, Delete, Get, Post, Query, Req, UploadedFile, UseInterceptors } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Query,
+  Req,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common'
 // import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'

@@ -11,7 +11,14 @@ import { RedisService } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, forwardRef, Inject, Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import Redis from 'ioredis'
-import { AdminUpdatePwdDto, CreateUserDto, QueryUserParams, UpdatePersonalInfo, UpdatePwdDto, UpdateUserDto } from './dto/user.dto'
+import {
+  AdminUpdatePwdDto,
+  CreateUserDto,
+  QueryUserParams,
+  UpdatePersonalInfo,
+  UpdatePwdDto,
+  UpdateUserDto,
+} from './dto/user.dto'
 
 @Injectable()
 export class UserService {

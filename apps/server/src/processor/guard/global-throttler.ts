@@ -1,6 +1,12 @@
 // custom-throttler.guard.ts
 import { RATE_KEY } from '@/processor/decorator'
-import { ExecutionContext, HttpException, HttpStatus, Injectable, ServiceUnavailableException } from '@nestjs/common'
+import {
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common'
 import { ThrottlerGuard } from '@nestjs/throttler'
 
 const REDIS_ERROR_CODES = new Set(['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN'])
@@ -71,7 +77,8 @@ export class GlobalThrottlerGuard extends ThrottlerGuard {
     // 4. 未登录：回退到 IP + UA，降低共享IP误伤
     const xff = (req.headers['x-forwarded-for'] as string) || ''
     const reqIp = req?.ips?.length ? req?.ips[0] : req?.ip
-    const ip = (xff.split(',')[0] || '').trim() || reqIp || req.connection?.remoteAddress || 'unknown'
+    const ip =
+      (xff.split(',')[0] || '').trim() || reqIp || req.connection?.remoteAddress || 'unknown'
     const ua = req.headers['user-agent'] || ''
     return `ip:${ip}|ua:${ua}`
   }

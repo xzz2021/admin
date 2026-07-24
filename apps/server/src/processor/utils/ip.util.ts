@@ -14,7 +14,9 @@ function isLAN(ip: string) {
   a_ip += Number.parseInt(aNum[2]) << 8
   a_ip += Number.parseInt(aNum[3]) << 0
   a_ip = (a_ip >> 16) & 0xffff
-  return a_ip >> 8 === 0x7f || a_ip >> 8 === 0xa || a_ip === 0xc0a8 || (a_ip >= 0xac10 && a_ip <= 0xac1f)
+  return (
+    a_ip >> 8 === 0x7f || a_ip >> 8 === 0xa || a_ip === 0xc0a8 || (a_ip >= 0xac10 && a_ip <= 0xac1f)
+  )
 }
 
 export function getIp(request: Request | IncomingMessage) {

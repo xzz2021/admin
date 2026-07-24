@@ -35,7 +35,12 @@ export class RbacPermissionCacheService {
   }
 
   async set(userId: string, permissions: string[]) {
-    await this.redis.set(this.key(userId), JSON.stringify(permissions), 'EX', RbacPermissionCacheService.TTL_SECONDS)
+    await this.redis.set(
+      this.key(userId),
+      JSON.stringify(permissions),
+      'EX',
+      RbacPermissionCacheService.TTL_SECONDS,
+    )
   }
 
   async invalidateUsers(userIds: string[]) {

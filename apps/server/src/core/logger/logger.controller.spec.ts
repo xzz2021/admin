@@ -10,6 +10,8 @@ describe('LoggerController permission boundary', () => {
     ['userLog:view', 'getUserOperationLogList'],
     ['userLog:delete', 'deleteUserOperationLog'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, LoggerController.prototype[methodName])).toBe(permission)
+    expect(Reflect.getMetadata(PERMISSION_KEY, LoggerController.prototype[methodName])).toBe(
+      permission,
+    )
   })
 })

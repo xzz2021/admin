@@ -1,4 +1,10 @@
-import { BatchDeleteUserDto, CreateUserDto, QueryUserParams, UpdatePwdDto, UpdateUserDto } from './user.dto'
+import {
+  BatchDeleteUserDto,
+  CreateUserDto,
+  QueryUserParams,
+  UpdatePwdDto,
+  UpdateUserDto,
+} from './user.dto'
 
 describe('User DTO schemas', () => {
   it('coerces query values and applies safe pagination defaults', () => {
@@ -13,9 +19,12 @@ describe('User DTO schemas', () => {
     })
   })
 
-  it.each([{ pageIndex: 0 }, { pageSize: 0 }, { pageSize: 101 }])('rejects unsafe pagination: %o', input => {
-    expect(() => QueryUserParams.schema.parse(input)).toThrow()
-  })
+  it.each([{ pageIndex: 0 }, { pageSize: 0 }, { pageSize: 101 }])(
+    'rejects unsafe pagination: %o',
+    input => {
+      expect(() => QueryUserParams.schema.parse(input)).toThrow()
+    },
+  )
 
   it('requires initial password when creating a user', () => {
     expect(() =>

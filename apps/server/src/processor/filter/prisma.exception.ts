@@ -37,7 +37,12 @@ export const checkPrismaError = (exception: unknown) => {
     return { msg: '数据验证失败', meta: exception.message }
   }
 
-  if (exception && typeof exception === 'object' && 'code' in exception && typeof exception.code === 'string') {
+  if (
+    exception &&
+    typeof exception === 'object' &&
+    'code' in exception &&
+    typeof exception.code === 'string'
+  ) {
     const err = exception as { code: string; message?: string; toString?: () => string }
     switch (err.code) {
       case 'P2002':

@@ -151,7 +151,11 @@ export class DepartmentService {
       if (!parent) throw new BadRequestException('父级不存在') // 父级不存在
       path = `${parent.path}/${tag.id}`
     }
-    await tx.department.update({ where: { id: tag.id }, data: { path, parentId }, select: { id: true } })
+    await tx.department.update({
+      where: { id: tag.id },
+      data: { path, parentId },
+      select: { id: true },
+    })
 
     if (children && children.length > 0) {
       for (const child of children) {

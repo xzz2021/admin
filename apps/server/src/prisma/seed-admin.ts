@@ -10,7 +10,9 @@ const SeedAdminEnvSchema = z.object({
 export async function createSeedAdmin(env: NodeJS.ProcessEnv) {
   const parsed = SeedAdminEnvSchema.safeParse(env)
   if (!parsed.success) {
-    throw new Error('首次初始化需要有效的 SEED_ADMIN_USERNAME、SEED_ADMIN_PASSWORD 和 SEED_ADMIN_PHONE')
+    throw new Error(
+      '首次初始化需要有效的 SEED_ADMIN_USERNAME、SEED_ADMIN_PASSWORD 和 SEED_ADMIN_PHONE',
+    )
   }
 
   return {

@@ -4,7 +4,15 @@ import { TokenService } from '@/system/auth/token.service'
 import { Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets'
 import type { IncomingMessage } from 'node:http'
 import type { Server } from 'ws'
 import WebSocket from 'ws'
@@ -79,7 +87,9 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.phone = payload.phone ?? ''
       client.exp = payload.exp ?? Math.floor(Date.now() / 1000) + 3600
       client.isSuperAdmin = Array.isArray(payload.roles)
-        ? payload.roles.some(role => (typeof role === 'string' ? role === 'super_admin' : role?.code === 'super_admin'))
+        ? payload.roles.some(role =>
+            typeof role === 'string' ? role === 'super_admin' : role?.code === 'super_admin',
+          )
         : false
 
       const ip = extractIP(getIp(req as IncomingMessage) || '') || '-'
@@ -99,7 +109,9 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.addSocket(jti, client)
       client.send(JSON.stringify({ event: 'connected', data: { ok: true, jti } }))
     } catch (error) {
-      this.logger.debug(`在线 WS 鉴权失败: ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.debug(
+        `在线 WS 鉴权失败: ${error instanceof Error ? error.message : String(error)}`,
+      )
       this.closeWith(client, 'unauthorized')
     }
   }

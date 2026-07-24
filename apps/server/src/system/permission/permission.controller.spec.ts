@@ -11,6 +11,8 @@ describe('PermissionController permission boundary', () => {
     ['menu:update', 'update'],
     ['menu:delete', 'remove'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, PermissionController.prototype[methodName])).toBe(permission)
+    expect(Reflect.getMetadata(PERMISSION_KEY, PermissionController.prototype[methodName])).toBe(
+      permission,
+    )
   })
 })

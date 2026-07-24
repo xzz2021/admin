@@ -21,7 +21,14 @@ import { TokenService } from './token.service'
     forwardRef(() => OnlineModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, TokenService, RtTokenService, JwtStrategy, JwtRefreshStrategy, JwtRefreshAuthGuard],
+  providers: [
+    AuthService,
+    TokenService,
+    RtTokenService,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    JwtRefreshAuthGuard,
+  ],
   exports: [AuthService, TokenService, RtTokenService],
 })
 export class AuthModule {}

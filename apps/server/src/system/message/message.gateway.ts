@@ -4,7 +4,15 @@ import { TokenService } from '@/system/auth/token.service'
 import { Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets'
 import Redis from 'ioredis'
 import type { IncomingMessage } from 'node:http'
 import type { Server } from 'ws'
@@ -23,7 +31,9 @@ type MsgSocket = WebSocket & {
   path: '/message/ws',
   cors: { origin: true, credentials: true },
 })
-export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit, OnModuleDestroy {
+export class MessageGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(MessageGateway.name)
   private readonly sockets = new Map<string, Set<MsgSocket>>()
   private subscriber: Redis | null = null
@@ -57,12 +67,16 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect,
           const payload = JSON.parse(raw) as MessagePushPayload
           this.pushToUser(payload)
         } catch (error) {
-          this.logger.debug(`解析推送消息失败: ${error instanceof Error ? error.message : String(error)}`)
+          this.logger.debug(
+            `解析推送消息失败: ${error instanceof Error ? error.message : String(error)}`,
+          )
         }
       })
       this.logger.log(`已订阅 Redis 频道 ${MESSAGE_PUSH_CHANNEL}`)
     } catch (error) {
-      this.logger.error(`消息推送订阅失败: ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.error(
+        `消息推送订阅失败: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
   }
 
@@ -87,7 +101,11 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect,
     }
     try {
       const secret = this.configService.getOrThrow<string>('token.secret')
-      const payload = await this.jwtService.verifyAsync<{ sub?: string; id?: string; jti?: string }>(token, { secret })
+      const payload = await this.jwtService.verifyAsync<{
+        sub?: string
+        id?: string
+        jti?: string
+      }>(token, { secret })
       const userId = payload.sub ?? payload.id
       const jti = payload.jti
       if (!userId || !jti) {
@@ -104,7 +122,9 @@ export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect,
       const unread = await this.messageService.getUnreadCount(userId)
       client.send(JSON.stringify({ event: 'connected', data: { ok: true, unread } }))
     } catch (error) {
-      this.logger.debug(`消息 WS 鉴权失败: ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.debug(
+        `消息 WS 鉴权失败: ${error instanceof Error ? error.message : String(error)}`,
+      )
       this.closeWith(client, 'unauthorized')
     }
   }

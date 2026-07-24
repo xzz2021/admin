@@ -41,7 +41,11 @@ export class MenuService {
         where: { id },
         data: {
           ...rest,
-          ...(parentId === undefined ? {} : parentId === null ? { parent: { disconnect: true } } : { parent: { connect: { id: parentId } } }),
+          ...(parentId === undefined
+            ? {}
+            : parentId === null
+              ? { parent: { disconnect: true } }
+              : { parent: { connect: { id: parentId } } }),
         },
         select: { id: true },
       })

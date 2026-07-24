@@ -17,7 +17,10 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
     if (isPublic) return true
 
     // WebSocket 走各自 Gateway 鉴权，避免 HTTP Guard 误伤
@@ -37,7 +40,10 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
     const jti = request.user?.jti as string | undefined
     if (!jti) return true
 
-    if ((await this.tokenService.isBlacklisted(jti)) || (await this.rtTokenService.isBlacklisted(jti))) {
+    if (
+      (await this.tokenService.isBlacklisted(jti)) ||
+      (await this.rtTokenService.isBlacklisted(jti))
+    ) {
       throw new UnauthorizedException('token 已失效')
     }
 

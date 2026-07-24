@@ -66,10 +66,13 @@ const CreateMenuSchema = MenuSchema.omit({
 export class CreateMenuDto extends createZodDto(CreateMenuSchema) {}
 
 //  继承MenuSchema 并且 限制id 不能等于 parentId
-const UpdateMenuSchema = MenuSchema.refine(data => data.parentId == null || data.id !== data.parentId, {
-  message: 'id 不能等于 parentId',
-  path: ['parentId'], // 错误挂到 parentId 上，方便前端展示
-})
+const UpdateMenuSchema = MenuSchema.refine(
+  data => data.parentId == null || data.id !== data.parentId,
+  {
+    message: 'id 不能等于 parentId',
+    path: ['parentId'], // 错误挂到 parentId 上，方便前端展示
+  },
+)
 export class UpdateMenuDto extends createZodDto(UpdateMenuSchema) {}
 
 const MenuSortArraySchema = z.object({

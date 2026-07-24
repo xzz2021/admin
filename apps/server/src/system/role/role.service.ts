@@ -26,7 +26,12 @@ export class RoleService {
     return { menuMap, menuIds, permissionIds }
   }
 
-  private async validateMenuPermissions(menuMap: Map<string, Set<string>>, menuIds: string[], permissionIds: string[], tx: Prisma.TransactionClient) {
+  private async validateMenuPermissions(
+    menuMap: Map<string, Set<string>>,
+    menuIds: string[],
+    permissionIds: string[],
+    tx: Prisma.TransactionClient,
+  ) {
     const menus = await tx.menu.findMany({
       where: { id: { in: menuIds }, enabled: true },
       select: { id: true },
@@ -39,7 +44,8 @@ export class RoleService {
       where: { id: { in: permissionIds }, enabled: true },
       select: { id: true, menuId: true },
     })
-    if (permissions.length !== permissionIds.length) throw new BadRequestException('存在无效或被禁用的权限')
+    if (permissions.length !== permissionIds.length)
+      throw new BadRequestException('存在无效或被禁用的权限')
 
     const permissionMenuMap = new Map<string, string>()
     for (const permission of permissions) {
@@ -72,8 +78,12 @@ export class RoleService {
         },
         select: { id: true },
       })
-      if (menuIds.length) await tx.roleMenu.createMany({ data: menuIds.map(menuId => ({ roleId: role.id, menuId })) })
-      if (permissionIds.length) await tx.rolePermission.createMany({ data: permissionIds.map(permissionId => ({ roleId: role.id, permissionId })) })
+      if (menuIds.length)
+        await tx.roleMenu.createMany({ data: menuIds.map(menuId => ({ roleId: role.id, menuId })) })
+      if (permissionIds.length)
+        await tx.rolePermission.createMany({
+          data: permissionIds.map(permissionId => ({ roleId: role.id, permissionId })),
+        })
       return role
     })
     return { message: '创建角色成功', id: res.id }

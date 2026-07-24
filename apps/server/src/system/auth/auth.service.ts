@@ -2,7 +2,15 @@ import { PgService } from '@/prisma/pg.service'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { OnlineGateway } from '@/system/online/online.gateway'
 import { OnlineService } from '@/system/online/online.service'
-import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, Optional, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Optional,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
 import { RedisService } from '@liaoliaots/nestjs-redis'
@@ -37,7 +45,10 @@ export class AuthService {
     this.redis = this.redisService.getOrThrow()
   }
 
-  async create(createUserDto: RegisterDto, checkCode: boolean = true): Promise<{ message: string; res?: { id: string } }> {
+  async create(
+    createUserDto: RegisterDto,
+    checkCode: boolean = true,
+  ): Promise<{ message: string; res?: { id: string } }> {
     const { phone, password, username } = createUserDto
     const user = await this.isUserExist(phone)
     if (user) {
@@ -106,7 +117,12 @@ export class AuthService {
 
     const { password, ...result } = user
     const { username, phone, id, roles } = result
-    const accessToken = await this.tokenService.signToken(id, { username, phone, id, roles: roles.map(item => item.role) })
+    const accessToken = await this.tokenService.signToken(id, {
+      username,
+      phone,
+      id,
+      roles: roles.map(item => item.role),
+    })
 
     return {
       message: `${username}登录成功`,
@@ -129,7 +145,11 @@ export class AuthService {
 
     const { password, ...result } = user
     const { username, phone, id, roles } = result
-    const { accessToken } = await this.rtTokenService.signToken(id, { username, phone, id, roles: roles.map(item => item.role) }, res)
+    const { accessToken } = await this.rtTokenService.signToken(
+      id,
+      { username, phone, id, roles: roles.map(item => item.role) },
+      res,
+    )
 
     /*
       注意使用res设置cookie后   直接返回数据是无效的
@@ -268,7 +288,12 @@ export class AuthService {
       throw new UnauthorizedException('用户不存在或已禁用')
     }
     const { username, phone, id, roles } = user
-    const { accessToken } = await this.rtTokenService.signToken(userId, { username, phone, id, roles: roles.map(item => item.role) }, res, oldJti)
+    const { accessToken } = await this.rtTokenService.signToken(
+      userId,
+      { username, phone, id, roles: roles.map(item => item.role) },
+      res,
+      oldJti,
+    )
     // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
     await this.onlineService?.remove(oldJti)
     return { access_token: accessToken, message: '获取新的token成功' }

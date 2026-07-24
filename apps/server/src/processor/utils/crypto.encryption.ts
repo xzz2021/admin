@@ -35,10 +35,16 @@ function detectDataType(data: string): 'string' | 'object' | 'array' {
 }
 
 // 解密数据 - 支持字符串、对象和数组，自动判断数据类型
-export function aesGcmDecrypt<T = string | object | any[]>({ ciphertext, iv, tag }: { ciphertext: string; iv: string; tag: string }, key: string): T {
+export function aesGcmDecrypt<T = string | object | any[]>(
+  { ciphertext, iv, tag }: { ciphertext: string; iv: string; tag: string },
+  key: string,
+): T {
   const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'base64'))
   decipher.setAuthTag(Buffer.from(tag, 'base64'))
-  const decrypted = Buffer.concat([decipher.update(Buffer.from(ciphertext, 'base64')), decipher.final()])
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(ciphertext, 'base64')),
+    decipher.final(),
+  ])
   const decryptedString = decrypted.toString('utf8')
 
   // 自动检测数据类型

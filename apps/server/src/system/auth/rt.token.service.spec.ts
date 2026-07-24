@@ -30,7 +30,11 @@ describe('RtTokenService', () => {
   }
 
   const createService = () =>
-    new RtTokenService(jwt as unknown as JwtService, { getOrThrow: () => redis } as unknown as RedisService, configService as unknown as ConfigService)
+    new RtTokenService(
+      jwt as unknown as JwtService,
+      { getOrThrow: () => redis } as unknown as RedisService,
+      configService as unknown as ConfigService,
+    )
 
   const cookie = jest.fn()
   const clearCookie = jest.fn()
@@ -44,7 +48,9 @@ describe('RtTokenService', () => {
     redis.get.mockResolvedValue(null)
     redis.set.mockResolvedValue('OK')
     redis.del.mockResolvedValue(1)
-    jwt.signAsync.mockImplementation((_payload: unknown, options: { jwtid?: string }) => Promise.resolve(`token:${options.jwtid ?? 'none'}`))
+    jwt.signAsync.mockImplementation((_payload: unknown, options: { jwtid?: string }) =>
+      Promise.resolve(`token:${options.jwtid ?? 'none'}`),
+    )
   })
 
   it('stores refresh expiry for jti and sets cookie maxAge from refresh TTL', async () => {
@@ -53,7 +59,10 @@ describe('RtTokenService', () => {
 
     await service.issue('user-1', { username: 'admin' }, res)
 
-    const jtiSetCall = redis.set.mock.calls.find((call: unknown[]) => typeof call[0] === 'string' && String(call[0]).startsWith('cookies:exp:'))
+    const jtiSetCall = redis.set.mock.calls.find(
+      (call: unknown[]) =>
+        typeof call[0] === 'string' && String(call[0]).startsWith('cookies:exp:'),
+    )
     expect(jtiSetCall?.[2]).toBe('EX')
     expect(jtiSetCall?.[3]).toBe(3600)
 
@@ -74,17 +83,25 @@ describe('RtTokenService', () => {
     const service = createService()
     redis.get.mockImplementation((key: string) => {
       if (key === 'user:cookies:user-1') return Promise.resolve(JSON.stringify(['old-jti']))
-      if (key === 'cookies:exp:old-jti') return Promise.resolve(String(Math.floor(Date.now() / 1000) + 1800))
+      if (key === 'cookies:exp:old-jti')
+        return Promise.resolve(String(Math.floor(Date.now() / 1000) + 1800))
       return Promise.resolve(null)
     })
 
     const result = await service.issue('user-1', {}, res, 'old-jti')
 
     expect(result.jti).not.toBe('old-jti')
-    expect(redis.set).toHaveBeenCalledWith(`rt:jwt:blacklist:old-jti`, '1', 'EX', expect.any(Number))
+    expect(redis.set).toHaveBeenCalledWith(
+      `rt:jwt:blacklist:old-jti`,
+      '1',
+      'EX',
+      expect.any(Number),
+    )
     expect(redis.del).toHaveBeenCalledWith('cookies:exp:old-jti')
 
-    const listSetCall = redis.set.mock.calls.find((call: unknown[]) => call[0] === 'user:cookies:user-1')
+    const listSetCall = redis.set.mock.calls.find(
+      (call: unknown[]) => call[0] === 'user:cookies:user-1',
+    )
     expect(JSON.parse(String(listSetCall?.[1]))).toEqual([result.jti])
   })
 

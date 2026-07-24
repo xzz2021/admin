@@ -4,15 +4,21 @@ import { DepartmentService } from './department.service'
 describe('DepartmentService tree updates', () => {
   const findMany = jest.fn()
   const update = jest.fn()
-  const transaction = jest.fn(async (callback: (tx: { department: { findMany: typeof findMany; update: typeof update } }) => Promise<unknown>) =>
-    callback({ department: { findMany, update } }),
+  const transaction = jest.fn(
+    async (
+      callback: (tx: {
+        department: { findMany: typeof findMany; update: typeof update }
+      }) => Promise<unknown>,
+    ) => callback({ department: { findMany, update } }),
   )
 
   const service = new DepartmentService({ $transaction: transaction } as unknown as PgService)
 
   beforeEach(() => {
     jest.clearAllMocks()
-    update.mockImplementation(({ where }: { where: { id: string } }) => Promise.resolve({ id: where.id }))
+    update.mockImplementation(({ where }: { where: { id: string } }) =>
+      Promise.resolve({ id: where.id }),
+    )
   })
 
   it('updates descendant materialized paths when moving a department', async () => {
