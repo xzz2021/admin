@@ -9,13 +9,10 @@ import { Table, TableColumn } from '@/components/Table'
 import { UploadBtn } from '@/components/UploadBtn'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
-import { downloadFile, formatFileSize, resolveStaticUrl } from '@/utils/file'
-import { useClipboard } from '@vueuse/core'
+import { downloadFile, FileUnavailableError, formatFileSize, resolveStaticUrl } from '@/utils/file'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, unref } from 'vue'
 import RenderFile from './components/RenderFile.vue'
-
-const { copy } = useClipboard()
 
 const ids = ref<number[]>([])
 const allFileList = ref<FileItem[]>([])
@@ -42,7 +39,13 @@ const { tableRegister, tableState, tableMethods } = useTable({
   },
   fetchDelApi: async () => {
     const res = await deleteFileApi(unref(ids))
-    return !!res
+    if (!res) return false
+    const message = typeof res.message === 'string' ? res.message : ''
+    if (message.includes('路径不存在')) {
+      ElMessage.warning(message)
+      return 'silenced'
+    }
+    return true
   }
 })
 const { loading, dataList, total, currentPage, pageSize } = tableState
@@ -57,6 +60,19 @@ const setSearchParams = (params: FileListParams) => {
 
 const { t } = useI18n()
 
+const handleDownload = async (row: FileItem) => {
+  const fileUrl = resolveStaticUrl(row.url)
+  try {
+    await downloadFile({ url: fileUrl, fileName: row.name })
+  } catch (error) {
+    if (error instanceof FileUnavailableError) {
+      ElMessage.error(error.message)
+      return
+    }
+    ElMessage.error('文件下载失败')
+  }
+}
+
 const tableColumns = reactive<TableColumn[]>([
   { field: 'select', type: 'selection' },
   {
@@ -70,7 +86,8 @@ const tableColumns = reactive<TableColumn[]>([
     width: 170,
     slots: {
       default: (data: any) => {
-        const { url, extension, name } = data.row as FileItem
+        const row = data.row as FileItem
+        const { url, extension, name } = row
         return <RenderFile url={resolveStaticUrl(url)} extension={extension || ''} filename={name} />
       }
     }
@@ -99,18 +116,14 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'action',
     label: t('userDemo.action'),
-    width: 300,
+    minWidth: 160,
     fixed: 'right',
     slots: {
       default: (data: any) => {
         const row = data.row as FileItem
-        const fileUrl = resolveStaticUrl(row.url)
         return (
           <>
-            <BaseButton type="success" onClick={() => copyUrl(fileUrl)}>
-              {t('setting.copy')}
-            </BaseButton>
-            <BaseButton type="primary" onClick={() => downloadFile({ url: fileUrl, fileName: row.name })}>
+            <BaseButton type="primary" onClick={() => handleDownload(row)}>
               {t('formDemo.download')}
             </BaseButton>
             <BaseButton type="danger" onClick={() => delData(row.id)}>
@@ -149,21 +162,11 @@ const searchSchema = reactive<FormSchema[]>([
     component: 'Input'
   },
   {
-    field: 'mimeType',
-    label: '类型',
-    component: 'Input'
-  },
-  {
     field: 'extension',
     label: '扩展名',
     component: 'Input'
   }
 ])
-
-const copyUrl = (url: string) => {
-  copy(url)
-  ElMessage.success('文件链接复制成功')
-}
 
 const startUpload = async (file: File) => {
   await uploadFileApi(file)

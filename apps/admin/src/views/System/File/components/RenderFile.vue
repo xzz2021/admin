@@ -4,71 +4,126 @@
   </div>
 </template>
 <script setup lang="tsx">
-import { getFileType } from '@/utils/file'
+import { createAudioViewer } from '@/components/AudioPlayer'
 import { Icon } from '@/components/Icon'
 import { createVideoViewer } from '@/components/VideoPlayer'
-import { ElImage } from 'element-plus'
-import { defineComponent } from 'vue'
-import { createAudioViewer } from '@/components/AudioPlayer'
+import { getFileType, probeFileAccessible } from '@/utils/file'
+import { ElImage, ElMessage } from 'element-plus'
+import { defineComponent, ref } from 'vue'
+
 interface PropsItem {
   extension: string
   url: string
   filename: string
 }
+
 const props = defineProps<PropsItem>()
+const emit = defineEmits<{
+  unavailable: []
+}>()
+
+const imageFailed = ref(false)
+const probing = ref(false)
+
+const notifyUnavailable = () => {
+  emit('unavailable')
+}
+
+const openMedia = async (kind: 'audio' | 'video') => {
+  if (!props.url || probing.value) return
+  probing.value = true
+  try {
+    const ok = await probeFileAccessible(props.url)
+    if (!ok) {
+      ElMessage.error(kind === 'audio' ? '音频文件已失效' : '视频文件已失效')
+      notifyUnavailable()
+      return
+    }
+    if (kind === 'audio') {
+      createAudioViewer({
+        url: props.url,
+        filename: props.filename,
+        onUnavailable: notifyUnavailable
+      })
+    } else {
+      createVideoViewer({
+        url: props.url,
+        onUnavailable: notifyUnavailable
+      })
+    }
+  } finally {
+    probing.value = false
+  }
+}
 
 const RenderPreview = defineComponent({
-  render() {
-    const type = getFileType(props.extension)
-    const url = props.url
-    const filename = props.filename
-    switch (type) {
-      case 'image':
-        return <ElImage src={url} fit="cover" class="w-[100%]" lazy preview-src-list={[url]} preview-teleported />
-      case 'audio':
-        return (
-          <div onClick={() => createAudioViewer({ url, filename })} class="w-full flex items-center">
-            <Icon icon="headphones" style={{ color: '#0dc70b' }} />
-            <div class="ml-2 w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
-          </div>
-        )
-      case 'video':
-        return (
-          <div onClick={() => createVideoViewer({ url })} class="w-full flex items-center">
-            <Icon icon="film" style={{ color: '#ff6b12' }} />
-            <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
-          </div>
-        )
-      case 'doc':
-        return (
-          <div class="w-full flex items-center">
-            <Icon icon="file-text" style={{ color: '#0070ff' }} />
-            <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
-          </div>
-        )
-      default:
-        return <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
+  setup() {
+    return () => {
+      const type = getFileType(props.extension)
+      const url = props.url
+      const filename = props.filename
+
+      switch (type) {
+        case 'image':
+          if (imageFailed.value) {
+            return (
+              <div
+                class="w-full flex items-center justify-center text-12px color-[var(--el-color-danger)]"
+                onClick={notifyUnavailable}
+              >
+                图片已失效
+              </div>
+            )
+          }
+          return (
+            <ElImage
+              src={url}
+              fit="cover"
+              class="w-[100%]"
+              lazy
+              preview-src-list={[url]}
+              preview-teleported
+              onError={() => {
+                imageFailed.value = true
+              }}
+              v-slots={{
+                error: () => <div class="text-12px color-[var(--el-color-danger)]">图片已失效</div>
+              }}
+            />
+          )
+        case 'audio':
+          return (
+            <div
+              onClick={() => openMedia('audio')}
+              class="w-full flex items-center"
+              title={probing.value ? '检测中...' : filename}
+            >
+              <Icon icon="headphones" style={{ color: '#0dc70b' }} />
+              <div class="ml-2 w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
+            </div>
+          )
+        case 'video':
+          return (
+            <div
+              onClick={() => openMedia('video')}
+              class="w-full flex items-center"
+              title={probing.value ? '检测中...' : filename}
+            >
+              <Icon icon="film" style={{ color: '#ff6b12' }} />
+              <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
+            </div>
+          )
+        case 'doc':
+          return (
+            <div class="w-full flex items-center">
+              <Icon icon="file-text" style={{ color: '#0070ff' }} />
+              <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
+            </div>
+          )
+        default:
+          return <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
+      }
     }
   }
 })
 </script>
-
-<style scoped>
-.scrolling-text {
-  position: relative;
-  display: inline-block;
-  overflow: hidden; /* 隐藏超出容器的部分 */
-  white-space: nowrap; /* 保证文字在一行 */
-  animation: scroll 10s linear infinite; /* 10s 循环滚动 */
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateX(100%); /* 从右侧开始 */
-  }
-
-  100% {
-    transform: translateX(-100%); /* 滚动到左侧 */
-  }
-}
-</style>

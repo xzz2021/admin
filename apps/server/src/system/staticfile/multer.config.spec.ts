@@ -1,6 +1,12 @@
 import { BadRequestException } from '@nestjs/common'
-import { resolve, sep } from 'path'
-import { assertPathInsideRoot, sanitizePathSegment, sanitizeUploadFilename, UPLOAD_ALLOWLIST } from './multer.config'
+import { join, resolve, sep } from 'path'
+import {
+  assertPathInsideRoot,
+  sanitizePathSegment,
+  sanitizeUploadFilename,
+  tryResolvePathInsideRoot,
+  UPLOAD_ALLOWLIST,
+} from './multer.config'
 
 describe('multer upload safety helpers', () => {
   const prevRoot = process.env.STATIC_FILE_ROOT_PATH
@@ -34,6 +40,18 @@ describe('multer upload safety helpers', () => {
   it('blocks delete/unlink targets outside the static root', () => {
     const root = resolve(process.cwd(), 'public')
     expect(() => assertPathInsideRoot(root, resolve(root, '..', 'package.json'))).toThrow(BadRequestException)
-    expect(assertPathInsideRoot(root, resolve(root, 'avatar', 'u1', 'a.png'))).toBe(resolve(root, 'avatar', 'u1', 'a.png'))
+    expect(assertPathInsideRoot(root, resolve(root, 'avatar', 'u1', 'a.png'))).toBe(
+      resolve(root, 'avatar', 'u1', 'a.png'),
+    )
+  })
+
+  it('soft-resolves paths for compatible delete without throwing', () => {
+    const root = resolve(process.cwd(), 'public')
+    expect(tryResolvePathInsideRoot(root, resolve(root, '..', 'package.json'))).toBeNull()
+    expect(tryResolvePathInsideRoot(root, '')).toBeNull()
+    expect(tryResolvePathInsideRoot(root, join('avatar', 'u1', 'a.png'))).toBe(resolve(root, 'avatar', 'u1', 'a.png'))
+    expect(tryResolvePathInsideRoot(root, resolve(root, 'file', 'manage', 'a.png'))).toBe(
+      resolve(root, 'file', 'manage', 'a.png'),
+    )
   })
 })

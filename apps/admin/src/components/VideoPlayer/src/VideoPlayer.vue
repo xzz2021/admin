@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Player from 'xgplayer'
-import { ref, unref, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, unref, watch } from 'vue'
 import 'xgplayer/dist/index.min.css'
 
 const props = defineProps({
@@ -15,17 +15,28 @@ const props = defineProps({
   }
 })
 
-const playerRef = ref<Player>()
+const emit = defineEmits<{
+  error: [error?: unknown]
+}>()
 
+const playerRef = ref<Player>()
 const videoEl = ref<HTMLDivElement>()
 
+const bindError = (player: Player) => {
+  player.on('error', (err: unknown) => {
+    emit('error', err)
+  })
+}
+
 const intiPlayer = () => {
-  if (!unref(videoEl)) return
+  if (!unref(videoEl) || !props.url) return
   playerRef.value = new Player({
     autoplay: false,
-    ...props,
-    el: unref(videoEl)
+    url: props.url,
+    poster: props.poster,
+    el: unref(videoEl)!
   })
+  bindError(playerRef.value)
 }
 
 onMounted(() => {
@@ -33,20 +44,18 @@ onMounted(() => {
 })
 
 watch(
-  () => props,
-  async (newProps) => {
+  () => [props.url, props.poster] as const,
+  async () => {
     await nextTick()
-    if (newProps) {
-      unref(playerRef)?.setConfig(newProps)
-    }
-  },
-  {
-    deep: true
+    unref(playerRef)?.destroy()
+    playerRef.value = undefined
+    intiPlayer()
   }
 )
 
 onBeforeUnmount(() => {
   unref(playerRef)?.destroy()
+  playerRef.value = undefined
 })
 
 defineExpose({

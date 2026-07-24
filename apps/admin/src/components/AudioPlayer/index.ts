@@ -11,50 +11,53 @@ interface AudioViewerOptions {
   filename: string
   poster?: string
   show?: boolean
-  onClose?: () => void
+  onUnavailable?: () => void
 }
 
 let instance: VNode | null = null
 let container: HTMLElement | null = null
 
+export function destroyAudioViewer() {
+  if (!container) {
+    instance = null
+    return
+  }
+  render(null, container)
+  container.remove()
+  container = null
+  instance = null
+}
+
+/** @deprecated 使用 destroyAudioViewer */
+export function destroyAllAudioViewers() {
+  destroyAudioViewer()
+}
+
 export function createAudioViewer(options: AudioViewerOptions) {
   if (!isClient) return
 
-  const { show = true, url, filename } = options
-
-  if (instance) {
-    instance.component!.props!.url = url
-    instance.component!.props!.filename = filename || '未知音频'
-    instance.component!.props!.show = show
-    return
-  }
+  // 每次打开先销毁旧实例，避免残留层无法关闭
+  destroyAudioViewer()
 
   container = document.createElement('div')
   const id = toAnyString()
   container.id = id
-
-  const onClose = () => {
-    setTimeout(() => {
-      if (instance) {
-        instance.component!.props!.show = false
-      }
-    }, 150)
-  }
-
-  const propsData: Partial<AudioViewerOptions> = {
-    ...options,
-    id,
-    onClose
-  }
   document.body.appendChild(container)
-  instance = createVNode(AudioPlayer, propsData)
-  render(instance, container)
-}
 
-// 提供销毁所有实例的方法
-export function destroyAllAudioViewers() {
-  if (container) {
-    render(null, container)
-    document.body.removeChild(container)
-  }
+  instance = createVNode(AudioPlayer, {
+    id,
+    url: options.url,
+    filename: options.filename || '未知音频',
+    poster: options.poster || '',
+    show: true,
+    onClose: () => {
+      destroyAudioViewer()
+    },
+    onUnavailable: () => {
+      // 先销毁播放器，再交给业务侧确认是否清理无效数据
+      destroyAudioViewer()
+      options.onUnavailable?.()
+    }
+  })
+  render(instance, container)
 }

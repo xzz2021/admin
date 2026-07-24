@@ -42,7 +42,7 @@ export const FileIcon: FileExtendNameIconMap = {
 }
 
 /** 图片类型 */
-export const ImageTypes = ['jpg', 'png', 'gif', 'jpeg']
+export const ImageTypes = ['jpg', 'png', 'gif', 'jpeg', 'webp']
 
 /** WPS、Office文件类型 */
 export const OfficeTypes = ['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'pdf']

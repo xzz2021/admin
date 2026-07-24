@@ -1,7 +1,7 @@
+import { Table, TableColumn, TableExpose, TableProps, TableSetProps } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
-import { Table, TableExpose, TableProps, TableSetProps, TableColumn } from '@/components/Table'
-import { ElTable, ElMessageBox, ElMessage } from 'element-plus'
-import { ref, watch, unref, nextTick, onMounted } from 'vue'
+import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
+import { nextTick, onMounted, ref, unref, watch } from 'vue'
 
 const { t } = useI18n()
 
@@ -14,7 +14,8 @@ interface UseTableConfig {
     list: any[]
     total?: number
   }>
-  fetchDelApi?: () => Promise<boolean>
+  /** 返回 true 使用默认成功提示；返回字符串则展示该提示；返回 'silenced' 表示调用方已自行提示 */
+  fetchDelApi?: () => Promise<boolean | string>
 }
 
 export const useTable = (config: UseTableConfig) => {
@@ -164,7 +165,11 @@ export const useTable = (config: UseTableConfig) => {
       }).then(async () => {
         const res = await fetchDelApi()
         if (res) {
-          ElMessage.success(t('common.delSuccess'))
+          if (res === true) {
+            ElMessage.success(t('common.delSuccess'))
+          } else if (res !== 'silenced') {
+            ElMessage.success(res)
+          }
 
           // 计算出临界点
           const current =

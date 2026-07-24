@@ -1,8 +1,8 @@
 import { PgService } from '@/prisma/pg.service'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import * as fs from 'fs'
-import { assertPathInsideRoot, getStaticFileRoot } from './multer.config'
 import { UploadFileDto } from './file.dto'
+import { getStaticFileRoot, tryResolvePathInsideRoot } from './multer.config'
 
 @Injectable()
 export class StaticfileService {
@@ -29,13 +29,25 @@ export class StaticfileService {
       throw new BadRequestException('部分文件不存在')
     }
     const root = getStaticFileRoot()
+    let missingPathCount = 0
     for (const file of fileList) {
-      const safePath = assertPathInsideRoot(root, file.path)
-      if (fs.existsSync(safePath)) {
-        fs.unlinkSync(safePath)
+      const safePath = tryResolvePathInsideRoot(root, file.path)
+      if (!safePath || !fs.existsSync(safePath)) {
+        missingPathCount += 1
+        continue
       }
+      fs.unlinkSync(safePath)
     }
     await this.pgService.file.deleteMany({ where: { id: { in: ids } } })
+    if (missingPathCount > 0) {
+      return {
+        message:
+          missingPathCount === fileList.length
+            ? '文件路径不存在，已清理无效数据'
+            : `部分文件路径不存在（${missingPathCount}），已清理对应无效数据`,
+        missingPathCount,
+      }
+    }
     return { message: '文件删除成功' }
   }
 

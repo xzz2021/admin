@@ -9,7 +9,13 @@ import path, { basename, extname, join, resolve, sep } from 'path'
 const IMAGE_MIME = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'])
 const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp'])
 
-const MANAGE_MIME = new Set([...IMAGE_MIME, 'application/pdf', 'text/plain', 'application/zip', 'application/x-zip-compressed'])
+const MANAGE_MIME = new Set([
+  ...IMAGE_MIME,
+  'application/pdf',
+  'text/plain',
+  'application/zip',
+  'application/x-zip-compressed',
+])
 const MANAGE_EXT = new Set([...IMAGE_EXT, '.pdf', '.txt', '.zip'])
 
 const AVATAR_MAX_BYTES = 5 * 1024 * 1024
@@ -61,6 +67,22 @@ export function assertPathInsideRoot(root: string, targetPath: string): string {
   return resolvedTarget
 }
 
+/**
+ * 兼容解析落盘路径：相对路径按 STATIC_FILE_ROOT 拼接；越界或非法则返回 null（不抛错）。
+ * 删除场景用：避免历史脏数据因路径失效阻断 DB 清理。
+ */
+export function tryResolvePathInsideRoot(root: string, targetPath: string): string | null {
+  if (!targetPath?.trim()) {
+    return null
+  }
+  try {
+    const candidate = path.isAbsolute(targetPath) ? targetPath : join(root, targetPath)
+    return assertPathInsideRoot(root, candidate)
+  } catch {
+    return null
+  }
+}
+
 function ensureDirInsideRoot(root: string, relativeDir: string): string {
   if (!relativeDir || relativeDir.includes('..') || path.isAbsolute(relativeDir)) {
     throw new BadRequestException('非法上传目录')
@@ -70,7 +92,10 @@ function ensureDirInsideRoot(root: string, relativeDir: string): string {
   return target
 }
 
-function createFileFilter(allowedMimes: Set<string>, allowedExts: Set<string>): NonNullable<MulterOptions['fileFilter']> {
+function createFileFilter(
+  allowedMimes: Set<string>,
+  allowedExts: Set<string>,
+): NonNullable<MulterOptions['fileFilter']> {
   return (_req, file, cb) => {
     try {
       const decoded = decodeOriginalName(file.originalname)
