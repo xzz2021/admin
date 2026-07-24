@@ -1,7 +1,8 @@
 //  这里是捕获所未知异常  无法拿到源信息
 // 如果需要源信息   后期考虑 实现return next.handle().pipe() 来捕获
 
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Inject, Logger, NotFoundException } from '@nestjs/common';
+import { MonitorService } from '@/system/monitor/monitor.service';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { parseException } from './exception.util';
@@ -9,7 +10,10 @@ import { checkPrismaError } from './prisma.exception';
 //  捕获 HttpException 异常 或 HttpException 子类 异常
 @Catch() // @Catch()参数留空  表示 捕获所有异常
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Optional() private readonly monitorService?: MonitorService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
     const start = Date.now();
@@ -45,6 +49,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         context: 'AllExceptionsFilter',
         info: `${path}, ${request.method} ${Date.now() - start}ms`,
         status,
+        message,
+      });
+      void this.monitorService?.recordError({
+        status,
+        method: request.method,
+        path,
         message,
       });
     }

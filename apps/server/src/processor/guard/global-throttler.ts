@@ -37,6 +37,7 @@ function isRedisUnavailableError(error: unknown): boolean {
 @Injectable()
 export class GlobalThrottlerGuard extends ThrottlerGuard {
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (context.getType?.() === 'ws') return true;
     try {
       return await super.canActivate(context);
     } catch (error) {

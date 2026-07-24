@@ -90,7 +90,8 @@ async function main() {
     async (tx: Prisma.TransactionClient) => {
       const menuCount = await tx.menu.count();
       if (menuCount > 0) {
-        console.log(`ℹ️ Menu already contains ${menuCount} records; skipping seed.`);
+        console.log(`ℹ️ Menu already contains ${menuCount} records; skipping full seed.`);
+        await ensureMonitorMenu(tx);
         return;
       }
 
@@ -106,6 +107,54 @@ async function main() {
     },
     { timeout: 60_000 },
   );
+}
+
+/** 已有库增量补齐服务监控菜单与权限（幂等） */
+async function ensureMonitorMenu(tx: Prisma.TransactionClient) {
+  const exists = await tx.menu.findFirst({ where: { path: 'server' }, select: { id: true } });
+  if (exists) {
+    const perm = await tx.permission.findFirst({ where: { code: 'server:view' }, select: { id: true } });
+    if (!perm) {
+      await tx.permission.create({
+        data: { name: '查看', code: 'server:view', menuId: exists.id, type: 'BUTTON' },
+      });
+      console.log('🌱 Ensured permission server:view');
+    }
+    return;
+  }
+
+  const systemMenu = await tx.menu.findFirst({ where: { path: 'system' }, select: { id: true } });
+  if (!systemMenu) {
+    console.log('⚠️ System menu not found, skip ensureMonitorMenu');
+    return;
+  }
+
+  const menu = await tx.menu.create({
+    data: {
+      name: 'Server',
+      path: 'server',
+      redirect: null,
+      type: 1,
+      component: 'views/System/Server/Server',
+      sort: 0,
+      enabled: true,
+      title: 'router.server',
+      icon: 'monitor',
+      hidden: false,
+      affix: false,
+      activeMenu: null,
+      alwaysShow: false,
+      breadcrumb: true,
+      canTo: false,
+      noCache: false,
+      noTagsView: false,
+      parentId: systemMenu.id,
+    },
+  });
+  await tx.permission.create({
+    data: { name: '查看', code: 'server:view', menuId: menu.id, type: 'BUTTON' },
+  });
+  console.log('🌱 Ensured monitor menu & permission server:view');
 }
 
 main()

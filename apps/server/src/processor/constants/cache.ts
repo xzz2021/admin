@@ -7,5 +7,8 @@ export enum RedisKeys {
   AUTH_PASSWORD_V_PREFIX = 'auth:passwordVersion:',
   ONLINE_USER_PREFIX = 'online:user:',
   TOKEN_BLACKLIST_PREFIX = 'token:blacklist:',
+  MONITOR_METRICS = 'monitor:metrics',
+  MONITOR_LATEST = 'monitor:latest',
+  MONITOR_ERRORS = 'monitor:errors',
 }
 export const API_CACHE_PREFIX = 'api-cache:';

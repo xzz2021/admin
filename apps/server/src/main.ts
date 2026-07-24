@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { WsAdapter } from '@nestjs/platform-ws';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -13,6 +14,7 @@ import { GlobalZodValidationPipe } from './processor/pipe/global.zod.validation.
 // import { doubleCsrf } from 'csrf-csrf';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new WsAdapter(app));
 
   // 修复：INestApplication 没有 set 方法，使用 express 实例设置 trust proxy     反向代理/CDN 后必开 才能拿到用户真实ip
   // 仅信任固定的两层代理：Nginx Proxy Manager -> admin Nginx。

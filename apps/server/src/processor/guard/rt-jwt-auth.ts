@@ -17,13 +17,19 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    // 允许对 `/public/` 开头的资源访问
-    if (request.url.startsWith('/public/')) {
-      return true;
-    }
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
     if (isPublic) return true;
+
+    // WebSocket 走各自 Gateway 鉴权，避免 HTTP Guard 误伤
+    if (context.getType?.() === 'ws') {
+      return false;
+    }
+
+    const request = context.switchToHttp().getRequest();
+    // 允许对 `/public/` 开头的资源访问
+    if (request?.url?.startsWith('/public/')) {
+      return true;
+    }
 
     const ok = (await super.canActivate(context)) as boolean;
     if (!ok) return false;
