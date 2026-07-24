@@ -23,7 +23,14 @@ export class MessageService {
   }
 
   /** 入队异步发送（站内信） */
-  async enqueueMail(input: { senderId: string; receiverId: string; title: string; content: string; level?: NoticeLevel; meta?: Record<string, unknown> }) {
+  async enqueueMail(input: {
+    senderId: string
+    receiverId: string
+    title: string
+    content: string
+    level?: NoticeLevel
+    meta?: Record<string, unknown>
+  }) {
     if (input.senderId === input.receiverId) {
       throw new BadRequestException('不能给自己发送站内信')
     }
@@ -46,7 +53,13 @@ export class MessageService {
   }
 
   /** 入队系统通知（全体启用用户） */
-  async enqueueSystem(input: { senderId?: string; title: string; content: string; level?: NoticeLevel; meta?: Record<string, unknown> }) {
+  async enqueueSystem(input: {
+    senderId?: string
+    title: string
+    content: string
+    level?: NoticeLevel
+    meta?: Record<string, unknown>
+  }) {
     await this.addJob({
       type: MessageType.SYSTEM,
       title: input.title,
@@ -59,7 +72,12 @@ export class MessageService {
   }
 
   /** 入队告警（发给超级管理员） */
-  async enqueueAlert(input: { title: string; content: string; level?: NoticeLevel; meta?: Record<string, unknown> }) {
+  async enqueueAlert(input: {
+    title: string
+    content: string
+    level?: NoticeLevel
+    meta?: Record<string, unknown>
+  }) {
     await this.addJob({
       type: MessageType.ALERT,
       title: input.title,
@@ -85,7 +103,9 @@ export class MessageService {
       const ok = await this.redis.set(key, '1', 'EX', ttlSec, 'NX')
       if (ok !== 'OK') return false
     } catch (error) {
-      this.logger.debug(`告警防抖锁失败，仍尝试发送: ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.debug(
+        `告警防抖锁失败，仍尝试发送: ${error instanceof Error ? error.message : String(error)}`,
+      )
     }
     try {
       await this.enqueueAlert(input)
@@ -96,7 +116,10 @@ export class MessageService {
     }
   }
 
-  async list(userId: string, query: { pageIndex?: number; pageSize?: number; type?: MessageType; unreadOnly?: boolean }) {
+  async list(
+    userId: string,
+    query: { pageIndex?: number; pageSize?: number; type?: MessageType; unreadOnly?: boolean },
+  ) {
     const pageIndex = Math.max(1, query.pageIndex ?? 1)
     const pageSize = Math.min(100, Math.max(1, query.pageSize ?? 20))
     const where: Prisma.MessageWhereInput = { receiverId: userId }
@@ -117,6 +140,7 @@ export class MessageService {
       this.getUnreadCount(userId),
     ])
 
+    console.log('TCL: list -> 获取消息列表成功')
     return {
       list: list as MessageListItem[],
       total,
@@ -137,7 +161,9 @@ export class MessageService {
     } catch {
       // fallback DB
     }
-    const count = await this.pgService.message.count({ where: { receiverId: userId, readAt: null } })
+    const count = await this.pgService.message.count({
+      where: { receiverId: userId, readAt: null },
+    })
     await this.setUnread(userId, count)
     return count
   }
@@ -178,7 +204,9 @@ export class MessageService {
       data: { readAt: new Date() },
     })
     if (result.count > 0) {
-      const unread = await this.pgService.message.count({ where: { receiverId: userId, readAt: null } })
+      const unread = await this.pgService.message.count({
+        where: { receiverId: userId, readAt: null },
+      })
       await this.setUnread(userId, unread)
     }
     return { message: '已标记已读', count: result.count, unread: await this.getUnreadCount(userId) }
@@ -198,7 +226,9 @@ export class MessageService {
     const result = await this.pgService.message.deleteMany({
       where: { id: { in: ids }, receiverId: userId },
     })
-    const unread = await this.pgService.message.count({ where: { receiverId: userId, readAt: null } })
+    const unread = await this.pgService.message.count({
+      where: { receiverId: userId, readAt: null },
+    })
     await this.setUnread(userId, unread)
     return { message: '删除成功', count: result.count, unread }
   }
@@ -212,7 +242,11 @@ export class MessageService {
         ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
         ...(q
           ? {
-              OR: [{ username: { contains: q, mode: 'insensitive' } }, { nickname: { contains: q, mode: 'insensitive' } }, { phone: { contains: q } }],
+              OR: [
+                { username: { contains: q, mode: 'insensitive' } },
+                { nickname: { contains: q, mode: 'insensitive' } },
+                { phone: { contains: q } },
+              ],
             }
           : {}),
       },

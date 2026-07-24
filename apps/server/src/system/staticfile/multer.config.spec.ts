@@ -20,9 +20,15 @@ describe('multer upload safety helpers', () => {
   })
 
   it('rejects path traversal and dangerous extensions in filenames', () => {
-    expect(() => sanitizeUploadFilename('../../etc/passwd', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(BadRequestException)
-    expect(() => sanitizeUploadFilename('shell.php', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(BadRequestException)
-    expect(() => sanitizeUploadFilename('photo.exe.jpg', UPLOAD_ALLOWLIST.IMAGE_EXT)).toThrow(BadRequestException)
+    expect(() => sanitizeUploadFilename('../../etc/passwd', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(
+      BadRequestException,
+    )
+    expect(() => sanitizeUploadFilename('shell.php', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(
+      BadRequestException,
+    )
+    expect(() => sanitizeUploadFilename('photo.exe.jpg', UPLOAD_ALLOWLIST.IMAGE_EXT)).toThrow(
+      BadRequestException,
+    )
   })
 
   it('keeps only basename and generates a safe stored name', () => {
@@ -39,7 +45,9 @@ describe('multer upload safety helpers', () => {
 
   it('blocks delete/unlink targets outside the static root', () => {
     const root = resolve(process.cwd(), 'public')
-    expect(() => assertPathInsideRoot(root, resolve(root, '..', 'package.json'))).toThrow(BadRequestException)
+    expect(() => assertPathInsideRoot(root, resolve(root, '..', 'package.json'))).toThrow(
+      BadRequestException,
+    )
     expect(assertPathInsideRoot(root, resolve(root, 'avatar', 'u1', 'a.png'))).toBe(
       resolve(root, 'avatar', 'u1', 'a.png'),
     )
@@ -49,7 +57,9 @@ describe('multer upload safety helpers', () => {
     const root = resolve(process.cwd(), 'public')
     expect(tryResolvePathInsideRoot(root, resolve(root, '..', 'package.json'))).toBeNull()
     expect(tryResolvePathInsideRoot(root, '')).toBeNull()
-    expect(tryResolvePathInsideRoot(root, join('avatar', 'u1', 'a.png'))).toBe(resolve(root, 'avatar', 'u1', 'a.png'))
+    expect(tryResolvePathInsideRoot(root, join('avatar', 'u1', 'a.png'))).toBe(
+      resolve(root, 'avatar', 'u1', 'a.png'),
+    )
     expect(tryResolvePathInsideRoot(root, resolve(root, 'file', 'manage', 'a.png'))).toBe(
       resolve(root, 'file', 'manage', 'a.png'),
     )

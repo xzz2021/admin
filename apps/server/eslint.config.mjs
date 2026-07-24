@@ -29,15 +29,16 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-floating-promises": "warn",
       "@typescript-eslint/no-unsafe-argument": "warn",
-      //   这里设置 长度要和 prettier 保持一致
+      // 这里设置 长度要和 prettier 保持一致；过宽会把函数参数强行压成单行
       "prettier/prettier": [
         "error",
         {
           semi: false,
           endOfLine: "auto",
-          printWidth: 160,
-          arrayElementNewline: "never",
-          insertFinalNewline: true, // 允许文件末尾有多个空白行
+          printWidth: 100,
+          singleQuote: true,
+          trailingComma: "all",
+          arrowParens: "avoid",
         },
       ],
       "@typescript-eslint/no-unsafe-return": "off",

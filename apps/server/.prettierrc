@@ -2,9 +2,7 @@
   "singleQuote": true,
   "semi": false,
   "trailingComma": "all",
-  "printWidth": 120,
+  "printWidth": 100,
   "endOfLine": "auto",
-  "insertFinalNewline": false,
-  "singleAttributePerLine": false,
   "arrowParens": "avoid"
 }

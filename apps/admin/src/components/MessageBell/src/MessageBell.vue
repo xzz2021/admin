@@ -32,8 +32,8 @@ const onCommand = (cmd: string) => {
 </script>
 
 <template>
-  <ElDropdown trigger="click" @command="onCommand">
-    <div class="flex items-center h-full cursor-pointer px-8px">
+  <ElDropdown trigger="click" @command="onCommand" class="custom-hover">
+    <div class="flex items-center h-full cursor-pointer">
       <ElBadge :value="messageStore.unread" :hidden="!messageStore.unread" :max="99">
         <Icon icon="bell" :size="18" color="var(--top-header-text-color)" />
       </ElBadge>

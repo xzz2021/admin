@@ -5,6 +5,7 @@
 1. 复制环境变量：`cp .env.example .env`，按需修改密码与密钥
 2. 创建外部网络（仅首次）：`docker network create shared`
 3. 确保 Nginx Proxy Manager 也加入 `shared` 网络
+4. 提交文件一律为LF `git config core.autocrlf input`
 
 ## 首次构建启动
 

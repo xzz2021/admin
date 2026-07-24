@@ -1,7 +1,19 @@
 import { RequiredPermission } from '@/processor/decorator'
 import { Serialize } from '@/processor/decorator/serialize'
 import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
-import { BadRequestException, Body, Controller, Delete, Get, Header, Post, Req, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Post,
+  Req,
+  StreamableFile,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'

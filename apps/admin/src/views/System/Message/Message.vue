@@ -255,7 +255,10 @@ onMounted(fetchList)
         <BaseButton
           :type="unreadOnly ? 'primary' : 'default'"
           @click="
-            unreadOnly = !unreadOnly
+            ;() => {
+              unreadOnly = !unreadOnly
+              fetchList()
+            }
             fetchList()
           "
         >

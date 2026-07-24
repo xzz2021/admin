@@ -63,7 +63,7 @@ export default defineComponent({
           {locale.value ? (
             <LocaleDropdown class="custom-hover" color="var(--top-header-text-color)"></LocaleDropdown>
           ) : undefined}
-          <MessageBell class="custom-hover"></MessageBell>
+          <MessageBell></MessageBell>
           <UserInfo></UserInfo>
         </div>
       </div>

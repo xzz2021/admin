@@ -32,7 +32,7 @@ const setLang = async (lang: LocaleType) => {
 </script>
 
 <template>
-  <ElDropdown :class="prefixCls" trigger="click" @command="setLang">
+  <ElDropdown :class="prefixCls" trigger="click" @command="setLang" class="custom-hover">
     <Icon :size="18" icon="languages" class="cursor-pointer !p-0" :class="$attrs.class" :color="color" />
     <template #dropdown>
       <ElDropdownMenu>
