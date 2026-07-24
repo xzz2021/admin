@@ -2,6 +2,7 @@
 import { computed, defineComponent, onMounted, onBeforeUnmount, unref, watch } from 'vue'
 import { useAppStore } from '@/store/modules/app'
 import { useOnlinePresenceStore } from '@/store/modules/onlinePresence'
+import { useMessageStore } from '@/store/modules/message'
 import { useUserStore } from '@/store/modules/user'
 import { Backtop } from '@/components/Backtop'
 import { Setting } from '@/components/Setting'
@@ -15,6 +16,7 @@ const prefixCls = getPrefixCls('layout')
 const appStore = useAppStore()
 const userStore = useUserStore()
 const presenceStore = useOnlinePresenceStore()
+const messageStore = useMessageStore()
 
 // 是否是移动端
 const mobile = computed(() => appStore.getMobile)
@@ -52,19 +54,26 @@ export default defineComponent({
     onMounted(() => {
       if (userStore.getToken) {
         presenceStore.start()
+        messageStore.start()
       }
     })
 
     watch(
       () => userStore.getToken,
       (token) => {
-        if (token) presenceStore.start()
-        else presenceStore.stop()
+        if (token) {
+          presenceStore.start()
+          messageStore.start()
+        } else {
+          presenceStore.stop()
+          messageStore.stop()
+        }
       }
     )
 
     onBeforeUnmount(() => {
       presenceStore.stop()
+      messageStore.stop()
     })
 
     return () => (

@@ -1,7 +1,7 @@
-import { RequiredPermission } from '@/processor/decorator';
-import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { MonitorService } from './monitor.service';
+import { RequiredPermission } from '@/processor/decorator'
+import { Controller, Get } from '@nestjs/common'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { MonitorService } from './monitor.service'
 
 @ApiTags('系统监控')
 @Controller('monitor')
@@ -12,6 +12,6 @@ export class MonitorController {
   @RequiredPermission('server:view')
   @ApiOperation({ summary: '获取监控快照（含近 1 小时指标与异常）' })
   getSnapshot() {
-    return this.monitorService.getPayload();
+    return this.monitorService.getPayload()
   }
 }

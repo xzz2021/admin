@@ -1,13 +1,14 @@
 <script lang="tsx">
-import { defineComponent, computed } from 'vue'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { Collapse } from '@/components/Collapse'
 import { LocaleDropdown } from '@/components/LocaleDropdown'
+import { MessageBell } from '@/components/MessageBell'
+import { Screenfull } from '@/components/Screenfull'
 import { SizeDropdown } from '@/components/SizeDropdown'
 import { UserInfo } from '@/components/UserInfo'
-import { Screenfull } from '@/components/Screenfull'
-import { Breadcrumb } from '@/components/Breadcrumb'
-import { useAppStore } from '@/store/modules/app'
 import { useDesign } from '@/hooks/web/useDesign'
+import { useAppStore } from '@/store/modules/app'
+import { computed, defineComponent } from 'vue'
 
 const { getPrefixCls, variables } = useDesign()
 
@@ -62,6 +63,7 @@ export default defineComponent({
           {locale.value ? (
             <LocaleDropdown class="custom-hover" color="var(--top-header-text-color)"></LocaleDropdown>
           ) : undefined}
+          <MessageBell class="custom-hover"></MessageBell>
           <UserInfo></UserInfo>
         </div>
       </div>

@@ -38,10 +38,16 @@ enum PermissionType {
   OTHER
 }
 
+enum MessageType {
+  MAIL
+  SYSTEM
+  ALERT
+}
+
 model User {
   id       String @id @default(cuid())
   /// @z.string().min(2).max(50).meta({ description: '用户名', example: 'admin' })
-  username String 
+  username String
   /// @z.string().min(6).max(128).meta({ description: '密码（存储哈希值）', example: '123456' })
   password String
   /// @z.string().max(50).optional().meta({ description: '昵称', example: 'admin' })
@@ -69,6 +75,8 @@ model User {
   sessions     UserSession[]
   auditLogs    AuditLog[]
   operationLogs UserOperationLog[]
+  sentMessages     Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -291,6 +299,37 @@ model Notice {
   updatedAt DateTime @updatedAt
 
   @@index([published, startsAt, endsAt])
+}
+
+/// 站内消息：站内信 / 系统通知 / 告警（每条对应一个接收人）
+model Message {
+  id    String      @id @default(cuid())
+  /// 派发批次 ID（Bull 任务幂等，防重试重复落库）
+  dispatchId String
+  /// @z.nativeEnum(MessageType).meta({ description: '消息类型', example: 'SYSTEM' })
+  type  MessageType
+  /// @z.string().min(1).max(200).meta({ description: '消息标题', example: '系统通知' })
+  title String      @db.VarChar(200)
+  /// @z.string().min(1).meta({ description: '消息内容', example: '服务已恢复' })
+  content String @db.Text
+  /// @z.nativeEnum(NoticeLevel).optional().meta({ description: '级别', example: 'INFO' })
+  level NoticeLevel @default(INFO)
+  /// @z.string().optional().meta({ description: '发送人 ID，系统/告警可为空', example: 'clxxx' })
+  senderId String?
+  sender   User?   @relation("MessageSender", fields: [senderId], references: [id], onDelete: SetNull)
+  /// @z.string().meta({ description: '接收人 ID', example: 'clxxx' })
+  receiverId String
+  receiver   User   @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  /// @z.coerce.date().optional().meta({ description: '已读时间', example: '2026-01-01T12:00:00.000Z' })
+  readAt DateTime?
+  /// 扩展信息：链接、来源模块等
+  meta Json?
+  createdAt DateTime @default(now())
+
+  @@unique([dispatchId, receiverId])
+  @@index([receiverId, createdAt(sort: Desc)])
+  @@index([receiverId, readAt])
+  @@index([type, createdAt])
 }
 
 model UserSession {

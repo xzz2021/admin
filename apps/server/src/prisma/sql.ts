@@ -15,7 +15,7 @@ const _role = [
     code: 'user',
     description: '用户',
   },
-];
+]
 const _menu = [
   {
     name: 'Dashboard',
@@ -348,6 +348,25 @@ const _menu = [
         noTagsView: false,
       },
       {
+        name: 'Message',
+        path: 'message',
+        redirect: null,
+        type: 1,
+        component: 'views/System/Message/Message',
+        sort: 0,
+        enabled: true,
+        title: 'router.message',
+        icon: 'bell',
+        hidden: false,
+        affix: false,
+        activeMenu: null,
+        alwaysShow: false,
+        breadcrumb: true,
+        canTo: false,
+        noCache: false,
+        noTagsView: false,
+      },
+      {
         name: 'UserLog',
         path: 'userLog',
         redirect: null,
@@ -368,7 +387,7 @@ const _menu = [
       },
     ],
   },
-];
+]
 
 const _permission = [
   {
@@ -593,6 +612,18 @@ const _permission = [
     resource: 'onlineUser',
     type: 'button',
   },
-];
+  {
+    name: '查看',
+    code: 'view',
+    resource: 'message',
+    type: 'button',
+  },
+  {
+    name: '发送',
+    code: 'send',
+    resource: 'message',
+    type: 'button',
+  },
+]
 
-export { _menu, _permission, _role };
+export { _menu, _permission, _role }

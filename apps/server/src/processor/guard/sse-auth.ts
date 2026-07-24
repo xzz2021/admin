@@ -1,15 +1,15 @@
-import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 
 @Injectable()
 export class SseAuthGuard extends AuthGuard('sse') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const ok = (await super.canActivate(context)) as boolean;
+    const ok = (await super.canActivate(context)) as boolean
     // console.log('-=---------------------', ok);
     // 2) 现在再读 user 才有值
     // const request = context.switchToHttp().getRequest();
 
-    return ok;
+    return ok
   }
 
   /**
@@ -22,9 +22,9 @@ export class SseAuthGuard extends AuthGuard('sse') {
 
     // console.log('[sse guard] handleRequest err=', err, 'info=', info, 'user=', user);
     if (err || !user) {
-      throw err || new UnauthorizedException('Token 无效或未提供');
+      throw err || new UnauthorizedException('Token 无效或未提供')
     }
 
-    return user;
+    return user
   }
 }
