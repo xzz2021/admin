@@ -4,6 +4,7 @@ import type { PersonalUserDetail } from '@/api/user/types'
 import defaultAvatar from '@/assets/imgs/avatar.jpg'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Dialog } from '@/components/Dialog'
+import { useI18n } from '@/hooks/web/useI18n'
 import { useUserStore } from '@/store/modules/user'
 import { resolveAvatarUrl } from '@/utils/file'
 import { ElButton, ElDivider, ElImage, ElMessage, ElTabPane, ElTabs, ElTag } from 'element-plus'
@@ -12,6 +13,7 @@ import EditInfo from './components/EditInfo.vue'
 import EditPassword from './components/EditPassword.vue'
 import UploadAvatar from './components/UploadAvatar.vue'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 
 const userInfo = ref<PersonalUserDetail>()
@@ -59,7 +61,7 @@ const saveAvatar = async () => {
     avatarLoading.value = true
     const file = await unref(uploadAvatarRef)?.getCroppedFile()
     if (!file) {
-      ElMessage.warning('请先选择并裁剪头像')
+      ElMessage.warning(t('personal.selectAvatarFirst'))
       return
     }
 
@@ -75,7 +77,7 @@ const saveAvatar = async () => {
     userStore.bumpAvatarVersion()
 
     await fetchDetailUserApi()
-    ElMessage.success('头像修改成功')
+    ElMessage.success(t('personal.avatarUpdateSuccess'))
     dialogVisible.value = false
   } catch (error) {
     console.error(error)
@@ -87,7 +89,7 @@ const saveAvatar = async () => {
 
 <template>
   <div v-loading="pageLoading" class="flex w-100% h-100%">
-    <ContentWrap title="个人信息" class="w-400px">
+    <ContentWrap :title="t('personal.personalInfo')" class="w-400px">
       <div class="flex justify-center items-center">
         <div class="avatar w-[150px] h-[150px] relative cursor-pointer" @click="dialogVisible = true">
           <ElImage class="w-[150px] h-[150px] rounded-full" :src="avatarSrc" fit="cover" />
@@ -95,22 +97,22 @@ const saveAvatar = async () => {
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>用户名：</div>
+        <div>{{ t('personal.username') }}：</div>
         <div>{{ userInfo?.username ?? '-' }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>手机号：</div>
+        <div>{{ t('personal.phone') }}：</div>
         <div>{{ userInfo?.phone ?? '-' }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>所属部门：</div>
+        <div>{{ t('personal.department') }}：</div>
         <div>{{ userInfo?.department?.name ?? '-' }}</div>
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>所属角色：</div>
+        <div>{{ t('personal.role') }}：</div>
         <div>
           <template v-if="roleNames.length">
             <ElTag v-for="item in roleNames" :key="item" class="ml-2 mb-2">{{ item }}</ElTag>
@@ -120,29 +122,29 @@ const saveAvatar = async () => {
       </div>
       <ElDivider />
       <div class="flex justify-between items-center">
-        <div>创建时间：</div>
+        <div>{{ t('personal.createTime') }}：</div>
         <div>{{ userInfo?.createdAt ?? '-' }}</div>
       </div>
       <ElDivider />
     </ContentWrap>
-    <ContentWrap title="基本资料" class="flex-[3] ml-20px">
+    <ContentWrap :title="t('personal.basicInfo')" class="flex-[3] ml-20px">
       <ElTabs v-model="activeName">
-        <ElTabPane label="基本信息" name="first">
+        <ElTabPane :label="t('personal.basicProfile')" name="first">
           <EditInfo :user-info="userInfo" @success="fetchDetailUserApi" />
         </ElTabPane>
-        <ElTabPane label="修改密码" name="second" lazy>
+        <ElTabPane :label="t('personal.changePassword')" name="second" lazy>
           <EditPassword />
         </ElTabPane>
       </ElTabs>
     </ContentWrap>
   </div>
 
-  <Dialog v-model="dialogVisible" title="修改头像" width="800px">
+  <Dialog v-model="dialogVisible" :title="t('personal.changeAvatar')" width="800px">
     <UploadAvatar ref="uploadAvatarRef" :url="avatarSrc" />
 
     <template #footer>
-      <ElButton type="primary" :loading="avatarLoading" @click="saveAvatar">保存</ElButton>
-      <ElButton @click="dialogVisible = false">关闭</ElButton>
+      <ElButton type="primary" :loading="avatarLoading" @click="saveAvatar">{{ t('exampleDemo.save') }}</ElButton>
+      <ElButton @click="dialogVisible = false">{{ t('common.close') }}</ElButton>
     </template>
   </Dialog>
 </template>

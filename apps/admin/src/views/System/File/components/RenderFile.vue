@@ -10,6 +10,7 @@ import { createVideoViewer } from '@/components/VideoPlayer'
 import { getFileType, probeFileAccessible } from '@/utils/file'
 import { ElImage, ElMessage } from 'element-plus'
 import { defineComponent, ref } from 'vue'
+import { useI18n } from '@/hooks/web/useI18n'
 
 interface PropsItem {
   extension: string
@@ -22,6 +23,7 @@ const emit = defineEmits<{
   unavailable: []
 }>()
 
+const { t } = useI18n()
 const imageFailed = ref(false)
 const probing = ref(false)
 
@@ -35,7 +37,7 @@ const openMedia = async (kind: 'audio' | 'video') => {
   try {
     const ok = await probeFileAccessible(props.url)
     if (!ok) {
-      ElMessage.error(kind === 'audio' ? '音频文件已失效' : '视频文件已失效')
+      ElMessage.error(kind === 'audio' ? t('file.audioUnavailable') : t('file.videoUnavailable'))
       notifyUnavailable()
       return
     }
@@ -71,7 +73,7 @@ const RenderPreview = defineComponent({
                 class="w-full flex items-center justify-center text-12px color-[var(--el-color-danger)]"
                 onClick={notifyUnavailable}
               >
-                图片已失效
+                {t('file.imageUnavailable')}
               </div>
             )
           }
@@ -87,7 +89,7 @@ const RenderPreview = defineComponent({
                 imageFailed.value = true
               }}
               v-slots={{
-                error: () => <div class="text-12px color-[var(--el-color-danger)]">图片已失效</div>
+                error: () => <div class="text-12px color-[var(--el-color-danger)]">{t('file.imageUnavailable')}</div>
               }}
             />
           )
@@ -96,7 +98,7 @@ const RenderPreview = defineComponent({
             <div
               onClick={() => openMedia('audio')}
               class="w-full flex items-center"
-              title={probing.value ? '检测中...' : filename}
+              title={probing.value ? t('file.probing') : filename}
             >
               <Icon icon="headphones" style={{ color: '#0dc70b' }} />
               <div class="ml-2 w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
@@ -107,7 +109,7 @@ const RenderPreview = defineComponent({
             <div
               onClick={() => openMedia('video')}
               class="w-full flex items-center"
-              title={probing.value ? '检测中...' : filename}
+              title={probing.value ? t('file.probing') : filename}
             >
               <Icon icon="film" style={{ color: '#ff6b12' }} />
               <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>

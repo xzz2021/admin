@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { addRoleApi, editRoleApi, getRoleListApi, getRoleMenuAndPermissionApi } from '@/api/role'
 import { ContentWrap } from '@/components/ContentWrap'
+import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AssignMenuPermissionPanel, { type RoleFormModel } from './components/AssignMenuPermissionPanel.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -73,11 +75,11 @@ const handleCancel = () => {
 
 const handleSave = async () => {
   if (!roleForm.name?.trim()) {
-    ElMessage.warning('请输入角色名称')
+    ElMessage.warning(t('role.nameRequired'))
     return
   }
   if (!roleForm.code?.trim()) {
-    ElMessage.warning('请输入角色编码')
+    ElMessage.warning(t('role.codeRequired'))
     return
   }
 
@@ -85,7 +87,7 @@ const handleSave = async () => {
   if (!submitData) return
 
   if (!submitData.menus.length) {
-    ElMessage.warning('请至少选择一个菜单')
+    ElMessage.warning(t('role.menuRequired'))
     return
   }
 
@@ -93,15 +95,15 @@ const handleSave = async () => {
   try {
     if (roleId.value) {
       await editRoleApi({ ...submitData, id: roleId.value })
-      ElMessage.success('保存成功')
+      ElMessage.success(t('common.saveSuccess'))
     } else {
       await addRoleApi(submitData)
-      ElMessage.success('新增成功')
+      ElMessage.success(t('common.createSuccess'))
     }
     router.push({ name: 'Role', state: { refresh: true } })
   } catch (error) {
     console.error(error)
-    ElMessage.error('保存失败')
+    ElMessage.error(t('common.saveFailed'))
   } finally {
     saveLoading.value = false
   }

@@ -58,11 +58,14 @@ interface MenuTreeNode {
   children?: MenuTreeNode[]
 }
 
-const PERMISSION_TYPE_LABELS: Record<string, string> = {
-  BUTTON: '页面操作',
-  DATA: '数据操作',
-  API: '状态操作',
-  OTHER: '其他权限'
+const getPermissionTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    BUTTON: t('role.permissionTypeButton'),
+    DATA: t('role.permissionTypeData'),
+    API: t('role.permissionTypeApi'),
+    OTHER: t('role.permissionTypeOther')
+  }
+  return map[type] || t('role.permissionTypeOther')
 }
 
 const props = defineProps({
@@ -210,7 +213,7 @@ const permissionGroups = computed(() => {
   })
   return Array.from(groups.entries()).map(([type, permissions]) => ({
     type,
-    label: PERMISSION_TYPE_LABELS[type] || '其他权限',
+    label: getPermissionTypeLabel(type),
     permissions
   }))
 })

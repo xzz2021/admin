@@ -82,7 +82,9 @@ const tableColumns = reactive<TableColumn[]>([
     slots: {
       default: (data: any) => {
         const component = data.row.component
-        return <>{component === '#' ? '顶级目录' : component === '##' ? '子目录' : component}</>
+        return (
+          <>{component === '#' ? t('menu.topDirectory') : component === '##' ? t('menu.subDirectory') : component}</>
+        )
       }
     }
   },
@@ -168,13 +170,13 @@ const AddAction = () => {
 const handleDelete = async (row: MenuItem) => {
   if (!row.id) return
   if (row.children?.length) {
-    ElMessage.warning('该菜单存在子菜单，请先删除子菜单')
+    ElMessage.warning(t('menu.deleteHasChildren'))
     return
   }
   try {
-    await ElMessageBox.confirm('确认删除该菜单？', '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('menu.confirmDelete'), t('common.tip'), { type: 'warning' })
     await delMenuApi(row.id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.delSuccess'))
     getList()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
@@ -187,7 +189,7 @@ const sortMenuRef = ref<InstanceType<typeof SortMenu>>()
 
 const openSortDialog = () => {
   if (!sourceList.value.length) {
-    ElMessage.warning('暂无菜单可排序')
+    ElMessage.warning(t('menu.noMenuToSort'))
     return
   }
   sortDialogVisible.value = true
@@ -196,7 +198,7 @@ const openSortDialog = () => {
 const handleSortSave = async () => {
   const payload = sortMenuRef.value?.getSortData() ?? []
   if (!payload.length) {
-    ElMessage.warning('暂无菜单可排序')
+    ElMessage.warning(t('menu.noMenuToSort'))
     return
   }
   sortLoading.value = true

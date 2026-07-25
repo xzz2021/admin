@@ -32,11 +32,14 @@ const { t } = useI18n()
 const { required } = useValidator()
 const { copy, getText } = useClipboard()
 
-const PERMISSION_TYPE_LABELS: Record<PermissionType, string> = {
-  BUTTON: '按钮权限',
-  DATA: '数据权限',
-  API: '接口权限',
-  OTHER: '其他'
+const getPermissionTypeLabel = (type: PermissionType) => {
+  const map: Record<PermissionType, string> = {
+    BUTTON: t('menu.permissionTypeButton'),
+    DATA: t('menu.permissionTypeData'),
+    API: t('menu.permissionTypeApi'),
+    OTHER: t('menu.permissionTypeOther')
+  }
+  return map[type] ?? type
 }
 
 const MENU_FIELDS = [
@@ -294,7 +297,7 @@ const handleClose = async (row: MenuPermission) => {
     if (menuId && row.id && !isTempPermissionId(row.id)) {
       await delPermissionApi(row.id)
       await reloadPermissionsFromApi()
-      ElMessage.success('删除权限成功')
+      ElMessage.success(t('menu.deletePermissionSuccess'))
       return
     }
 
@@ -303,7 +306,7 @@ const handleClose = async (row: MenuPermission) => {
     emit('permissions-change', permissions)
   } catch (error) {
     console.error(error)
-    ElMessage.error('删除权限失败')
+    ElMessage.error(t('menu.deletePermissionFailed'))
   }
 }
 
@@ -314,7 +317,7 @@ const drawerMenuPath = ref('')
 const openPermissionDrawer = async (row?: MenuPermission) => {
   const formData = await getFormData()
   if (!formData.path?.trim()) {
-    ElMessage.warning('请先填写菜单路径，再配置权限')
+    ElMessage.warning(t('menu.pathRequiredForPermission'))
     return
   }
   drawerMenuPath.value = formData.path.trim()
@@ -329,14 +332,14 @@ const COL_TWO_THIRDS = { span: 16 }
 const formSchema = reactive<FormSchema[]>([
   {
     field: 'type',
-    label: '菜单类型',
+    label: t('menu.menuType'),
     component: 'RadioButton',
     value: 0,
     colProps: COL_FULL,
     componentProps: {
       options: [
-        { label: '目录', value: 0 },
-        { label: '菜单', value: 1 }
+        { label: t('menu.directoryType'), value: 0 },
+        { label: t('menu.menuItemType'), value: 1 }
       ],
       on: {
         change: async (val: number) => {
@@ -356,13 +359,13 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'divider-basic',
-    label: '基础信息',
+    label: t('menu.basicInfo'),
     component: 'Divider',
     colProps: COL_FULL
   },
   {
     field: 'parentId',
-    label: '父级菜单',
+    label: t('userDemo.superior'),
     component: 'TreeSelect',
     colProps: COL_THIRD,
     componentProps: {
@@ -378,7 +381,7 @@ const formSchema = reactive<FormSchema[]>([
       checkOnClickNode: true,
       clearable: true,
       defaultExpandAll: true,
-      placeholder: '不选则为顶级菜单',
+      placeholder: t('menu.parentMenuPlaceholder'),
       on: {
         change: async (val: string | null) => {
           const formData = await getFormData()
@@ -397,7 +400,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'title',
-    label: t('menu.name'),
+    label: t('menu.title'),
     component: 'Input',
     colProps: COL_THIRD
   },
@@ -415,13 +418,13 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'redirect',
-    label: '重定向',
+    label: t('menu.redirect'),
     component: 'Input',
     colProps: COL_THIRD
   },
   {
     field: 'sort',
-    label: '排序',
+    label: t('menu.sortOrder'),
     component: 'InputNumber',
     value: 0,
     colProps: COL_THIRD,
@@ -429,13 +432,13 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'component',
-    label: '组件',
+    label: t('menu.component'),
     component: 'Input',
     value: '#',
     colProps: COL_TWO_THIRDS,
     componentProps: {
       disabled: true,
-      placeholder: '#为顶级目录，##为子目录',
+      placeholder: t('menu.componentPlaceholder'),
       on: {
         change: (val: string) => {
           cacheComponent.value = val
@@ -469,19 +472,19 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'divider-display',
-    label: '显示设置',
+    label: t('menu.displaySettings'),
     component: 'Divider',
     colProps: COL_FULL
   },
   {
     field: 'external',
-    label: '外部链接',
+    label: t('menu.externalLink'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'link',
-    label: '链接地址',
+    label: t('menu.linkUrl'),
     component: 'Input',
     colProps: COL_TWO_THIRDS,
     componentProps: {
@@ -490,50 +493,50 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'hidden',
-    label: '隐藏',
+    label: t('menu.hidden'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'alwaysShow',
-    label: '一直显示',
+    label: t('menu.alwaysShow'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'noCache',
-    label: '清除缓存',
+    label: t('menu.noCache'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'keepAlive',
-    label: '页面缓存',
+    label: t('menu.keepAlive'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'breadcrumb',
-    label: '显示面包屑',
+    label: t('menu.breadcrumb'),
     component: 'Switch',
     value: true,
     colProps: COL_THIRD
   },
   {
     field: 'affix',
-    label: '固定标签页',
+    label: t('menu.affix'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'noTagsView',
-    label: '隐藏标签页',
+    label: t('menu.noTagsView'),
     component: 'Switch',
     colProps: COL_THIRD
   },
   {
     field: 'canTo',
-    label: '可跳转',
+    label: t('menu.canTo'),
     component: 'Switch',
     colProps: COL_THIRD
   },
@@ -555,7 +558,7 @@ const formSchema = reactive<FormSchema[]>([
           <>
             <div class="flex flex-wrap gap-8px items-center mt-5px">
               <BaseButton type="primary" size="small" onClick={() => openPermissionDrawer()}>
-                添加权限
+                {t('menu.addPermission')}
               </BaseButton>
               <BaseButton size="small" onClick={() => handleCopyPermissions()}>
                 <Icon icon="copy" class="mr-4px" />
@@ -577,10 +580,10 @@ const formSchema = reactive<FormSchema[]>([
               class="mt-10px"
             >
               <ElTableColumn type="index" width="50" />
-              <ElTableColumn prop="name" label="名称" />
+              <ElTableColumn prop="name" label={t('common.name')} />
               <ElTableColumn
                 prop="code"
-                label="编码"
+                label={t('common.code')}
                 v-slots={{
                   default: ({ row }: { row: MenuPermission }) => (
                     <span title={row.code}>{getPermissionCodeSuffix(row.code, data?.path)}</span>
@@ -589,40 +592,40 @@ const formSchema = reactive<FormSchema[]>([
               />
               <ElTableColumn
                 prop="type"
-                label="类型"
+                label={t('common.type')}
                 width="100"
                 v-slots={{
                   default: ({ row }: { row: MenuPermission }) => (
-                    <ElTag size="small">{PERMISSION_TYPE_LABELS[row.type] ?? row.type}</ElTag>
+                    <ElTag size="small">{getPermissionTypeLabel(row.type)}</ElTag>
                   )
                 }}
               />
               <ElTableColumn
                 prop="enabled"
-                label="状态"
+                label={t('menu.status')}
                 width="80"
                 v-slots={{
                   default: ({ row }: { row: MenuPermission }) => (
                     <ElTag type={row.enabled ? 'success' : 'danger'} size="small">
-                      {row.enabled ? '启用' : '禁用'}
+                      {row.enabled ? t('userDemo.enable') : t('userDemo.disable')}
                     </ElTag>
                   )
                 }}
               />
               <ElTableColumn
-                label="操作"
+                label={t('userDemo.action')}
                 width="140"
                 v-slots={{
                   default: ({ row }: { row: MenuPermission }) => (
                     <>
                       <ElButton size="small" type="primary" onClick={() => openPermissionDrawer(row)}>
-                        编辑
+                        {t('common.edit')}
                       </ElButton>
-                      <ElPopconfirm title="确认删除该权限？" onConfirm={() => handleClose(row)}>
+                      <ElPopconfirm title={t('menu.confirmDeletePermission')} onConfirm={() => handleClose(row)}>
                         {{
                           reference: () => (
                             <ElButton size="small" type="danger">
-                              删除
+                              {t('exampleDemo.del')}
                             </ElButton>
                           )
                         }}
@@ -721,7 +724,7 @@ const confirmPermission = async (data: MenuPermission) => {
   const permissions = [...(formData?.permissions || [])]
   const duplicate = permissions.some((item) => item.code === data.code && item.id !== data.id)
   if (duplicate) {
-    ElMessage.warning('权限编码已存在')
+    ElMessage.warning(t('menu.permissionCodeExists'))
     return
   }
 
@@ -744,7 +747,7 @@ const confirmPermission = async (data: MenuPermission) => {
         await addPermissionApi({ ...payload, menuId })
       }
       await reloadPermissionsFromApi()
-      ElMessage.success('保存权限成功')
+      ElMessage.success(t('menu.savePermissionSuccess'))
     } else {
       const savedPermission: MenuPermission = {
         ...payload,
@@ -769,7 +772,7 @@ const confirmPermission = async (data: MenuPermission) => {
     showDrawer.value = false
   } catch (error) {
     console.error(error)
-    ElMessage.error('保存权限失败')
+    ElMessage.error(t('menu.savePermissionFailed'))
   } finally {
     permissionSaving.value = false
   }

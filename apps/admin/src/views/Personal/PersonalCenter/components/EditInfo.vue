@@ -3,6 +3,7 @@ import { updatePersonApi } from '@/api/user'
 import type { PersonalUserDetail } from '@/api/user/types'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
+import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
 import { ElDivider, ElMessage, ElMessageBox } from 'element-plus'
 import { PropType, reactive, ref, watch } from 'vue'
@@ -18,12 +19,13 @@ const emit = defineEmits<{
   success: []
 }>()
 
+const { t } = useI18n()
 const { required, phone, maxlength, email } = useValidator()
 
 const formSchema = reactive<FormSchema[]>([
   {
     field: 'username',
-    label: '用户名',
+    label: t('personal.username'),
     component: 'Input',
     colProps: {
       span: 24
@@ -31,7 +33,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'phone',
-    label: '手机号码',
+    label: t('personal.phoneNumber'),
     component: 'Input',
     colProps: {
       span: 24
@@ -39,7 +41,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'email',
-    label: '邮箱',
+    label: t('personal.email'),
     component: 'Input',
     colProps: {
       span: 24
@@ -80,9 +82,9 @@ const save = async () => {
   })
   if (!valid || !props.userInfo?.id) return
 
-  ElMessageBox.confirm('是否确认修改?', '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('personal.confirmModify'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   })
     .then(async () => {
@@ -95,7 +97,7 @@ const save = async () => {
           phone: formData.phone,
           email: formData.email || undefined
         })
-        ElMessage.success('修改成功')
+        ElMessage.success(t('personal.modifySuccess'))
         emit('success')
       } catch (error) {
         console.error(error)
@@ -110,5 +112,5 @@ const save = async () => {
 <template>
   <Form :rules="rules" @register="formRegister" :schema="formSchema" />
   <ElDivider />
-  <BaseButton type="primary" :loading="saveLoading" @click="save">保存</BaseButton>
+  <BaseButton type="primary" :loading="saveLoading" @click="save">{{ t('exampleDemo.save') }}</BaseButton>
 </template>

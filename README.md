@@ -53,3 +53,14 @@ docker compose run --rm migrate
 - `migrate` 使用 Dockerfile 的 `migrator` 阶段；`server` 使用 `runner` 阶段
 - prisma7不兼容node26,故使用node24
 - 清理docker残留: `docker system prune -a --volumes -f`
+
+## 部署
+
+如果只更新admin的nginx.conf
+
+1.  拷进正在跑的 admin 容器
+    docker cp apps/admin/nginx.conf app-admin:/etc/nginx/conf.d/default.conf
+2.  检查配置
+    docker exec app-admin nginx -t
+3.  平滑重载（不断服务）
+    docker exec app-admin nginx -s reload

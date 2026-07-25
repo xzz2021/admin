@@ -69,7 +69,7 @@ const handleDownload = async (row: FileItem) => {
       ElMessage.error(error.message)
       return
     }
-    ElMessage.error('文件下载失败')
+    ElMessage.error(t('file.downloadFailed'))
   }
 }
 
@@ -82,7 +82,7 @@ const tableColumns = reactive<TableColumn[]>([
   },
   {
     field: 'preview',
-    label: '文件预览',
+    label: t('file.preview'),
     width: 170,
     slots: {
       default: (data: any) => {
@@ -94,23 +94,23 @@ const tableColumns = reactive<TableColumn[]>([
   },
   {
     field: 'name',
-    label: '名称',
+    label: t('file.name'),
     minWidth: 140
   },
   {
     field: 'size',
-    label: '文件大小',
+    label: t('file.size'),
     width: 110,
     formatter: (row: FileItem) => formatFileSize(row.size)
   },
   {
     field: 'mimeType',
-    label: '文件类型',
+    label: t('file.mimeType'),
     minWidth: 140
   },
   {
     field: 'createdAt',
-    label: '上传时间',
+    label: t('file.uploadTime'),
     minWidth: 170
   },
   {
@@ -146,7 +146,7 @@ const delData = async (id?: number) => {
     ids.value = elTableExpose?.getSelectionRows().map((v: FileItem) => v.id) || []
   }
   if (ids.value.length === 0) {
-    ElMessage.warning('请选择要删除的文件')
+    ElMessage.warning(t('file.selectToDelete'))
     return
   }
   delLoading.value = true
@@ -158,12 +158,12 @@ const delData = async (id?: number) => {
 const searchSchema = reactive<FormSchema[]>([
   {
     field: 'name',
-    label: '名称',
+    label: t('file.name'),
     component: 'Input'
   },
   {
     field: 'extension',
-    label: '扩展名',
+    label: t('file.extension'),
     component: 'Input'
   }
 ])
@@ -171,7 +171,7 @@ const searchSchema = reactive<FormSchema[]>([
 const startUpload = async (file: File) => {
   await uploadFileApi(file)
   await getList()
-  ElMessage.success('上传成功')
+  ElMessage.success(t('file.uploadSuccess'))
 }
 </script>
 

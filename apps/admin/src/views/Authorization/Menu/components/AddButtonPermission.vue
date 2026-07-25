@@ -3,10 +3,10 @@ import type { MenuPermission, PermissionType } from '@/api/menu/types'
 import { BaseButton } from '@/components/Button'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
+import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
 import { ElDrawer, ElInput, ElMessage } from 'element-plus'
 import { computed, reactive, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import {
   buildPermissionCode,
   getPermissionCodePrefix,
@@ -23,31 +23,30 @@ const props = defineProps<{
 }>()
 
 const { required } = useValidator()
+const { t } = useI18n()
 
 const PERMISSION_TYPE_OPTIONS = [
-  { label: '按钮权限', value: 'BUTTON' },
-  { label: '数据权限', value: 'DATA' },
-  { label: '接口权限', value: 'API' },
-  { label: '其他', value: 'OTHER' }
+  { label: t('menu.permissionTypeButton'), value: 'BUTTON' },
+  { label: t('menu.permissionTypeData'), value: 'DATA' },
+  { label: t('menu.permissionTypeApi'), value: 'API' },
+  { label: t('menu.permissionTypeOther'), value: 'OTHER' }
 ]
 
 const codeSuffix = ref('')
 const codePrefix = computed(() => getPermissionCodePrefix(props.menuPath))
 const isEdit = computed(() => !!props.editData?.id)
-const drawerTitle = computed(() => (isEdit.value ? '编辑权限' : '新增权限'))
-
-const { t } = useI18n()
+const drawerTitle = computed(() => (isEdit.value ? t('menu.editPermissionTitle') : t('menu.addPermissionTitle')))
 
 const formSchema = reactive<FormSchema[]>([
   {
     field: 'name',
-    label: '权限名称',
+    label: t('menu.permissionName'),
     component: 'Input',
     colProps: { span: 24 }
   },
   {
     field: 'type',
-    label: '权限类型',
+    label: t('menu.permissionType'),
     component: 'Select',
     value: 'BUTTON',
     colProps: { span: 24 },
@@ -57,7 +56,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'sort',
-    label: '排序',
+    label: t('menu.sortOrder'),
     component: 'InputNumber',
     value: 0,
     colProps: { span: 24 },
@@ -123,15 +122,15 @@ watch(
 
 const confirm = async () => {
   if (!props.menuPath?.trim()) {
-    ElMessage.warning('请先填写菜单路径')
+    ElMessage.warning(t('menu.pathRequired'))
     return
   }
   if (!codeSuffix.value.trim()) {
-    ElMessage.warning('请填写权限编码后缀')
+    ElMessage.warning(t('menu.permissionCodeSuffixRequired'))
     return
   }
   if (!PERMISSION_CODE_SUFFIX_PATTERN.test(codeSuffix.value.trim())) {
-    ElMessage.warning('编码后缀只能包含字母、数字、下划线，且必须以字母开头')
+    ElMessage.warning(t('menu.permissionCodeSuffixInvalid'))
     return
   }
 
@@ -154,7 +153,7 @@ const confirm = async () => {
       enabled: formData.enabled ?? true
     })
   } catch (error) {
-    ElMessage.warning(error instanceof Error ? error.message : '编码格式不正确')
+    ElMessage.warning(error instanceof Error ? error.message : t('menu.permissionCodeInvalid'))
   }
 }
 </script>
@@ -164,16 +163,16 @@ const confirm = async () => {
     <template #default>
       <Form :rules="rules" @register="formRegister" :schema="formSchema" />
       <div class="permission-code-field">
-        <div class="permission-code-field__label">权限编码</div>
-        <ElInput v-model="codeSuffix" placeholder="如 update、delete、view">
+        <div class="permission-code-field__label">{{ t('menu.permissionCode') }}</div>
+        <ElInput v-model="codeSuffix" :placeholder="t('menu.permissionCodePlaceholder')">
           <template v-if="codePrefix" #prepend>{{ codePrefix }}:</template>
         </ElInput>
-        <div class="permission-code-field__tip">只需输入动作后缀，提交时自动拼接菜单 path</div>
+        <div class="permission-code-field__tip">{{ t('menu.permissionCodeTip') }}</div>
       </div>
     </template>
     <template #footer>
-      <BaseButton @click="modelValue = false">取消</BaseButton>
-      <BaseButton type="primary" :loading="confirmLoading" @click="confirm">确认</BaseButton>
+      <BaseButton @click="modelValue = false">{{ t('common.cancel') }}</BaseButton>
+      <BaseButton type="primary" :loading="confirmLoading" @click="confirm">{{ t('common.confirm') }}</BaseButton>
     </template>
   </ElDrawer>
 </template>

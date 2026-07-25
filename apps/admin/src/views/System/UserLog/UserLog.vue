@@ -64,7 +64,7 @@ const tableColumns = reactive<TableColumn[]>([
   },
   {
     field: 'user.username',
-    label: '操作人',
+    label: t('userLog.operator'),
     width: '100px',
     align: 'center',
     formatter: (row: LogItem) => row.user?.username || '-'
@@ -72,48 +72,50 @@ const tableColumns = reactive<TableColumn[]>([
 
   {
     field: 'isSuccess',
-    label: '结果',
+    label: t('userLog.result'),
     width: '90px',
     align: 'center',
     slots: {
       default: (data: any) => {
         const isSuccess = data.row.isSuccess
-        return <ElTag type={isSuccess ? 'success' : 'danger'}>{isSuccess ? '成功' : '失败'}</ElTag>
+        return (
+          <ElTag type={isSuccess ? 'success' : 'danger'}>{isSuccess ? t('common.success') : t('common.failed')}</ElTag>
+        )
       }
     }
   },
   {
     field: 'responseMsg',
-    label: '响应信息',
+    label: t('userLog.responseMsg'),
     minWidth: 140,
     formatter: (row: LogItem) => row.responseMsg || '-'
   },
   {
     field: 'duration',
-    label: '响应时长',
+    label: t('userLog.duration'),
     width: '100px',
     align: 'center',
     formatter: (row: LogItem) => formatDuration(row.duration)
   },
   {
     field: 'method',
-    label: '方法',
+    label: t('userLog.method'),
     width: '100px',
     align: 'center'
   },
   {
     field: 'requestUrl',
-    label: '路径',
+    label: t('userLog.path'),
     minWidth: 180
   },
   {
     field: 'ip',
-    label: 'IP地址',
+    label: t('userLog.ip'),
     width: '130px'
   },
   {
     field: 'createdAt',
-    label: '操作时间',
+    label: t('userLog.operateTime'),
     minWidth: 170
   },
   {
@@ -154,7 +156,7 @@ const delData = async (row?: LogItem | null) => {
     ids.value = elTableExpose?.getSelectionRows().map((v: LogItem) => v.id) || []
   }
   if (ids.value.length === 0) {
-    ElMessage.warning('请选择要删除的日志')
+    ElMessage.warning(t('userLog.selectToDelete'))
     return
   }
   delLoading.value = true
@@ -173,12 +175,12 @@ const action = (row: LogItem, type: string) => {
 const searchSchema = reactive<FormSchema[]>([
   {
     field: 'requestUrl',
-    label: '路径',
+    label: t('userLog.path'),
     component: 'Input'
   },
   {
     field: 'method',
-    label: '方法',
+    label: t('userLog.method'),
     component: 'Select',
     componentProps: {
       options: [
@@ -192,16 +194,16 @@ const searchSchema = reactive<FormSchema[]>([
   },
   {
     field: 'isSuccess',
-    label: '结果',
+    label: t('userLog.result'),
     component: 'Select',
     componentProps: {
       options: [
         {
-          label: '成功',
+          label: t('common.success'),
           value: true
         },
         {
-          label: '失败',
+          label: t('common.failed'),
           value: false
         }
       ]
@@ -209,7 +211,7 @@ const searchSchema = reactive<FormSchema[]>([
   },
   {
     field: 'dateRange',
-    label: '操作时间',
+    label: t('userLog.operateTime'),
     component: 'DatePicker',
     componentProps: {
       type: 'datetimerange',

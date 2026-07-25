@@ -29,7 +29,7 @@ const loadMenuFromApi = async (id: string) => {
   const res = await getMenuListApi()
   const menu = findMenuById(res.data.list || [], id)
   if (!menu) {
-    ElMessage.warning('未找到该菜单')
+    ElMessage.warning(t('menu.menuNotFound'))
     return null
   }
   return menu
@@ -77,20 +77,20 @@ const handleSave = async () => {
     if (menu.id) {
       await editMenuApi(menu as any)
       await syncPermissions(menu.id, permissions, oldPermissions)
-      ElMessage.success('更新成功')
+      ElMessage.success(t('common.updateSuccess'))
     } else {
       const res = await addMenuApi(menu as any)
       const newMenuId = res.data.id
       if (permissions.length) {
         await syncPermissions(newMenuId, permissions)
       }
-      ElMessage.success('新增成功')
+      ElMessage.success(t('common.createSuccess'))
     }
 
     router.push({ name: 'Menu', state: { refresh: true } })
   } catch (error) {
     console.error(error)
-    ElMessage.error('保存失败')
+    ElMessage.error(t('common.saveFailed'))
   } finally {
     saveLoading.value = false
   }

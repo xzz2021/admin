@@ -2,6 +2,7 @@
 import type { LogItem } from '@/api/log/type'
 import { Descriptions, DescriptionsSchema } from '@/components/Descriptions'
 import { JsonEditor } from '@/components/JsonEditor'
+import { useI18n } from '@/hooks/web/useI18n'
 import { ElTag } from 'element-plus'
 import { computed, PropType, reactive } from 'vue'
 
@@ -12,43 +13,47 @@ const props = defineProps({
   }
 })
 
+const { t } = useI18n()
+
 const detailInfo = computed(() => props.currentRow?.detailInfo || {})
 
 const detailSchema = reactive<DescriptionsSchema[]>([
   {
     field: 'user.username',
-    label: '操作人',
+    label: t('userLog.operator'),
     slots: {
       default: () => <div>{props.currentRow?.user?.username || '-'}</div>
     }
   },
   {
     field: 'user.phone',
-    label: '手机号',
+    label: t('common.phone'),
     slots: {
       default: () => <div>{props.currentRow?.user?.phone || '-'}</div>
     }
   },
   {
     field: 'isSuccess',
-    label: '响应状态',
+    label: t('userLog.responseStatus'),
     slots: {
       default: () => {
         const isSuccess = props.currentRow?.isSuccess
-        return <ElTag type={isSuccess ? 'success' : 'danger'}>{isSuccess ? '成功' : '失败'}</ElTag>
+        return (
+          <ElTag type={isSuccess ? 'success' : 'danger'}>{isSuccess ? t('common.success') : t('common.failed')}</ElTag>
+        )
       }
     }
   },
   {
     field: 'responseMsg',
-    label: '响应信息',
+    label: t('userLog.responseMsg'),
     slots: {
       default: () => <div>{props.currentRow?.responseMsg || '-'}</div>
     }
   },
   {
     field: 'duration',
-    label: '响应时长',
+    label: t('userLog.duration'),
     slots: {
       default: () => <div>{props.currentRow?.duration != null ? `${props.currentRow.duration}ms` : '-'}</div>
     }
@@ -56,16 +61,16 @@ const detailSchema = reactive<DescriptionsSchema[]>([
 
   {
     field: 'method',
-    label: '方法'
+    label: t('userLog.method')
   },
 
   {
     field: 'requestUrl',
-    label: '路径'
+    label: t('userLog.path')
   },
   {
     field: 'ip',
-    label: 'IP地址'
+    label: t('userLog.ip')
   },
   {
     field: 'userAgent',
@@ -73,7 +78,7 @@ const detailSchema = reactive<DescriptionsSchema[]>([
   },
   {
     field: 'createdAt',
-    label: '操作时间'
+    label: t('userLog.operateTime')
   }
 ])
 </script>
@@ -82,7 +87,7 @@ const detailSchema = reactive<DescriptionsSchema[]>([
   <Descriptions :schema="detailSchema" :data="currentRow || {}" />
 
   <div v-if="Object.keys(detailInfo).length" class="mt-16px">
-    <div class="mb-8px text-14px text-[var(--el-text-color-regular)]">详细信息</div>
+    <div class="mb-8px text-14px text-[var(--el-text-color-regular)]">{{ t('userLog.detailInfo') }}</div>
     <JsonEditor :model-value="detailInfo" :editable="false" :height="240" />
   </div>
 </template>

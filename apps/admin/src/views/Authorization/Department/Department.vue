@@ -140,14 +140,14 @@ const openDialog = (row?: DepartmentItem) => {
 
 const handleDelete = async (row: DepartmentItem) => {
   if (row.children?.length) {
-    ElMessage.warning('该部门存在子部门，请先删除子部门')
+    ElMessage.warning(t('department.deleteHasChildren'))
     return
   }
 
   try {
-    await ElMessageBox.confirm(`确认删除部门「${row.name}」？`, '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('department.confirmDelete', { name: row.name }), t('common.tip'), { type: 'warning' })
     await delDepartmentApi(row.id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.delSuccess'))
     getList()
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
@@ -169,17 +169,17 @@ const handleSave = async () => {
 
     if (formData.id) {
       await editDepartmentApi({ ...payload, id: formData.id })
-      ElMessage.success('更新成功')
+      ElMessage.success(t('common.updateSuccess'))
     } else {
       await addDepartmentApi(payload)
-      ElMessage.success('新增成功')
+      ElMessage.success(t('common.createSuccess'))
     }
 
     dialogVisible.value = false
     getList()
   } catch (error) {
     console.error(error)
-    ElMessage.error('保存失败')
+    ElMessage.error(t('common.saveFailed'))
   } finally {
     saveLoading.value = false
   }
@@ -208,7 +208,7 @@ const handleSave = async () => {
   </ContentWrap>
 
   <Dialog v-model="dialogVisible" :title="dialogTitle" width="560px">
-    <Write :key="currentRow?.id || 'new'" ref="writeRef" :current-row="currentRow" />
+    <Write :key="currentRow?.id || 'new'" ref="writeRef" :current-row="currentRow" :department-list="sourceList" />
 
     <template #footer>
       <BaseButton @click="dialogVisible = false">{{ t('common.cancel') }}</BaseButton>

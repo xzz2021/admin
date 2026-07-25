@@ -114,14 +114,14 @@ const openDialog = (row?: DictionaryTypeItem) => {
 
 const handleDelete = async (row: DictionaryTypeItem) => {
   if (row.items?.length) {
-    ElMessage.warning('该字典类型下存在字典项，请先删除字典项')
+    ElMessage.warning(t('dict.deleteTypeHasEntries'))
     return
   }
 
   try {
-    await ElMessageBox.confirm(`确认删除字典「${row.name}」？`, '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('dict.confirmDeleteType', { name: row.name }), t('common.tip'), { type: 'warning' })
     await delDictionaryTypeApi([row.id])
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.delSuccess'))
     emit('refresh')
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
@@ -142,7 +142,7 @@ const handleSave = async () => {
       code: formData.code,
       enabled: formData.enabled ?? true
     })
-    ElMessage.success(formData.id ? '更新成功' : '新增成功')
+    ElMessage.success(formData.id ? t('common.updateSuccess') : t('common.createSuccess'))
     dialogVisible.value = false
     emit('refresh', res.data.id)
   } finally {
@@ -165,7 +165,7 @@ const handleContextmenu = (id: string) => {
       </div>
     </div>
 
-    <ElInput v-model="searchKeyword" class="mb-10px" placeholder="搜索字典类型" clearable />
+    <ElInput v-model="searchKeyword" class="mb-10px" :placeholder="t('dict.searchTypePlaceholder')" clearable />
 
     <ElTree
       ref="treeEl"

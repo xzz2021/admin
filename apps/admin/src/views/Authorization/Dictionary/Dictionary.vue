@@ -107,7 +107,7 @@ const searchSchema = reactive<FormSchema[]>([
     label: t('tableDemo.keyword'),
     component: 'Input',
     componentProps: {
-      placeholder: '标签 / 编码'
+      placeholder: t('dict.entryKeywordPlaceholder')
     }
   }
 ])
@@ -124,7 +124,7 @@ const saveLoading = ref(false)
 
 const openDialog = (row?: DictionaryEntryItem) => {
   if (!currentTypeId.value) {
-    ElMessage.warning('请先选择字典类型')
+    ElMessage.warning(t('dict.selectTypeFirst'))
     return
   }
   dialogTitle.value = row ? t('exampleDemo.edit') : t('exampleDemo.add')
@@ -141,10 +141,10 @@ const handleDelete = async (row: DictionaryEntryItem) => {
   if (!currentTypeId.value) return
 
   try {
-    await ElMessageBox.confirm(`确认删除字典项「${row.label}」？`, '提示', { type: 'warning' })
+    await ElMessageBox.confirm(t('dict.confirmDeleteEntry', { name: row.label }), t('common.tip'), { type: 'warning' })
     await delDictionaryEntryApi([row.id])
     removeEntriesLocally(currentTypeId.value, [row.id])
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.delSuccess'))
   } catch (error) {
     if (error === 'cancel' || error === 'close') return
   }
@@ -158,7 +158,7 @@ const handleSave = async () => {
   try {
     await saveDictionaryEntryApi(formData)
     await syncEntryAfterSave()
-    ElMessage.success(formData.id ? '更新成功' : '新增成功')
+    ElMessage.success(formData.id ? t('common.updateSuccess') : t('common.createSuccess'))
     dialogVisible.value = false
   } finally {
     saveLoading.value = false
@@ -181,7 +181,7 @@ const handleSave = async () => {
         <ElLink v-if="currentTypeCode" type="primary" @click="copy(currentTypeCode)">
           {{ t('tableDemo.code') }}:{{ currentTypeCode }}
         </ElLink>
-        <ElTag v-if="currentType && !currentType.enabled" type="info">字典类型已禁用</ElTag>
+        <ElTag v-if="currentType && !currentType.enabled" type="info">{{ t('dict.typeDisabled') }}</ElTag>
       </div>
 
       <div class="mb-12px flex flex-wrap items-end gap-12px">
@@ -194,7 +194,7 @@ const handleSave = async () => {
       </div>
 
       <Table v-if="currentTypeId" :columns="tableColumns" :data="entryList" :loading="listLoading" />
-      <ElEmpty v-else description="请选择左侧字典类型" />
+      <ElEmpty v-else :description="t('dict.selectTypeEmpty')" />
 
       <Dialog v-model="dialogVisible" :title="dialogTitle" width="480px">
         <Write :key="currentRow?.id || 'new'" ref="writeRef" :current-row="currentRow" :type-id="currentTypeId || ''" />

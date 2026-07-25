@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { getDepartmentListApi } from '@/api/department'
-import type { DepartmentItem } from '@/api/department/types'
+import type { CreateDepartmentDto, DepartmentItem } from '@/api/department/types'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -15,6 +14,11 @@ const props = defineProps({
   currentRow: {
     type: Object as PropType<DepartmentItem | null>,
     default: () => null
+  },
+  /** 父组件已加载的完整部门树，用于上级部门选择 */
+  departmentList: {
+    type: Array as PropType<DepartmentItem[]>,
+    default: () => []
   }
 })
 
@@ -23,7 +27,7 @@ const editingId = ref<string>()
 const formSchema = reactive<FormSchema[]>([
   {
     field: 'parentId',
-    label: t('userDemo.superiorDepartment'),
+    label: t('userDemo.superior'),
     component: 'TreeSelect',
     colProps: { span: 24 },
     componentProps: {
@@ -40,11 +44,7 @@ const formSchema = reactive<FormSchema[]>([
       checkOnClickNode: true,
       clearable: true
     },
-    optionApi: async () => {
-      // 每次打开面板不应该都请求接口,直接读父组件数据就可以了  --- 待优化
-      const res = await getDepartmentListApi()
-      return filterDepartmentTreeForParent(res.data.list || [], editingId.value)
-    }
+    optionApi: async () => filterDepartmentTreeForParent(props.departmentList, editingId.value)
   },
   {
     field: 'name',
@@ -84,8 +84,6 @@ const rules = reactive({
 
 const { formRegister, formMethods } = useForm()
 const { setValues, getFormData, getElFormExpose } = formMethods
-
-import type { CreateDepartmentDto } from '@/api/department/types'
 
 export type DepartmentFormData = CreateDepartmentDto & { id?: string }
 

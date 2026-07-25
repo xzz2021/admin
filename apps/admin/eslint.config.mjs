@@ -74,5 +74,11 @@ export default tseslint.config(
       'vue/require-toggle-inside-transition': 0
     }
   },
-  eslintPluginPrettierRecommended
+  eslintPluginPrettierRecommended,
+  {
+    // 覆盖 recommended：格式由保存时 Prettier 处理，不在 ESLint 里标红
+    rules: {
+      'prettier/prettier': 'off'
+    }
+  }
 )

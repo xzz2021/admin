@@ -2,18 +2,20 @@
 import { updatePasswordApi } from '@/api/user'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
+import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
 import { useUserStore } from '@/store/modules/user'
 import { ElDivider, ElMessage, ElMessageBox } from 'element-plus'
 import { reactive, ref } from 'vue'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 const { required } = useValidator()
 
 const formSchema = reactive<FormSchema[]>([
   {
     field: 'password',
-    label: '旧密码',
+    label: t('personal.oldPassword'),
     component: 'InputPassword',
     colProps: {
       span: 24
@@ -21,7 +23,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'newPassword',
-    label: '新密码',
+    label: t('personal.newPassword'),
     component: 'InputPassword',
     colProps: {
       span: 24
@@ -32,7 +34,7 @@ const formSchema = reactive<FormSchema[]>([
   },
   {
     field: 'newPassword2',
-    label: '确认新密码',
+    label: t('personal.confirmNewPassword'),
     component: 'InputPassword',
     colProps: {
       span: 24
@@ -55,7 +57,7 @@ const rules = reactive({
         const formData = await getFormData()
         const { newPassword2 } = formData
         if (val !== newPassword2) {
-          callback(new Error('新密码与确认新密码不一致'))
+          callback(new Error(t('personal.passwordMismatch')))
         } else {
           callback()
         }
@@ -69,7 +71,7 @@ const rules = reactive({
         const formData = await getFormData()
         const { newPassword } = formData
         if (val !== newPassword) {
-          callback(new Error('确认新密码与新密码不一致'))
+          callback(new Error(t('personal.confirmPasswordMismatch')))
         } else {
           callback()
         }
@@ -82,7 +84,7 @@ const saveLoading = ref(false)
 const save = async () => {
   const userId = userStore.getUserInfo?.id
   if (!userId) {
-    ElMessage.error('用户信息异常，请重新登录')
+    ElMessage.error(t('personal.userInfoError'))
     return
   }
 
@@ -92,9 +94,9 @@ const save = async () => {
   })
   if (!valid) return
 
-  ElMessageBox.confirm('是否确认修改密码?', '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm(t('personal.confirmModifyPassword'), t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   })
     .then(async () => {
@@ -111,7 +113,7 @@ const save = async () => {
           newPassword: '',
           newPassword2: ''
         })
-        ElMessage.success('密码修改成功')
+        ElMessage.success(t('personal.passwordModifySuccess'))
       } catch (error) {
         console.error(error)
       } finally {
@@ -125,5 +127,5 @@ const save = async () => {
 <template>
   <Form :rules="rules" @register="formRegister" :schema="formSchema" />
   <ElDivider />
-  <BaseButton type="primary" :loading="saveLoading" @click="save">确认修改</BaseButton>
+  <BaseButton type="primary" :loading="saveLoading" @click="save">{{ t('personal.confirmModifyBtn') }}</BaseButton>
 </template>
