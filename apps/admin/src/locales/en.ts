@@ -178,6 +178,7 @@ export default {
     department: 'Department',
     menuManagement: 'Menu',
     dictionary: 'Dictionary',
+    dictionaryType: 'Dictionary type',
     userIdentity: 'User identity',
     userInfo: 'Information',
     systemManagement: 'System',
@@ -573,7 +574,9 @@ export default {
     description: 'Description',
     cardTable: 'Card table',
     createdAt: 'Created at',
-    updatedAt: 'Updated at'
+    updatedAt: 'Updated at',
+    operator: 'Operator',
+    keyword: 'Keyword'
   },
   richText: {
     richText: 'Rich text',

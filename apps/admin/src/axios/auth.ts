@@ -71,8 +71,11 @@ export const refreshExpiredToken = async (
     userStore.setToken(token)
     return applyAuthHeader(config, token)
   } catch (error: unknown) {
+    // 仅鉴权失败才登出；503/500 等基础设施故障保留登录态，避免误提示「登录过期」
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       userStore.logout()
+    } else {
+      config._refreshInfraError = true
     }
     return null
   }

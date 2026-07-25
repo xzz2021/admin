@@ -23,7 +23,7 @@ const props = defineProps({
 const formSchema = reactive<FormSchema[]>([
   {
     field: 'label',
-    label: '标签',
+    label: t('tableDemo.title'),
     component: 'Input',
     colProps: { span: 24 }
   },

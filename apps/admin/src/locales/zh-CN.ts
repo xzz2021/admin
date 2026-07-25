@@ -176,6 +176,7 @@ export default {
     department: '部门管理',
     menuManagement: '菜单管理',
     dictionary: '字典管理',
+    dictionaryType: '字典类型',
     userIdentity: '用户身份',
     userInfo: '个人信息',
     // 系统管理 用户管理 在线用户  oss管理  文件管理  用户日志
@@ -567,7 +568,8 @@ export default {
     cardTable: '卡片表格',
     createdAt: '创建时间',
     updatedAt: '更新时间',
-    operator: '操作人'
+    operator: '操作人',
+    keyword: '关键词'
   },
   richText: {
     richText: '富文本',

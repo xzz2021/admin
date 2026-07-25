@@ -2,6 +2,7 @@
 // 如果需要源信息   后期考虑 实现return next.handle().pipe() 来捕获
 
 import { MonitorService } from '@/system/monitor/monitor.service'
+import { PgService } from '@/prisma/pg.service'
 import {
   ArgumentsHost,
   Catch,
@@ -22,6 +23,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Optional() private readonly monitorService?: MonitorService,
+    @Optional() private readonly pgService?: PgService,
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost) {
@@ -45,9 +47,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const prismaError = checkPrismaError(exception)
     if (prismaError) {
-      status = HttpStatus.BAD_REQUEST
+      status = prismaError.transient ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.BAD_REQUEST
       message = prismaError.msg
       meta = prismaError.meta
+      if (prismaError.transient) {
+        this.pgService?.markUnavailable()
+      }
     }
 
     const shouldLog = status !== 401 && !(exception instanceof NotFoundException)

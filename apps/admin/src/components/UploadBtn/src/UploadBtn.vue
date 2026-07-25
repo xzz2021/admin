@@ -2,6 +2,9 @@
 import { BaseButton } from '@/components/Button'
 import { ElUpload } from 'element-plus'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   uploadApi: (file: File) => Promise<void>
@@ -24,6 +27,6 @@ const beforeUpload = (file: File) => {
 
 <template>
   <ElUpload :show-file-list="false" :before-upload="beforeUpload" :disabled="loading">
-    <BaseButton type="primary" :loading="loading">{{ text || '上传文件' }}</BaseButton>
+    <BaseButton type="primary" :loading="loading">{{ text || t('formDemo.upload') }}</BaseButton>
   </ElUpload>
 </template>

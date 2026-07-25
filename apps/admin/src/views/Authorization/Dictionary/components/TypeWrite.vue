@@ -158,7 +158,7 @@ const handleContextmenu = (id: string) => {
 <template>
   <ContentWrap v-loading="loading" class="w-260px flex-shrink-0">
     <div class="mb-10px flex items-center justify-between">
-      <span class="font-medium">字典类型</span>
+      <span class="font-medium">{{ t('router.dictionaryType') }}</span>
       <div class="flex items-center gap-10px">
         <Icon icon="plus" :size="16" class="cursor-pointer" @click="openDialog()" />
         <Icon icon="rotate-cw" :size="16" class="cursor-pointer" @click="emit('refresh')" />

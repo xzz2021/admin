@@ -24,6 +24,11 @@ docker compose -f compose.yml up -d --build
 
 前端 `VITE_API_BASE_PATH=api/`：若前后端同域名，NPM 需把 `/api` 转到 server，并去掉 `/api` 前缀（与开发时 Vite proxy 一致）。
 
+WebSocket（`/api/online/ws`、`/api/message/ws`、`/api/monitor/ws`）走同一 `/api` 反代：
+
+- **admin 容器内 nginx** 已配置 `Upgrade` / `Connection` 与更长的 `proxy_read_timeout`
+- **外层 Nginx Proxy Manager**：对应 Proxy Host 打开 Websockets Support；若 NPM 直接反代 `server:3000` 而非经 admin，也需开启 WS
+
 ## 停止服务（不删除 volume）
 
 ```bash

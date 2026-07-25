@@ -15,7 +15,7 @@ export class CaptchaGuard implements CanActivate {
     const captchaId = req.cookies?.[CAPTCHA_ID_COOKIE] as string | undefined
     const captchaText = req.cookies?.[CAPTCHA_TEXT_COOKIE] as string | undefined
     if (!captchaId || !captchaText) {
-      throw new BadRequestException('验证码不能为空')
+      throw new BadRequestException('验证码已失效')
     }
     const ok: boolean = await this.svc.verify(captchaId, captchaText)
     if (!ok) {

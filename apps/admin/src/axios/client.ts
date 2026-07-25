@@ -74,12 +74,20 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    const retryConfig = await refreshExpiredToken(error.response?.status || 0, error.config)
+    const status = error.response?.status || 0
+    const retryConfig = await refreshExpiredToken(status, error.config)
     if (retryConfig) {
       return axiosInstance.request(retryConfig)
     }
 
     cleanupPending(error.config)
+
+    // access token 过期后若 refresh 因服务不可用失败，原请求仍是 401，需改成可理解的提示
+    if (status === 401 && error.config?._refreshInfraError) {
+      showAxiosError('服务暂时不可用，请稍后重试')
+      return Promise.reject(error)
+    }
+
     showAxiosError(getAxiosErrorMessage(error))
     return Promise.reject(error)
   }

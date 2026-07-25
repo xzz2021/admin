@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useI18n } from '@/hooks/web/useI18n'
-import { ref, watch } from 'vue'
 import { Dialog } from '@/components/Dialog'
-import { Form } from '@/components/Form'
-import { useForm } from '@/hooks/web/useForm'
-import { reactive, computed } from 'vue'
-import { useValidator } from '@/hooks/web/useValidator'
-import { FormSchema } from '@/components/Form'
+import { Form, FormSchema } from '@/components/Form'
 import { useDesign } from '@/hooks/web/useDesign'
+import { useForm } from '@/hooks/web/useForm'
+import { useI18n } from '@/hooks/web/useI18n'
+import { useValidator } from '@/hooks/web/useValidator'
 import { useLockStore } from '@/store/modules/lock'
 import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
+import { computed, reactive, ref, watch } from 'vue'
+
+import avatar from '@/assets/imgs/avatar.jpg'
 
 const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('lock-dialog')
@@ -97,7 +97,7 @@ const handleLock = async () => {
 <template>
   <Dialog v-model="dialogVisible" width="500px" max-height="170px" :class="prefixCls" :title="dialogTitle">
     <div class="flex flex-col items-center">
-      <img :src="userInfo?.avatar" alt="" class="w-70px h-70px rounded-[50%]" />
+      <img :src="userInfo?.avatar || avatar" alt="" class="w-70px h-70px rounded-[50%]" />
       <span class="text-14px my-10px text-[var(--top-header-text-color)]">{{ userInfo?.username }}</span>
     </div>
     <Form :is-col="false" :schema="schema" :rules="rules" @register="formRegister" />

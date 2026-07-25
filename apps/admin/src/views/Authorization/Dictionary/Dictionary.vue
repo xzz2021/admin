@@ -45,7 +45,7 @@ const tableColumns = reactive<TableColumn[]>([
   },
   {
     field: 'label',
-    label: '标签',
+    label: t('tableDemo.title'),
     minWidth: 120
   },
   {
@@ -81,7 +81,7 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'action',
     label: t('tableDemo.action'),
-    width: 160,
+    width: 170,
     fixed: 'right',
     slots: {
       default: (data: any) => {
@@ -104,7 +104,7 @@ const tableColumns = reactive<TableColumn[]>([
 const searchSchema = reactive<FormSchema[]>([
   {
     field: 'keyword',
-    label: '关键词',
+    label: t('tableDemo.keyword'),
     component: 'Input',
     componentProps: {
       placeholder: '标签 / 编码'
@@ -179,7 +179,7 @@ const handleSave = async () => {
     <ContentWrap class="min-w-0 flex-1">
       <div class="mb-12px flex flex-wrap items-center gap-12px">
         <ElLink v-if="currentTypeCode" type="primary" @click="copy(currentTypeCode)">
-          当前字典编码：{{ currentTypeCode }}
+          {{ t('tableDemo.code') }}:{{ currentTypeCode }}
         </ElLink>
         <ElTag v-if="currentType && !currentType.enabled" type="info">字典类型已禁用</ElTag>
       </div>

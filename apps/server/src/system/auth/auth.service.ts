@@ -1,4 +1,5 @@
 import { PgService } from '@/prisma/pg.service'
+import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { OnlineGateway } from '@/system/online/online.gateway'
 import { OnlineService } from '@/system/online/online.service'
@@ -262,38 +263,43 @@ export class AuthService {
   }
 
   async rtRefresh(userId: string, res: Response, oldJti: string) {
-    const user = await this.pgService.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        username: true,
-        phone: true,
-        enabled: true,
-        roles: {
-          include: {
-            role: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
+    // 会话有效性已由 JwtRefreshAuthGuard（Redis）校验；
+    // DB 仅用于刷新用户资料。库瞬时不可用时仍换发短 token，避免全站被误判为 401。
+    let extraPayload: Record<string, unknown> = { id: userId }
+    try {
+      const user = await this.pgService.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          phone: true,
+          enabled: true,
+          roles: {
+            include: {
+              role: {
+                select: {
+                  id: true,
+                  name: true,
+                  code: true,
+                },
               },
             },
           },
+          avatar: true,
+          email: true,
         },
-        avatar: true,
-        email: true,
-      },
-    })
-    if (!user || !user.enabled) {
-      throw new UnauthorizedException('用户不存在或已禁用')
+      })
+      if (!user || !user.enabled) {
+        throw new UnauthorizedException('用户不存在或已禁用')
+      }
+      const { username, phone, id, roles } = user
+      extraPayload = { username, phone, id, roles: roles.map(item => item.role) }
+    } catch (error) {
+      if (error instanceof UnauthorizedException) throw error
+      if (!isTransientDbError(error)) throw error
     }
-    const { username, phone, id, roles } = user
-    const { accessToken } = await this.rtTokenService.signToken(
-      userId,
-      { username, phone, id, roles: roles.map(item => item.role) },
-      res,
-      oldJti,
-    )
+
+    const { accessToken } = await this.rtTokenService.signToken(userId, extraPayload, res, oldJti)
     // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
     await this.onlineService?.remove(oldJti)
     return { access_token: accessToken, message: '获取新的token成功' }

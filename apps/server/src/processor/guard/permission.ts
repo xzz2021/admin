@@ -1,7 +1,13 @@
 import { PgService } from '@/prisma/pg.service'
 import { PERMISSION_KEY } from '@/processor/decorator/permission'
+import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { RbacPermissionCacheService } from '@/processor/rbac'
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 /*
 
@@ -85,10 +91,25 @@ export class PermissionGuard implements CanActivate {
     const userId = request.user?.id
     if (!userId) return false
 
-    let permissions = await this.rbacPermissionCache.get(userId)
-    if (permissions === null) {
-      permissions = await this.getPermissions(userId)
-      await this.rbacPermissionCache.set(userId, permissions)
+    let permissions: string[]
+    try {
+      const cached = await this.rbacPermissionCache.get(userId)
+      if (cached === null) {
+        permissions = await this.getPermissions(userId)
+        await this.rbacPermissionCache.set(userId, permissions)
+      } else {
+        permissions = cached
+      }
+    } catch (error) {
+      if (isTransientDbError(error)) {
+        throw new ServiceUnavailableException('数据库暂不可用，请稍后重试')
+      }
+      // Redis 短暂故障时也不要伪装成鉴权失败
+      const msg = error instanceof Error ? error.message : String(error)
+      if (/ECONNREFUSED|ECONNRESET|ETIMEDOUT|Connection is closed|READONLY/i.test(msg)) {
+        throw new ServiceUnavailableException('缓存服务暂不可用，请稍后重试')
+      }
+      throw error
     }
 
     return (
