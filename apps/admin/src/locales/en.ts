@@ -204,7 +204,8 @@ export default {
     databaseBackup: 'Database Backup',
     fileManagement: 'File',
     userLog: 'User log',
-    message: 'Messages',
+    message: 'My messages',
+    messageAdmin: 'Message admin',
     // 权限测试页面
     permission: 'Permission test page',
     function: 'Function',
@@ -260,7 +261,9 @@ export default {
     cannotKick: 'Protected'
   },
   message: {
-    inbox: 'Inbox',
+    inbox: 'My messages',
+    adminHint:
+      'Compose in-app mail or system-wide notices. Alerts are triggered internally by monitor/backup services and are not published here.',
     type: 'Type',
     typeMail: 'Mail',
     typeSystem: 'System',

@@ -10,22 +10,22 @@
 
 ## 模块路由表
 
-| 前缀          | 模块       | 主要能力                         |
-| ------------- | ---------- | -------------------------------- |
-| `/`           | App        | `GET /`、`GET /health`           |
-| `/auth`       | Auth       | 注册、登录、刷新、登出、强制下线 |
-| `/captcha`    | Captcha    | 图形/数学验证码（Public）        |
-| `/user`       | User       | 用户 CRUD、个人信息、密码、头像  |
-| `/role`       | Role       | 角色、分配、当前菜单             |
-| `/menu`       | Menu       | 菜单 CRUD、排序                  |
-| `/permission` | Permission | 权限 CRUD                        |
-| `/department` | Department | 部门树 + seed 导出               |
-| `/dictionary` | Dictionary | 字典类型/项 + seed 导出          |
-| `/staticfile` | Staticfile | 上传、列表、删除、流式示例       |
-| `/monitor`    | Monitor    | 快照                             |
-| `/online`     | Online     | 在线列表、踢人                   |
-| `/message`    | Message    | 列表、已读、发送站内信/系统/告警 |
-| `/log`        | Logger     | 操作日志查询/删除                |
+| 前缀          | 模块       | 主要能力                                                          |
+| ------------- | ---------- | ----------------------------------------------------------------- |
+| `/`           | App        | `GET /`、`GET /health`                                            |
+| `/auth`       | Auth       | 注册、登录、刷新、登出、强制下线                                  |
+| `/captcha`    | Captcha    | 图形/数学验证码（Public）                                         |
+| `/user`       | User       | 用户 CRUD、个人信息、密码、头像                                   |
+| `/role`       | Role       | 角色、分配、当前菜单                                              |
+| `/menu`       | Menu       | 菜单 CRUD、排序                                                   |
+| `/permission` | Permission | 权限 CRUD                                                         |
+| `/department` | Department | 部门树 + seed 导出                                                |
+| `/dictionary` | Dictionary | 字典类型/项 + seed 导出                                           |
+| `/staticfile` | Staticfile | 上传、列表、删除、流式示例                                        |
+| `/monitor`    | Monitor    | 快照                                                              |
+| `/online`     | Online     | 在线列表、踢人                                                    |
+| `/message`    | Message    | 收件箱（list/已读/删除）；管理端发送站内信/系统通知（告警仅内部） |
+| `/log`        | Logger     | 操作日志查询/删除                                                 |
 
 ## WebSocket
 

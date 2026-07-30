@@ -1,0 +1,44 @@
+import { RequiredPermission, User } from '@/processor/decorator'
+import type { JwtUser } from '@/system/auth/dto/auth.dto'
+import { Body, Controller, Get, Post, Query } from '@nestjs/common'
+import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ReceiversQueryDto, SendMailDto, SendSystemDto } from './dto/message.dto'
+import { MessageService } from './message.service'
+
+@ApiTags('消息管理')
+@Controller('message')
+export class MessageAdminController {
+  constructor(private readonly messageService: MessageService) {}
+
+  @Get('receivers')
+  @RequiredPermission('messageAdmin:send')
+  @ApiOperation({ summary: '获取站内信接收人列表' })
+  receivers(@Query() query: ReceiversQueryDto, @User() user: JwtUser) {
+    return this.messageService.searchReceivers(query.keyword, user.id)
+  }
+
+  @Post('mail')
+  @RequiredPermission('messageAdmin:send')
+  @ApiOperation({ summary: '发送站内信' })
+  sendMail(@Body() body: SendMailDto, @User() user: JwtUser) {
+    return this.messageService.enqueueMail({
+      senderId: user.id,
+      receiverIds: body.receiverIds,
+      title: body.title,
+      content: body.content,
+      level: body.level,
+    })
+  }
+
+  @Post('system')
+  @RequiredPermission('messageAdmin:send')
+  @ApiOperation({ summary: '发送系统通知（全体用户）' })
+  sendSystem(@Body() body: SendSystemDto, @User() user: JwtUser) {
+    return this.messageService.enqueueSystem({
+      senderId: user.id,
+      title: body.title,
+      content: body.content,
+      level: body.level,
+    })
+  }
+}

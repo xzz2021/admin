@@ -41,7 +41,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-  API[MessageController] --> Queue[BullMQ message-dispatch]
+  API[MessageInbox/AdminController] --> Queue[BullMQ message-dispatch]
   Queue --> Worker[MessageProcessor]
   Worker --> PG[(Message 表)]
   Worker --> Redis

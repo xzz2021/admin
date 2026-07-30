@@ -45,10 +45,6 @@ export const sendSystemApi = (data: { title: string; content: string; level?: No
   return request.post({ url: '/message/system', data })
 }
 
-export const sendAlertApi = (data: { title: string; content: string; level?: NoticeLevel }): Promise<IResponse> => {
-  return request.post({ url: '/message/alert', data })
-}
-
 export const buildMessageWsUrl = (token: string): string => {
   const apiBase = String(import.meta.env.VITE_API_BASE_PATH || 'api/').replace(/^\/+|\/+$/g, '')
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'

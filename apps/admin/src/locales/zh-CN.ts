@@ -203,7 +203,8 @@ export default {
     databaseBackup: '数据库备份',
     fileManagement: '文件管理',
     userLog: '用户日志',
-    message: '消息中心',
+    message: '我的消息',
+    messageAdmin: '消息管理',
 
     permission: '权限测试页',
     function: '功能',
@@ -258,7 +259,8 @@ export default {
     cannotKick: '不可下线'
   },
   message: {
-    inbox: '消息中心',
+    inbox: '我的消息',
+    adminHint: '用于发送站内信或全体系统通知。告警由监控/备份等服务内部触发，不在此发布。',
     type: '类型',
     typeMail: '站内信',
     typeSystem: '系统通知',
