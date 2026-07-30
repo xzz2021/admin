@@ -488,7 +488,7 @@ const formSchema = reactive<FormSchema[]>([
     component: 'Input',
     colProps: COL_TWO_THIRDS,
     componentProps: {
-      placeholder: 'https://example.com'
+      placeholder: 'https://example.com / /docs'
     }
   },
   {

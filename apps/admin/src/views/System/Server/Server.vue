@@ -14,7 +14,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 const { t } = useI18n()
 const userStore = useUserStore()
 
-const POLL_MS = 5000
+const POLL_MS = 15000
 const connected = ref(false)
 const lastUpdated = ref('')
 const snapshot = ref<MonitorSnapshot | null>(null)

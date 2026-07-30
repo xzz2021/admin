@@ -23,7 +23,9 @@ const ROUTE_MENU_META_KEYS = [
   'noTagsView',
   'canTo',
   'permissions',
-  'permission'
+  'permission',
+  'external',
+  'link'
 ] as const
 
 /** activeMenu 仅接受完整路由 path，用于隐藏子页高亮父菜单；过滤种子/脏数据中的无效值 */
@@ -171,7 +173,10 @@ export const generateRoutesByServer = (routes: AppCustomRouteRecordRaw[]): AppRo
       const comModule = modules[`../${route.component}.vue`] || modules[`../${route.component}.tsx`]
       const component = route.component as string
       if (!comModule && !component.includes('#')) {
-        console.error(`未找到${route.component}.vue文件或${route.component}.tsx文件，请创建`)
+        // 外链菜单不渲染本地页面，component 只是占位，无需告警
+        if (!route.external) {
+          console.error(`未找到${route.component}.vue文件或${route.component}.tsx文件，请创建`)
+        }
       } else {
         // 动态加载路由文件，可根据实际情况进行自定义逻辑
         data.component = component === '#' ? Layout : component.includes('##') ? getParentLayout() : comModule
@@ -184,6 +189,21 @@ export const generateRoutesByServer = (routes: AppCustomRouteRecordRaw[]): AppRo
     res.push(syncRouteMenuToMeta(data))
   }
   return res
+}
+
+/**
+ * 外链地址归一化为绝对地址：http(s) 原样返回，相对地址按站点根补全。
+ * 归一化后可直接交给 Menu 的 select 回调，由既有的 isUrl 分支走 window.open。
+ */
+export const resolveExternalLink = (link: string): string => {
+  const trimmed = link.trim()
+  if (!trimmed) return ''
+  if (isUrl(trimmed)) return trimmed
+  try {
+    return new URL(trimmed, window.location.origin).href
+  } catch (_error) {
+    return ''
+  }
 }
 
 export const pathResolve = (parentPath: string, path: string) => {

@@ -167,7 +167,7 @@ model Menu {
   noTagsView Boolean @default(false)
   /// @z.boolean().optional().meta({ description: '是否外部链接', example: false })
   external Boolean @default(false)
-  /// @z.string().url({ message: '外部链接格式不正确' }).max(100).optional().meta({ description: '外部链接地址', example: 'https://example.com' })
+  /// @z.string().max(100).regex(/^(https?:\/\/.+|\/.*)$/, { message: '外部链接格式不正确' }).optional().meta({ description: '外部链接地址，支持 http(s) 绝对地址或 / 开头的相对地址', example: 'https://example.com' })
   link String? @db.VarChar(100)
 
   roles       RoleMenu[]

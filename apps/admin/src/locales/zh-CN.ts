@@ -291,7 +291,7 @@ export default {
     contentTooLong: '消息内容不能超过 5000 个字符'
   },
   monitor: {
-    refreshHint: '后端每 10 秒采集并写入 Redis 滑动窗口，前端经 WebSocket 每 5 秒拉取近 1 小时数据',
+    refreshHint: '后端每 10 秒采集并写入 Redis 滑动窗口，前端经 WebSocket 每 15 秒拉取近 1 小时数据',
     wsConnected: 'WS 已连接',
     wsDisconnected: 'WS 断开',
     updatedAt: '更新于',

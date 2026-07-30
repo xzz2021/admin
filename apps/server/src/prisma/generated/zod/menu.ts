@@ -24,7 +24,7 @@ export const MenuModel = z.object({
   noCache: z.boolean().optional().meta({ description: '是否禁用 keep-alive', example: false }),
   noTagsView: z.boolean().optional().meta({ description: '是否隐藏标签页', example: false }),
   external: z.boolean().optional().meta({ description: '是否外部链接', example: false }),
-  link: z.string().url({ message: '外部链接格式不正确' }).max(100).optional().meta({ description: '外部链接地址', example: 'https://example.com' }).nullish(),
+  link: z.string().max(100).regex(/^(https?:\/\/.+|\/.*)$/, { message: '外部链接格式不正确' }).optional().meta({ description: '外部链接地址，支持 http(s) 绝对地址或 / 开头的相对地址', example: 'https://example.com' }).nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })

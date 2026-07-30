@@ -293,7 +293,7 @@ export default {
     contentTooLong: 'Message content cannot exceed 5000 characters'
   },
   monitor: {
-    refreshHint: 'Backend scrapes every 10s into a Redis sliding window; frontend polls via WebSocket every 5s',
+    refreshHint: 'Backend scrapes every 10s into a Redis sliding window; frontend polls via WebSocket every 15s',
     wsConnected: 'WS connected',
     wsDisconnected: 'WS disconnected',
     updatedAt: 'Updated at',

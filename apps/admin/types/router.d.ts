@@ -22,6 +22,8 @@ import { defineComponent } from 'vue'
  * activeMenu: '/dashboard'  显示高亮的路由路径
  * canTo: true               设置为true即使hidden为true，也依然可以进行路由跳转(默认 false)
  * permissions: ['edit']     设置该路由的权限
+ * external: true            设置为true时点击菜单打开 link 指向的地址，不做站内路由跳转(默认 false)
+ * link: 'https://a.com'     外链地址，支持 http(s) 绝对地址与 / 开头的相对地址
  */
 interface AppRouteMenu extends Record<string | number | symbol, unknown> {
   redirect?: string
@@ -38,6 +40,8 @@ interface AppRouteMenu extends Record<string | number | symbol, unknown> {
   permissions?: string[]
   permission?: string[]
   followRoute?: string
+  external?: boolean
+  link?: string
 }
 
 declare module 'vue-router' {
@@ -45,9 +49,7 @@ declare module 'vue-router' {
 }
 
 type Component<T = any> =
-  | ReturnType<typeof defineComponent>
-  | (() => Promise<typeof import('*.vue')>)
-  | (() => Promise<T>)
+  ReturnType<typeof defineComponent> | (() => Promise<typeof import('*.vue')>) | (() => Promise<T>)
 
 declare global {
   interface AppRouteRecordRaw extends AppRouteMenu, Omit<RouteRecordRaw, 'children'> {
@@ -58,9 +60,7 @@ declare global {
     fullPath?: string
   }
 
-  interface AppCustomRouteRecordRaw
-    extends AppRouteMenu,
-      Omit<RouteRecordRaw, 'component' | 'children'> {
+  interface AppCustomRouteRecordRaw extends AppRouteMenu, Omit<RouteRecordRaw, 'component' | 'children'> {
     name: string
     component: string
     path: string
@@ -73,7 +73,5 @@ declare global {
     permissions?: string[] | Recordable[]
     type: number
     keepAlive?: boolean
-    external?: boolean
-    link?: string
   }
 }
