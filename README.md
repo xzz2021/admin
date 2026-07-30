@@ -6,8 +6,9 @@
 
 - git/node24/pnpm11.13.1
 - 本机要有redis和postgres数据库,配置在[server](./apps//server/)的.env文件
-- prisma需要初始化种子数据,[server](./apps//server/)项目下执行`pnpm prisma:seed`,为了避免数据冲突,增量需要自行构造查询写入逻辑,文件在[seeds](./apps/./server/src/prisma/seed.ts)
+- prisma首次初始化数据库表`prisma migrate dev --name init `,还需要初始化种子数据,[server](./apps//server/)项目下执行`pnpm prisma:seed`,为了避免数据冲突,增量需要自行构造查询写入逻辑,文件在[seeds](./apps/./server/src/prisma/seed.ts)
 - 每次更新schema后需要执行`pnpm generate`
+- 如果想调试数据库备份服务,需要本机(win10)安装PostgreSQL Command Line Tools命令行工具并设置环境变量
 
 > 部署相关
 

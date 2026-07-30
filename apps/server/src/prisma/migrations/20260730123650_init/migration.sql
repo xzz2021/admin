@@ -4,6 +4,15 @@ CREATE TYPE "NoticeLevel" AS ENUM ('INFO', 'SUCCESS', 'WARNING', 'ERROR');
 -- CreateEnum
 CREATE TYPE "PermissionType" AS ENUM ('BUTTON', 'DATA', 'API', 'OTHER');
 
+-- CreateEnum
+CREATE TYPE "MessageType" AS ENUM ('MAIL', 'SYSTEM', 'ALERT');
+
+-- CreateEnum
+CREATE TYPE "BackupTrigger" AS ENUM ('MANUAL', 'SCHEDULED');
+
+-- CreateEnum
+CREATE TYPE "BackupStatus" AS ENUM ('RUNNING', 'SUCCESS', 'FAILED', 'EXPIRED');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -170,6 +179,23 @@ CREATE TABLE "Notice" (
 );
 
 -- CreateTable
+CREATE TABLE "Message" (
+    "id" TEXT NOT NULL,
+    "dispatchId" TEXT NOT NULL,
+    "type" "MessageType" NOT NULL,
+    "title" VARCHAR(200) NOT NULL,
+    "content" TEXT NOT NULL,
+    "level" "NoticeLevel" NOT NULL DEFAULT 'INFO',
+    "senderId" TEXT,
+    "receiverId" TEXT NOT NULL,
+    "readAt" TIMESTAMP(3),
+    "meta" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "UserSession" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -195,6 +221,44 @@ CREATE TABLE "AuditLog" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DbBackupConfig" (
+    "id" TEXT NOT NULL DEFAULT 'default',
+    "enabled" BOOLEAN NOT NULL DEFAULT true,
+    "cron" VARCHAR(100) NOT NULL,
+    "timezone" VARCHAR(50) NOT NULL,
+    "retentionMax" INTEGER NOT NULL DEFAULT 24,
+    "filePrefix" VARCHAR(80) NOT NULL,
+    "gzip" BOOLEAN NOT NULL DEFAULT true,
+    "lastRunAt" TIMESTAMP(3),
+    "lastStatus" "BackupStatus",
+    "lastError" VARCHAR(1000),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "DbBackupConfig_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "DbBackupJob" (
+    "id" TEXT NOT NULL,
+    "trigger" "BackupTrigger" NOT NULL,
+    "status" "BackupStatus" NOT NULL,
+    "fileName" VARCHAR(255) NOT NULL,
+    "filePath" VARCHAR(500) NOT NULL,
+    "fileSize" BIGINT,
+    "checksum" VARCHAR(64),
+    "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "finishedAt" TIMESTAMP(3),
+    "durationMs" INTEGER,
+    "errorMessage" VARCHAR(2000),
+    "createdById" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "DbBackupJob_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -304,6 +368,18 @@ CREATE UNIQUE INDEX "DictionaryItem_typeId_value_key" ON "DictionaryItem"("typeI
 CREATE INDEX "Notice_published_startsAt_endsAt_idx" ON "Notice"("published", "startsAt", "endsAt");
 
 -- CreateIndex
+CREATE INDEX "Message_receiverId_createdAt_idx" ON "Message"("receiverId", "createdAt" DESC);
+
+-- CreateIndex
+CREATE INDEX "Message_receiverId_readAt_idx" ON "Message"("receiverId", "readAt");
+
+-- CreateIndex
+CREATE INDEX "Message_type_createdAt_idx" ON "Message"("type", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Message_dispatchId_receiverId_key" ON "Message"("dispatchId", "receiverId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "UserSession_tokenHash_key" ON "UserSession"("tokenHash");
 
 -- CreateIndex
@@ -317,6 +393,15 @@ CREATE INDEX "AuditLog_userId_createdAt_idx" ON "AuditLog"("userId", "createdAt"
 
 -- CreateIndex
 CREATE INDEX "AuditLog_resource_createdAt_idx" ON "AuditLog"("resource", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "DbBackupJob_status_createdAt_idx" ON "DbBackupJob"("status", "createdAt" DESC);
+
+-- CreateIndex
+CREATE INDEX "DbBackupJob_createdAt_idx" ON "DbBackupJob"("createdAt" DESC);
+
+-- CreateIndex
+CREATE INDEX "DbBackupJob_createdById_idx" ON "DbBackupJob"("createdById");
 
 -- CreateIndex
 CREATE INDEX "File_extension_idx" ON "File"("extension");
@@ -364,10 +449,19 @@ ALTER TABLE "Department" ADD CONSTRAINT "Department_parentId_fkey" FOREIGN KEY (
 ALTER TABLE "DictionaryItem" ADD CONSTRAINT "DictionaryItem_typeId_fkey" FOREIGN KEY ("typeId") REFERENCES "DictionaryType"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UserSession" ADD CONSTRAINT "UserSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "DbBackupJob" ADD CONSTRAINT "DbBackupJob_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserOperationLog" ADD CONSTRAINT "UserOperationLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

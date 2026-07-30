@@ -36,3 +36,21 @@ export const MessageType = {
 } as const
 
 export type MessageType = (typeof MessageType)[keyof typeof MessageType]
+
+
+export const BackupTrigger = {
+  MANUAL: 'MANUAL',
+  SCHEDULED: 'SCHEDULED'
+} as const
+
+export type BackupTrigger = (typeof BackupTrigger)[keyof typeof BackupTrigger]
+
+
+export const BackupStatus = {
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type BackupStatus = (typeof BackupStatus)[keyof typeof BackupStatus]

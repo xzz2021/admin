@@ -44,6 +44,18 @@ enum MessageType {
   ALERT
 }
 
+enum BackupTrigger {
+  MANUAL
+  SCHEDULED
+}
+
+enum BackupStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
 model User {
   id       String @id @default(cuid())
   /// @z.string().min(2).max(50).meta({ description: '用户名', example: 'admin' })
@@ -77,6 +89,7 @@ model User {
   operationLogs UserOperationLog[]
   sentMessages     Message[] @relation("MessageSender")
   receivedMessages Message[] @relation("MessageReceiver")
+  backupJobs       DbBackupJob[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -369,6 +382,64 @@ model AuditLog {
 
   @@index([userId, createdAt])
   @@index([resource, createdAt])
+}
+
+model DbBackupConfig {
+  /// @z.string().meta({ description: '配置主键', example: 'default' })
+  id String @id @default("default")
+  /// @z.boolean().optional().meta({ description: '是否启用定时备份', example: true })
+  enabled Boolean @default(true)
+  /// @z.string().min(9).max(100).meta({ description: 'Cron 表达式', example: '0 0 * * * *' })
+  cron String @db.VarChar(100)
+  /// @z.string().min(1).max(50).meta({ description: '时区', example: 'Asia/Shanghai' })
+  timezone String @db.VarChar(50)
+  /// @z.number().int().min(1).max(999).meta({ description: '最大保留数量', example: 24 })
+  retentionMax Int @default(24)
+  /// @z.string().min(1).max(80).meta({ description: '备份文件名前缀', example: 'backstage_db' })
+  filePrefix String @db.VarChar(80)
+  /// @z.boolean().optional().meta({ description: '是否启用 gzip 压缩', example: true })
+  gzip Boolean @default(true)
+  /// @z.coerce.date().optional().meta({ description: '最近一次执行时间', example: '2026-01-01T12:00:00.000Z' })
+  lastRunAt DateTime?
+  /// @z.nativeEnum(BackupStatus).optional().meta({ description: '最近一次执行状态', example: 'SUCCESS' })
+  lastStatus BackupStatus?
+  /// @z.string().max(1000).optional().meta({ description: '最近一次错误信息', example: 'pg_dump exited with code 1' })
+  lastError String? @db.VarChar(1000)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DbBackupJob {
+  id String @id @default(cuid())
+  /// @z.nativeEnum(BackupTrigger).meta({ description: '触发方式', example: 'MANUAL' })
+  trigger BackupTrigger
+  /// @z.nativeEnum(BackupStatus).meta({ description: '任务状态', example: 'RUNNING' })
+  status BackupStatus
+  /// @z.string().min(1).max(255).meta({ description: '备份文件名', example: 'backstage_db_20260101_120000.sql.gz' })
+  fileName String @db.VarChar(255)
+  /// @z.string().min(1).max(500).meta({ description: '备份文件路径', example: '/app/apps/server/backups/backstage_db_20260101_120000.sql.gz' })
+  filePath String @db.VarChar(500)
+  /// @z.bigint().optional().meta({ description: '备份文件大小（字节）', example: '1024' })
+  fileSize BigInt?
+  /// @z.string().length(64).optional().meta({ description: '文件 SHA-256 校验值', example: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' })
+  checksum String? @db.VarChar(64)
+  /// @z.coerce.date().meta({ description: '开始执行时间', example: '2026-01-01T12:00:00.000Z' })
+  startedAt DateTime @default(now())
+  /// @z.coerce.date().optional().meta({ description: '执行完成时间', example: '2026-01-01T12:01:00.000Z' })
+  finishedAt DateTime?
+  /// @z.number().int().min(0).optional().meta({ description: '执行耗时（毫秒）', example: 1200 })
+  durationMs Int?
+  /// @z.string().max(2000).optional().meta({ description: '错误信息', example: 'spawn pg_dump ENOENT' })
+  errorMessage String? @db.VarChar(2000)
+  /// @z.string().optional().meta({ description: '手动触发人用户 ID', example: 'clxxx' })
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([createdById])
 }
 
 model File {

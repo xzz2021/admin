@@ -17,3 +17,15 @@ export enum MessageType {
   SYSTEM = "SYSTEM",
   ALERT = "ALERT"
 }
+
+export enum BackupTrigger {
+  MANUAL = "MANUAL",
+  SCHEDULED = "SCHEDULED"
+}
+
+export enum BackupStatus {
+  RUNNING = "RUNNING",
+  SUCCESS = "SUCCESS",
+  FAILED = "FAILED",
+  EXPIRED = "EXPIRED"
+}

@@ -31,6 +31,14 @@ interface AppConfig {
   staticFileRootPath: string
   // 静态文件访问前缀
   staticFileServeRoot: string
+  dbBackup: {
+    dir: string
+    cron: string
+    timezone: string
+    retentionMax: number
+    filePrefix: string
+    gzip: boolean
+  }
 
   // 可以添加更多配置项
   [key: string]: any
@@ -133,6 +141,14 @@ export const appConfig = (): AppConfig => {
     },
     staticFileRootPath: processEnv.STATIC_FILE_ROOT_PATH || '',
     staticFileServeRoot: processEnv.STATIC_FILE_SERVE_ROOT || '',
+    dbBackup: {
+      dir: processEnv.DB_BACKUP_DIR || 'backups',
+      cron: processEnv.DB_BACKUP_CRON || '0 0 * * * *',
+      timezone: processEnv.DB_BACKUP_TIMEZONE || 'Asia/Shanghai',
+      retentionMax: parseInt(processEnv.DB_BACKUP_RETENTION_MAX || '24', 10),
+      filePrefix: processEnv.DB_BACKUP_PREFIX || 'backstage_db',
+      gzip: processEnv.DB_BACKUP_GZIP ? processEnv.DB_BACKUP_GZIP === 'true' : true,
+    },
     helmet: processEnv.HELMET ? processEnv.HELMET === 'true' : nodeEnv === 'production',
   }
 }

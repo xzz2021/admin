@@ -9,7 +9,7 @@
 | postgres | postgres:18-alpine                   | 数据卷 `postgres-data`；挂载 `docker/postgres/init-users.sh` |
 | redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                  |
 | migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`                          |
-| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；卷 `server-public`                   |
+| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；卷 `server-public`、`server-backups` |
 | admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                          |
 
 网络：
@@ -27,7 +27,7 @@
 
 1. **builder**：Node 24.18，pnpm 11.13.1，`prisma generate` + `nest build`
 2. **migrator**：继承 builder，跑迁移与 seed
-3. **runner**：alpine 生产依赖，`node dist/src/main.js`，USER node，EXPOSE 3000
+3. **runner**：alpine 生产依赖，额外安装 `postgresql18-client` 供 `pg_dump` 备份；`node dist/src/main.js`，USER node，EXPOSE 3000
 
 ### admin（`apps/admin/Dockerfile`）
 
@@ -51,6 +51,17 @@ docker compose down
 docker compose run --rm migrate   # 仅迁移
 ```
 
+数据库备份相关环境变量：
+
+```bash
+DB_BACKUP_DIR=/app/apps/server/backups
+DB_BACKUP_CRON=0 0 * * * *
+DB_BACKUP_TIMEZONE=Asia/Shanghai
+DB_BACKUP_RETENTION_MAX=24
+DB_BACKUP_PREFIX=backstage_db
+DB_BACKUP_GZIP=true
+```
+
 仅热更新 nginx 配置（根 README）：
 
 ```bash
@@ -63,4 +74,9 @@ docker exec app-admin nginx -s reload
 
 - `.dockerignore`：排除 node_modules、多数 .env、测试等；放行 `apps/admin/.env.pro`、`dist-pro` 等
 - 已有库角色迁移 SQL：`docker/postgres/migrate-existing-users.sql`（**未**挂入 compose，需手动）
+- 备份文件默认落在 `server-backups` 卷，对外下载统一走后端鉴权接口，不直接暴露卷目录
+- `server` 生产镜像固定安装 PostgreSQL 18 客户端，与 Compose 中的 PostgreSQL 18 服务端保持主版本一致
+- 数据库备份通过 BullMQ 队列异步执行（Queue 与 Processor 同在 server 容器），定时任务使用 repeatable job；`attempts=1`
+- 立即备份使用固定 `jobId=db-backup:manual` 幂等入队；定时备份使用 `upsertJobScheduler(db-backup:scheduled)`，配置未变时不重设
+- 数据库备份菜单及 `databaseBackup:view/update/run/download/delete` 权限由 Seed 写入
 - CI（`.github/workflows/ci.yml`）只跑 `pnpm check`，不构建/推送镜像

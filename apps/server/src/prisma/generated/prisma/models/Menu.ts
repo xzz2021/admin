@@ -1789,7 +1789,7 @@ export type $MenuPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      */
     external: boolean
     /**
-     * @z.string().url({ message: '外部链接格式不正确' }).max(100).optional().meta({ description: '外部链接地址', example: 'https://example.com' })
+     * @z.string().max(100).regex(/^(https?:\/\/.+|\/.*)$/, { message: '外部链接格式不正确' }).optional().meta({ description: '外部链接地址，支持 http(s) 绝对地址或 / 开头的相对地址', example: 'https://example.com' })
      */
     link: string | null
     createdAt: Date

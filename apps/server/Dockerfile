@@ -40,6 +40,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN apk add --no-cache postgresql18-client \
+  && pg_dump --version
+
 RUN npm i -g pnpm@11.13.1
 
 # 切换 pnpm 源为镜像源

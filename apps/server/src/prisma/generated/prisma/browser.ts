@@ -88,6 +88,16 @@ export type UserSession = Prisma.UserSessionModel
  */
 export type AuditLog = Prisma.AuditLogModel
 /**
+ * Model DbBackupConfig
+ * 
+ */
+export type DbBackupConfig = Prisma.DbBackupConfigModel
+/**
+ * Model DbBackupJob
+ * 
+ */
+export type DbBackupJob = Prisma.DbBackupJobModel
+/**
  * Model File
  * 
  */

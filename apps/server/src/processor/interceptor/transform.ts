@@ -1,6 +1,12 @@
 // 这里用于 对正常响应数据 做统一格式转换处理
 
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+  StreamableFile,
+} from '@nestjs/common'
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { formatDateToYMDHMS } from '../utils/date'
@@ -17,7 +23,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, any> {
         //  如果数据不存在 也直接返回  这样可以看到未知异常
         if (data == null) return data
         // 如果返回的是文件流 则不记录日志
-        if (data instanceof ReadableStream) {
+        if (data instanceof ReadableStream || data instanceof StreamableFile) {
           return data
         }
         if (typeof data !== 'object' || Array.isArray(data)) {

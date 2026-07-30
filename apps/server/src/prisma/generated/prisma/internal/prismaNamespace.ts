@@ -398,6 +398,8 @@ export const ModelName = {
   Message: 'Message',
   UserSession: 'UserSession',
   AuditLog: 'AuditLog',
+  DbBackupConfig: 'DbBackupConfig',
+  DbBackupJob: 'DbBackupJob',
   File: 'File',
   UserOperationLog: 'UserOperationLog'
 } as const
@@ -415,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "role" | "userRole" | "menu" | "permission" | "roleMenu" | "rolePermission" | "department" | "dictionaryType" | "dictionaryItem" | "notice" | "message" | "userSession" | "auditLog" | "file" | "userOperationLog"
+    modelProps: "user" | "role" | "userRole" | "menu" | "permission" | "roleMenu" | "rolePermission" | "department" | "dictionaryType" | "dictionaryItem" | "notice" | "message" | "userSession" | "auditLog" | "dbBackupConfig" | "dbBackupJob" | "file" | "userOperationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1455,6 +1457,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DbBackupConfig: {
+      payload: Prisma.$DbBackupConfigPayload<ExtArgs>
+      fields: Prisma.DbBackupConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DbBackupConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DbBackupConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.DbBackupConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DbBackupConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>
+        }
+        findMany: {
+          args: Prisma.DbBackupConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>[]
+        }
+        create: {
+          args: Prisma.DbBackupConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>
+        }
+        createMany: {
+          args: Prisma.DbBackupConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DbBackupConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.DbBackupConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>
+        }
+        update: {
+          args: Prisma.DbBackupConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.DbBackupConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DbBackupConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DbBackupConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.DbBackupConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.DbBackupConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDbBackupConfig>
+        }
+        groupBy: {
+          args: Prisma.DbBackupConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DbBackupConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DbBackupConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DbBackupConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    DbBackupJob: {
+      payload: Prisma.$DbBackupJobPayload<ExtArgs>
+      fields: Prisma.DbBackupJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DbBackupJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DbBackupJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>
+        }
+        findFirst: {
+          args: Prisma.DbBackupJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DbBackupJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>
+        }
+        findMany: {
+          args: Prisma.DbBackupJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>[]
+        }
+        create: {
+          args: Prisma.DbBackupJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>
+        }
+        createMany: {
+          args: Prisma.DbBackupJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DbBackupJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>[]
+        }
+        delete: {
+          args: Prisma.DbBackupJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>
+        }
+        update: {
+          args: Prisma.DbBackupJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.DbBackupJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DbBackupJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DbBackupJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.DbBackupJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DbBackupJobPayload>
+        }
+        aggregate: {
+          args: Prisma.DbBackupJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDbBackupJob>
+        }
+        groupBy: {
+          args: Prisma.DbBackupJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DbBackupJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DbBackupJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DbBackupJobCountAggregateOutputType> | number
+        }
+      }
+    }
     File: {
       payload: Prisma.$FilePayload<ExtArgs>
       fields: Prisma.FileFieldRefs
@@ -1852,6 +2002,44 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
+export const DbBackupConfigScalarFieldEnum = {
+  id: 'id',
+  enabled: 'enabled',
+  cron: 'cron',
+  timezone: 'timezone',
+  retentionMax: 'retentionMax',
+  filePrefix: 'filePrefix',
+  gzip: 'gzip',
+  lastRunAt: 'lastRunAt',
+  lastStatus: 'lastStatus',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DbBackupConfigScalarFieldEnum = (typeof DbBackupConfigScalarFieldEnum)[keyof typeof DbBackupConfigScalarFieldEnum]
+
+
+export const DbBackupJobScalarFieldEnum = {
+  id: 'id',
+  trigger: 'trigger',
+  status: 'status',
+  fileName: 'fileName',
+  filePath: 'filePath',
+  fileSize: 'fileSize',
+  checksum: 'checksum',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  durationMs: 'durationMs',
+  errorMessage: 'errorMessage',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DbBackupJobScalarFieldEnum = (typeof DbBackupJobScalarFieldEnum)[keyof typeof DbBackupJobScalarFieldEnum]
+
+
 export const FileScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -2036,6 +2224,48 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'BackupStatus'
+ */
+export type EnumBackupStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BackupStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'BackupStatus[]'
+ */
+export type ListEnumBackupStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BackupStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BackupTrigger'
+ */
+export type EnumBackupTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BackupTrigger'>
+    
+
+
+/**
+ * Reference to a field of type 'BackupTrigger[]'
+ */
+export type ListEnumBackupTriggerFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BackupTrigger[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2172,6 +2402,8 @@ export type GlobalOmitConfig = {
   message?: Prisma.MessageOmit
   userSession?: Prisma.UserSessionOmit
   auditLog?: Prisma.AuditLogOmit
+  dbBackupConfig?: Prisma.DbBackupConfigOmit
+  dbBackupJob?: Prisma.DbBackupJobOmit
   file?: Prisma.FileOmit
   userOperationLog?: Prisma.UserOperationLogOmit
 }

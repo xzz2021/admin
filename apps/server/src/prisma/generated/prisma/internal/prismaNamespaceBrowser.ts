@@ -65,6 +65,8 @@ export const ModelName = {
   Message: 'Message',
   UserSession: 'UserSession',
   AuditLog: 'AuditLog',
+  DbBackupConfig: 'DbBackupConfig',
+  DbBackupJob: 'DbBackupJob',
   File: 'File',
   UserOperationLog: 'UserOperationLog'
 } as const
@@ -293,6 +295,44 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const DbBackupConfigScalarFieldEnum = {
+  id: 'id',
+  enabled: 'enabled',
+  cron: 'cron',
+  timezone: 'timezone',
+  retentionMax: 'retentionMax',
+  filePrefix: 'filePrefix',
+  gzip: 'gzip',
+  lastRunAt: 'lastRunAt',
+  lastStatus: 'lastStatus',
+  lastError: 'lastError',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DbBackupConfigScalarFieldEnum = (typeof DbBackupConfigScalarFieldEnum)[keyof typeof DbBackupConfigScalarFieldEnum]
+
+
+export const DbBackupJobScalarFieldEnum = {
+  id: 'id',
+  trigger: 'trigger',
+  status: 'status',
+  fileName: 'fileName',
+  filePath: 'filePath',
+  fileSize: 'fileSize',
+  checksum: 'checksum',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  durationMs: 'durationMs',
+  errorMessage: 'errorMessage',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DbBackupJobScalarFieldEnum = (typeof DbBackupJobScalarFieldEnum)[keyof typeof DbBackupJobScalarFieldEnum]
 
 
 export const FileScalarFieldEnum = {

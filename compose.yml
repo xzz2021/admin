@@ -44,6 +44,7 @@ services:
       - .env
     environment:
       PG_DATABASE_URL: ${APP_DATABASE_URL:?APP_DATABASE_URL is required}
+      DB_BACKUP_DIR: ${DB_BACKUP_DIR:-/app/apps/server/backups}
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -67,6 +68,7 @@ services:
         max-file: "3"
     volumes:
       - server-public:/app/apps/server/public
+      - server-backups:/app/apps/server/backups
     networks:
       - app-network
 
@@ -133,3 +135,4 @@ volumes:
   postgres-data:
   redis-data:
   server-public:
+  server-backups:

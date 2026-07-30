@@ -1,0 +1,17 @@
+import { MessageModule } from '@/system/message/message.module'
+import { BullModule } from '@nestjs/bullmq'
+import { Module } from '@nestjs/common'
+
+import { DB_BACKUP_QUEUE } from './db-backup.constants'
+import { DbBackupController } from './db-backup.controller'
+import { DbBackupProcessor } from './db-backup.processor'
+import { DbBackupService } from './db-backup.service'
+import { PgDumpRunner } from './pg-dump.runner'
+
+@Module({
+  imports: [MessageModule, BullModule.registerQueue({ name: DB_BACKUP_QUEUE })],
+  controllers: [DbBackupController],
+  providers: [DbBackupService, DbBackupProcessor, PgDumpRunner],
+  exports: [DbBackupService],
+})
+export class DbBackupModule {}

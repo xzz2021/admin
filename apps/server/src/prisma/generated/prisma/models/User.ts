@@ -269,6 +269,7 @@ export type UserWhereInput = {
   operationLogs?: Prisma.UserOperationLogListRelationFilter
   sentMessages?: Prisma.MessageListRelationFilter
   receivedMessages?: Prisma.MessageListRelationFilter
+  backupJobs?: Prisma.DbBackupJobListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -294,6 +295,7 @@ export type UserOrderByWithRelationInput = {
   operationLogs?: Prisma.UserOperationLogOrderByRelationAggregateInput
   sentMessages?: Prisma.MessageOrderByRelationAggregateInput
   receivedMessages?: Prisma.MessageOrderByRelationAggregateInput
+  backupJobs?: Prisma.DbBackupJobOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -322,6 +324,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   operationLogs?: Prisma.UserOperationLogListRelationFilter
   sentMessages?: Prisma.MessageListRelationFilter
   receivedMessages?: Prisma.MessageListRelationFilter
+  backupJobs?: Prisma.DbBackupJobListRelationFilter
 }, "id" | "email" | "phone">
 
 export type UserOrderByWithAggregationInput = {
@@ -388,6 +391,7 @@ export type UserCreateInput = {
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -412,6 +416,7 @@ export type UserUncheckedCreateInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUpdateInput = {
@@ -436,6 +441,7 @@ export type UserUpdateInput = {
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -460,6 +466,7 @@ export type UserUncheckedUpdateInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -725,6 +732,22 @@ export type UserUpdateOneWithoutAuditLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.UserUpdateWithoutAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
 }
 
+export type UserCreateNestedOneWithoutBackupJobsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBackupJobsInput, Prisma.UserUncheckedCreateWithoutBackupJobsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBackupJobsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutBackupJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutBackupJobsInput, Prisma.UserUncheckedCreateWithoutBackupJobsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutBackupJobsInput
+  upsert?: Prisma.UserUpsertWithoutBackupJobsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBackupJobsInput, Prisma.UserUpdateWithoutBackupJobsInput>, Prisma.UserUncheckedUpdateWithoutBackupJobsInput>
+}
+
 export type UserCreateNestedOneWithoutOperationLogsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutOperationLogsInput, Prisma.UserUncheckedCreateWithoutOperationLogsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutOperationLogsInput
@@ -762,6 +785,7 @@ export type UserCreateWithoutRolesInput = {
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -785,6 +809,7 @@ export type UserUncheckedCreateWithoutRolesInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -824,6 +849,7 @@ export type UserUpdateWithoutRolesInput = {
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -847,6 +873,7 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutDepartmentInput = {
@@ -870,6 +897,7 @@ export type UserCreateWithoutDepartmentInput = {
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -893,6 +921,7 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -963,6 +992,7 @@ export type UserCreateWithoutSentMessagesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -986,6 +1016,7 @@ export type UserUncheckedCreateWithoutSentMessagesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -1014,6 +1045,7 @@ export type UserCreateWithoutReceivedMessagesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutReceivedMessagesInput = {
@@ -1037,6 +1069,7 @@ export type UserUncheckedCreateWithoutReceivedMessagesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutReceivedMessagesInput = {
@@ -1076,6 +1109,7 @@ export type UserUpdateWithoutSentMessagesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -1099,6 +1133,7 @@ export type UserUncheckedUpdateWithoutSentMessagesInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutReceivedMessagesInput = {
@@ -1133,6 +1168,7 @@ export type UserUpdateWithoutReceivedMessagesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
@@ -1156,6 +1192,7 @@ export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1179,6 +1216,7 @@ export type UserCreateWithoutSessionsInput = {
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1202,6 +1240,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1241,6 +1280,7 @@ export type UserUpdateWithoutSessionsInput = {
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1264,6 +1304,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -1287,6 +1328,7 @@ export type UserCreateWithoutAuditLogsInput = {
   operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -1310,6 +1352,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -1349,6 +1392,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -1369,6 +1413,119 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutBackupJobsInput = {
+  id?: string
+  username: string
+  password: string
+  nickname?: string | null
+  email?: string | null
+  phone: string
+  avatar?: string | null
+  enabled?: boolean
+  lastLoginAt?: Date | string | null
+  lastLoginIp?: string | null
+  remark?: string | null
+  passwordChangedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+}
+
+export type UserUncheckedCreateWithoutBackupJobsInput = {
+  id?: string
+  username: string
+  password: string
+  nickname?: string | null
+  email?: string | null
+  phone: string
+  avatar?: string | null
+  enabled?: boolean
+  lastLoginAt?: Date | string | null
+  lastLoginIp?: string | null
+  remark?: string | null
+  passwordChangedAt?: Date | string | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+}
+
+export type UserCreateOrConnectWithoutBackupJobsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutBackupJobsInput, Prisma.UserUncheckedCreateWithoutBackupJobsInput>
+}
+
+export type UserUpsertWithoutBackupJobsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutBackupJobsInput, Prisma.UserUncheckedUpdateWithoutBackupJobsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutBackupJobsInput, Prisma.UserUncheckedCreateWithoutBackupJobsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutBackupJobsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutBackupJobsInput, Prisma.UserUncheckedUpdateWithoutBackupJobsInput>
+}
+
+export type UserUpdateWithoutBackupJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+}
+
+export type UserUncheckedUpdateWithoutBackupJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
@@ -1395,6 +1552,7 @@ export type UserCreateWithoutOperationLogsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutOperationLogsInput = {
@@ -1418,6 +1576,7 @@ export type UserUncheckedCreateWithoutOperationLogsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutOperationLogsInput = {
@@ -1457,6 +1616,7 @@ export type UserUpdateWithoutOperationLogsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOperationLogsInput = {
@@ -1480,6 +1640,7 @@ export type UserUncheckedUpdateWithoutOperationLogsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyDepartmentInput = {
@@ -1520,6 +1681,7 @@ export type UserUpdateWithoutDepartmentInput = {
   operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -1543,6 +1705,7 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -1574,6 +1737,7 @@ export type UserCountOutputType = {
   operationLogs: number
   sentMessages: number
   receivedMessages: number
+  backupJobs: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1583,6 +1747,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   operationLogs?: boolean | UserCountOutputTypeCountOperationLogsArgs
   sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
   receivedMessages?: boolean | UserCountOutputTypeCountReceivedMessagesArgs
+  backupJobs?: boolean | UserCountOutputTypeCountBackupJobsArgs
 }
 
 /**
@@ -1637,6 +1802,13 @@ export type UserCountOutputTypeCountReceivedMessagesArgs<ExtArgs extends runtime
   where?: Prisma.MessageWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountBackupJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DbBackupJobWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1661,6 +1833,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   operationLogs?: boolean | Prisma.User$operationLogsArgs<ExtArgs>
   sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   receivedMessages?: boolean | Prisma.User$receivedMessagesArgs<ExtArgs>
+  backupJobs?: boolean | Prisma.User$backupJobsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1729,6 +1902,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   operationLogs?: boolean | Prisma.User$operationLogsArgs<ExtArgs>
   sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   receivedMessages?: boolean | Prisma.User$receivedMessagesArgs<ExtArgs>
+  backupJobs?: boolean | Prisma.User$backupJobsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1748,6 +1922,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     operationLogs: Prisma.$UserOperationLogPayload<ExtArgs>[]
     sentMessages: Prisma.$MessagePayload<ExtArgs>[]
     receivedMessages: Prisma.$MessagePayload<ExtArgs>[]
+    backupJobs: Prisma.$DbBackupJobPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2202,6 +2377,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   operationLogs<T extends Prisma.User$operationLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$operationLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserOperationLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sentMessages<T extends Prisma.User$sentMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   receivedMessages<T extends Prisma.User$receivedMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$receivedMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  backupJobs<T extends Prisma.User$backupJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$backupJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DbBackupJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2807,6 +2983,30 @@ export type User$receivedMessagesArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[]
+}
+
+/**
+ * User.backupJobs
+ */
+export type User$backupJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DbBackupJob
+   */
+  select?: Prisma.DbBackupJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DbBackupJob
+   */
+  omit?: Prisma.DbBackupJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DbBackupJobInclude<ExtArgs> | null
+  where?: Prisma.DbBackupJobWhereInput
+  orderBy?: Prisma.DbBackupJobOrderByWithRelationInput | Prisma.DbBackupJobOrderByWithRelationInput[]
+  cursor?: Prisma.DbBackupJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DbBackupJobScalarFieldEnum | Prisma.DbBackupJobScalarFieldEnum[]
 }
 
 /**
