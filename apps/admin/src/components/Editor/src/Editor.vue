@@ -17,7 +17,7 @@ const props = defineProps({
   editorId: propTypes.string.def('wangeEditor-1'),
   height: propTypes.oneOfType([Number, String]).def('500px'),
   editorConfig: {
-    type: Object as PropType<IEditorConfig>,
+    type: Object as PropType<Partial<IEditorConfig>>,
     default: () => undefined
   },
   modelValue: propTypes.string.def('')

@@ -59,6 +59,7 @@
     "systeminformation": "^5.33.0",
     "winston": "^3.19.0",
     "ws": "^8.21.1",
+    "xss": "^1.0.15",
     "zod": "^4.4.3"
   },
   "devDependencies": {

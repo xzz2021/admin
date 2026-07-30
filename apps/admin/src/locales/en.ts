@@ -284,7 +284,13 @@ export default {
     fillRequired: 'Title and content required',
     selectReceiver: 'Select a receiver',
     receiver: 'Receiver',
-    sendQueued: 'Queued for delivery'
+    sendQueued: 'Queued for delivery',
+    view: 'View',
+    preview: 'Preview',
+    untitled: 'Untitled',
+    emptyContent: 'No content',
+    contentPlaceholder: 'Enter message content',
+    contentTooLong: 'Message content cannot exceed 5000 characters'
   },
   monitor: {
     refreshHint: 'Backend scrapes every 10s into a Redis sliding window; frontend polls via WebSocket every 5s',

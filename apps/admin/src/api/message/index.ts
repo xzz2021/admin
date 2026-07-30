@@ -27,7 +27,7 @@ export const deleteMessageApi = (ids: string[]): Promise<IResponse<{ count: numb
 }
 
 export const sendMailApi = (data: {
-  receiverId: string
+  receiverIds: string[]
   title: string
   content: string
   level?: NoticeLevel

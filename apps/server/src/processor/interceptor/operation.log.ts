@@ -14,6 +14,7 @@ const LOG_SKIP_PATHS = [
   '/monitor',
   '/online',
   '/message',
+  '/health',
 ]
 
 interface JwtUser {

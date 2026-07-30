@@ -1,5 +1,6 @@
 import { MessageType, NoticeLevel, Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
+import { isRichTextEmpty, sanitizeRichText } from '@/processor/utils'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { InjectQueue } from '@nestjs/bullmq'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
@@ -25,20 +26,23 @@ export class MessageService {
   /** 入队异步发送（站内信） */
   async enqueueMail(input: {
     senderId: string
-    receiverId: string
+    receiverIds: string[]
     title: string
     content: string
     level?: NoticeLevel
     meta?: Record<string, unknown>
   }) {
-    if (input.senderId === input.receiverId) {
+    const receiverIds = [...new Set(input.receiverIds)]
+    if (receiverIds.includes(input.senderId)) {
       throw new BadRequestException('不能给自己发送站内信')
     }
-    const receiver = await this.pgService.user.findFirst({
-      where: { id: input.receiverId, enabled: true },
+    const receivers = await this.pgService.user.findMany({
+      where: { id: { in: receiverIds }, enabled: true },
       select: { id: true },
     })
-    if (!receiver) throw new BadRequestException('接收人不存在或已禁用')
+    if (receivers.length !== receiverIds.length) {
+      throw new BadRequestException('部分接收人不存在或已禁用')
+    }
 
     await this.addJob({
       type: MessageType.MAIL,
@@ -46,10 +50,10 @@ export class MessageService {
       content: input.content,
       level: input.level ?? NoticeLevel.INFO,
       senderId: input.senderId,
-      receiverIds: [input.receiverId],
+      receiverIds,
       meta: input.meta ?? null,
     })
-    return { message: '站内信已加入发送队列' }
+    return { message: `站内信已加入发送队列，共 ${receiverIds.length} 位接收人` }
   }
 
   /** 入队系统通知（全体启用用户） */
@@ -251,7 +255,6 @@ export class MessageService {
           : {}),
       },
       select: { id: true, username: true, nickname: true, phone: true },
-      take: 20,
       orderBy: { username: 'asc' },
     })
     return { list, message: 'ok' }
@@ -278,9 +281,18 @@ export class MessageService {
     return users.map(item => item.id)
   }
 
+  /** 所有入队路径的唯一出口，在此统一清洗，保证落库内容不含 XSS 载荷 */
   private async addJob(payload: Omit<MessageDispatchJob, 'dispatchId'>) {
+    // 标题始终以纯文本渲染，只做裁剪；内容会被 v-html 渲染，必须过滤
+    const title = payload.title.trim()
+    const content = sanitizeRichText(payload.content)
+    if (!title || isRichTextEmpty(content)) {
+      throw new BadRequestException('消息标题和内容不能为空')
+    }
+
     const dispatchId = randomUUID()
-    await this.queue.add(MESSAGE_JOB, { ...payload, dispatchId } satisfies MessageDispatchJob, {
+    const job = { ...payload, title, content, dispatchId } satisfies MessageDispatchJob
+    await this.queue.add(MESSAGE_JOB, job, {
       jobId: dispatchId,
       removeOnComplete: 100,
       removeOnFail: 50,

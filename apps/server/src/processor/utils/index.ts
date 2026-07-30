@@ -1,5 +1,6 @@
 export * from './base.service'
 export * from './file.util'
+export * from './html.util'
 export * from './string'
 export * from './date'
 export * from './argon2.encryption'

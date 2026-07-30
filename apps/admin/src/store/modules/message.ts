@@ -43,9 +43,12 @@ export const useMessageStore = defineStore('message', () => {
             : item.level === 'SUCCESS'
               ? 'success'
               : 'info'
+      const plainContent =
+        new DOMParser().parseFromString(item.content, 'text/html').body.textContent?.replace(/\s+/g, ' ').trim() ||
+        item.content
       ElNotification({
         title: item.title,
-        message: item.content,
+        message: plainContent,
         type,
         position: 'top-right',
         duration: 4500

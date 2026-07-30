@@ -13,6 +13,7 @@ import type { MessageItem, MessageType } from '@/api/message/types'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Dialog } from '@/components/Dialog'
+import { Editor, RichTextPreview } from '@/components/Editor'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useMessageStore } from '@/store/modules/message'
@@ -37,12 +38,23 @@ type ReceiverOption = { id: string; username: string; nickname?: string | null; 
 const sendVisible = ref(false)
 const sendForm = reactive({
   kind: 'system' as 'mail' | 'system' | 'alert',
-  receiverId: '',
+  receiverIds: [] as string[],
   title: '',
   content: ''
 })
 const receiverOptions = ref<ReceiverOption[]>([])
 const receiverLoading = ref(false)
+
+interface PreviewMessage {
+  title: string
+  content: string
+  type: MessageType
+  sender?: string
+  createdAt?: string
+}
+
+const previewVisible = ref(false)
+const previewMessage = ref<PreviewMessage>()
 
 const typeLabel = (type: MessageType) => {
   if (type === 'MAIL') return t('message.typeMail')
@@ -54,6 +66,16 @@ const typeTag = (type: MessageType) => {
   if (type === 'ALERT') return 'danger'
   if (type === 'SYSTEM') return 'warning'
   return 'info'
+}
+
+const toPlainText = (content: string) => {
+  const document = new DOMParser().parseFromString(content, 'text/html')
+  return document.body.textContent?.replace(/\s+/g, ' ').trim() || ''
+}
+
+const hasRichTextContent = (content: string) => {
+  const document = new DOMParser().parseFromString(content, 'text/html')
+  return Boolean(document.body.textContent?.trim() || document.body.querySelector('img,video,audio,table,hr'))
 }
 
 const fetchList = async () => {
@@ -79,14 +101,18 @@ const onSelectionChange = (rows: MessageItem[]) => {
   selectedIds.value = rows.map((r) => r.id)
 }
 
-const markRead = async (ids: string[]) => {
+const markRead = async (ids: string[], options?: { silent?: boolean }) => {
   if (!ids.length) {
-    ElMessage.warning(t('message.selectFirst'))
+    if (!options?.silent) {
+      ElMessage.warning(t('message.selectFirst'))
+    }
     return
   }
   const res = await markMessageReadApi(ids).catch(() => null)
   if (res) {
-    ElMessage.success(res.message || t('message.markReadSuccess'))
+    if (!options?.silent) {
+      ElMessage.success(res.message || t('message.markReadSuccess'))
+    }
     messageStore.setUnread(res.data?.unread ?? messageStore.unread)
     fetchList()
   }
@@ -121,17 +147,18 @@ const removeSelected = async () => {
 
 const openSend = () => {
   sendForm.kind = 'system'
-  sendForm.receiverId = ''
+  sendForm.receiverIds = []
   sendForm.title = ''
   sendForm.content = ''
   receiverOptions.value = []
   sendVisible.value = true
+  void fetchReceivers()
 }
 
-const searchReceivers = async (keyword: string) => {
+const fetchReceivers = async () => {
   receiverLoading.value = true
   try {
-    const res = await searchMessageReceiversApi(keyword || undefined).catch(() => null)
+    const res = await searchMessageReceiversApi().catch(() => null)
     receiverOptions.value = res?.data?.list ?? []
   } finally {
     receiverLoading.value = false
@@ -139,11 +166,15 @@ const searchReceivers = async (keyword: string) => {
 }
 
 const submitSend = async () => {
-  if (!sendForm.title.trim() || !sendForm.content.trim()) {
+  if (!sendForm.title.trim() || !hasRichTextContent(sendForm.content)) {
     ElMessage.warning(t('message.fillRequired'))
     return
   }
-  if (sendForm.kind === 'mail' && !sendForm.receiverId) {
+  if (sendForm.content.length > 5000) {
+    ElMessage.warning(t('message.contentTooLong'))
+    return
+  }
+  if (sendForm.kind === 'mail' && !sendForm.receiverIds.length) {
     ElMessage.warning(t('message.selectReceiver'))
     return
   }
@@ -152,7 +183,7 @@ const submitSend = async () => {
   const content = sendForm.content.trim()
   let res = null as Awaited<ReturnType<typeof sendSystemApi>> | null
   if (sendForm.kind === 'mail') {
-    res = await sendMailApi({ receiverId: sendForm.receiverId, title, content }).catch(() => null)
+    res = await sendMailApi({ receiverIds: sendForm.receiverIds, title, content }).catch(() => null)
   } else if (sendForm.kind === 'alert') {
     res = await sendAlertApi({ title, content }).catch(() => null)
   } else {
@@ -161,6 +192,35 @@ const submitSend = async () => {
   if (res) {
     ElMessage.success(res.message || t('message.sendQueued'))
     sendVisible.value = false
+  }
+}
+
+const composeMessageType = (): MessageType => {
+  if (sendForm.kind === 'mail') return 'MAIL'
+  if (sendForm.kind === 'alert') return 'ALERT'
+  return 'SYSTEM'
+}
+
+const openComposePreview = () => {
+  previewMessage.value = {
+    title: sendForm.title.trim() || t('message.untitled'),
+    content: sendForm.content,
+    type: composeMessageType()
+  }
+  previewVisible.value = true
+}
+
+const openMessagePreview = (row: MessageItem) => {
+  previewMessage.value = {
+    title: row.title,
+    content: row.content,
+    type: row.type,
+    sender: row.sender?.username || '-',
+    createdAt: row.createdAt
+  }
+  previewVisible.value = true
+  if (!row.readAt) {
+    void markRead([row.id], { silent: true })
   }
 }
 
@@ -191,7 +251,7 @@ const tableColumns = reactive<TableColumn[]>([
     field: 'content',
     label: t('message.content'),
     minWidth: 220,
-    formatter: (row: MessageItem) => row.content
+    formatter: (row: MessageItem) => toPlainText(row.content) || '-'
   },
   {
     field: 'sender',
@@ -228,14 +288,11 @@ const tableColumns = reactive<TableColumn[]>([
     width: 100,
     fixed: 'right',
     slots: {
-      default: (data: { row: MessageItem }) =>
-        !data.row.readAt ? (
-          <BaseButton type="primary" link onClick={() => markRead([data.row.id])}>
-            {t('message.markRead')}
-          </BaseButton>
-        ) : (
-          <span class="text-12px text-[var(--el-text-color-secondary)]">-</span>
-        )
+      default: (data: { row: MessageItem }) => (
+        <BaseButton type="primary" link onClick={() => openMessagePreview(data.row)}>
+          {t('message.view')}
+        </BaseButton>
+      )
     }
   }
 ])
@@ -288,7 +345,7 @@ onMounted(fetchList)
       @update:page-size="fetchList"
     />
 
-    <Dialog v-model="sendVisible" :title="t('message.send')" width="520px">
+    <Dialog v-model="sendVisible" :title="t('message.send')" width="760px" max-height="70vh">
       <div class="flex flex-col gap-12px">
         <ElSelect v-model="sendForm.kind" class="w-full">
           <ElOption :label="t('message.typeMail')" value="mail" />
@@ -297,35 +354,59 @@ onMounted(fetchList)
         </ElSelect>
         <ElSelect
           v-if="sendForm.kind === 'mail'"
-          v-model="sendForm.receiverId"
+          v-model="sendForm.receiverIds"
+          multiple
           filterable
-          remote
           clearable
+          collapse-tags
+          collapse-tags-tooltip
           class="w-full"
           :placeholder="t('message.receiver')"
-          :remote-method="searchReceivers"
           :loading="receiverLoading"
-          @focus="searchReceivers('')"
         >
           <ElOption
             v-for="item in receiverOptions"
             :key="item.id"
-            :label="`${item.username}${item.nickname ? ` (${item.nickname})` : ''}`"
+            :label="`${item.username} ${item.nickname ? ` (${item.nickname})` : ''} · ${item.phone}`"
             :value="item.id"
           />
         </ElSelect>
         <ElInput v-model="sendForm.title" :placeholder="t('message.title')" maxlength="200" />
-        <ElInput
+        <Editor
           v-model="sendForm.content"
-          type="textarea"
-          :rows="5"
-          :placeholder="t('message.content')"
-          maxlength="5000"
+          editor-id="message-content-editor"
+          height="280px"
+          :editor-config="{ placeholder: t('message.contentPlaceholder') }"
         />
+        <div class="text-right text-12px text-[var(--el-text-color-secondary)]">
+          {{ sendForm.content.length }} / 5000
+        </div>
       </div>
       <template #footer>
         <BaseButton @click="sendVisible = false">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton @click="openComposePreview">{{ t('message.preview') }}</BaseButton>
         <BaseButton type="primary" @click="submitSend">{{ t('common.ok') }}</BaseButton>
+      </template>
+    </Dialog>
+
+    <Dialog v-model="previewVisible" :title="t('message.preview')" width="720px" max-height="70vh">
+      <template v-if="previewMessage">
+        <div class="mb-16px border-b border-b-solid border-[var(--el-border-color)] pb-16px">
+          <h2 class="m-0 mb-10px text-20px">{{ previewMessage.title }}</h2>
+          <div class="flex flex-wrap items-center gap-12px text-13px text-[var(--el-text-color-secondary)]">
+            <ElTag size="small" :type="typeTag(previewMessage.type)">
+              {{ typeLabel(previewMessage.type) }}
+            </ElTag>
+            <span v-if="previewMessage.sender">{{ t('message.sender') }}：{{ previewMessage.sender }}</span>
+            <span v-if="previewMessage.createdAt">
+              {{ dayjs(previewMessage.createdAt).format('YYYY-MM-DD HH:mm:ss') }}
+            </span>
+          </div>
+        </div>
+        <RichTextPreview :content="previewMessage.content" :empty-text="t('message.emptyContent')" />
+      </template>
+      <template #footer>
+        <BaseButton type="primary" @click="previewVisible = false">{{ t('common.close') }}</BaseButton>
       </template>
     </Dialog>
   </ContentWrap>

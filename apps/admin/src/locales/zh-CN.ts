@@ -282,7 +282,13 @@ export default {
     fillRequired: '请填写标题和内容',
     selectReceiver: '请选择接收人',
     receiver: '接收人',
-    sendQueued: '已加入发送队列'
+    sendQueued: '已加入发送队列',
+    view: '查看',
+    preview: '预览',
+    untitled: '未填写标题',
+    emptyContent: '暂无内容',
+    contentPlaceholder: '请输入消息内容',
+    contentTooLong: '消息内容不能超过 5000 个字符'
   },
   monitor: {
     refreshHint: '后端每 10 秒采集并写入 Redis 滑动窗口，前端经 WebSocket 每 5 秒拉取近 1 小时数据',

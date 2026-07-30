@@ -19,7 +19,7 @@ const ListQuerySchema = z.object({
 class ListQueryDto extends createZodDto(ListQuerySchema) {}
 
 const SendMailSchema = z.object({
-  receiverId: z.string().min(1),
+  receiverIds: z.array(z.string().min(1)).min(1),
   title: z.string().min(1).max(200),
   content: z.string().min(1).max(5000),
   level: z.nativeEnum(NoticeLevel).optional(),
@@ -64,7 +64,7 @@ export class MessageController {
 
   @Get('receivers')
   @RequiredPermission('message:send')
-  @ApiOperation({ summary: '搜索站内信接收人' })
+  @ApiOperation({ summary: '获取站内信接收人列表' })
   receivers(@Query() query: ReceiversQueryDto, @User() user: JwtUser) {
     return this.messageService.searchReceivers(query.keyword, user.id)
   }
@@ -104,7 +104,7 @@ export class MessageController {
   sendMail(@Body() body: SendMailDto, @User() user: JwtUser) {
     return this.messageService.enqueueMail({
       senderId: user.id,
-      receiverId: body.receiverId,
+      receiverIds: body.receiverIds,
       title: body.title,
       content: body.content,
       level: body.level,
