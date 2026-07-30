@@ -1,13 +1,23 @@
-部署相关
+> 项目整体结构,目录,架构设计详细文档在根目录[/docs](./docs/)下
 
-## 前置
+> 本地开发
+
+前置准备
+
+- git/node24/pnpm11.13.1
+- 本机要有redis和postgres数据库,配置在[server](./apps//server/)的.env文件
+- prisma需要初始化种子数据,[server](./apps//server/)项目下执行`pnpm prisma:seed`,为了避免数据冲突,增量需要自行构造查询写入逻辑,文件在[seeds](./apps/./server/src/prisma/seed.ts)
+- 每次更新schema后需要执行`pnpm generate`
+
+> 部署相关
+
+前置准备
 
 1. 复制环境变量：`cp .env.example .env`，按需修改密码与密钥
-2. 创建外部网络（仅首次）：`docker network create shared`
-3. 确保 Nginx Proxy Manager 也加入 `shared` 网络
-4. 提交文件一律为LF `git config core.autocrlf input`
+2. compose使用了外部的docker代理网络,需要确保 Nginx Proxy Manager 有创建和加入 `shared` 网络,后期优化成独立网络
+3. 提交文件一律为LF `git config core.autocrlf input`
 
-## 首次构建启动
+首次构建启动
 
 ```bash
 docker compose -f compose.yml up -d --build
@@ -29,32 +39,34 @@ WebSocket（`/api/online/ws`、`/api/message/ws`、`/api/monitor/ws`）走同一
 - **admin 容器内 nginx** 已配置 `Upgrade` / `Connection` 与更长的 `proxy_read_timeout`
 - **外层 Nginx Proxy Manager**：对应 Proxy Host 打开 Websockets Support；若 NPM 直接反代 `server:3000` 而非经 admin，也需开启 WS
 
-## 停止服务（不删除 volume）
+后期附参考图
+
+### 停止服务（不删除 volume）
 
 ```bash
 docker compose down
 ```
 
-## 更新代码后重建
+### 更新代码后重建
 
 ```bash
 docker compose up -d --build
 ```
 
-仅重新跑数据库迁移：
+### 仅重新跑数据库迁移：
 
 ```bash
 docker compose run --rm migrate
 ```
 
-## 说明
+### 说明
 
 - 内网只保留 admin 容器内 1 个 nginx（托管 SPA）
 - `migrate` 使用 Dockerfile 的 `migrator` 阶段；`server` 使用 `runner` 阶段
 - prisma7不兼容node26,故使用node24
-- 清理docker残留: `docker system prune -a --volumes -f`
+- 清理docker部署CACHE残留: `docker system prune -a --volumes -f`
 
-## 部署
+### 部署
 
 如果只更新admin的nginx.conf
 
