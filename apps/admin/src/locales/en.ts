@@ -860,6 +860,8 @@ export default {
     noPermissionTip: 'No permissions configured for this menu',
     selectedPermissionCount: '{count} permissions selected',
     selectAll: 'Select all',
+    selectAllMenuPermission: 'Select all menus and permissions',
+    unselectAllMenuPermission: 'Deselect all',
     roleDetail: 'Role detail',
     roleDetailTip: 'View role details and assigned menus and permissions',
     roleInfo: 'Role information',

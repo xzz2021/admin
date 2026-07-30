@@ -6,7 +6,7 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "dev": "pnpm vite --mode base --open",
+    "dev": "pnpm vite --mode base",
     "ts:check": "pnpm vue-tsc --noEmit --skipLibCheck",
     "typecheck": "vue-tsc --noEmit --skipLibCheck",
     "build": "pnpm run build:pro",

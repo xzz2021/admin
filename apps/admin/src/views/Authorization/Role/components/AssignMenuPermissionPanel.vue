@@ -259,6 +259,30 @@ const syncTreeCheckedKeys = () => {
   bumpPermissionChange()
 }
 
+const isAllMenuPermissionChecked = computed(() => {
+  permissionChangeTick.value
+  let hasMenu = false
+  let allChecked = true
+  eachTree(props.menuTree, (node: MenuTreeNode) => {
+    hasMenu = true
+    if (!node.checked || node.permissions?.some((permission) => !permission.checked)) {
+      allChecked = false
+    }
+  })
+  return hasMenu && allChecked
+})
+
+const toggleAllMenuPermissions = () => {
+  const checked = !isAllMenuPermissionChecked.value
+  eachTree(props.menuTree, (node: MenuTreeNode) => {
+    node.checked = checked
+    node.permissions?.forEach((permission) => {
+      permission.checked = checked
+    })
+  })
+  syncTreeCheckedKeys()
+}
+
 const handleImportPermissions = async () => {
   const clipboardText = await getText()
   if (!clipboardText?.trim()) {
@@ -361,7 +385,12 @@ defineExpose({
 
     <div class="permission-layout">
       <div class="permission-panel">
-        <div class="panel-header">{{ t('role.menuList') }}</div>
+        <div class="panel-header flex justify-between items-center">
+          <span>{{ t('role.menuList') }}</span>
+          <BaseButton v-if="menuTree.length" link type="danger" @click="toggleAllMenuPermissions">
+            {{ isAllMenuPermissionChecked ? t('role.unselectAllMenuPermission') : t('role.selectAllMenuPermission') }}
+          </BaseButton>
+        </div>
         <ElInput v-model="menuSearch" class="mb-12px" :placeholder="t('role.menuSearchPlaceholder')" clearable>
           <template #prefix>
             <Icon icon="search" />

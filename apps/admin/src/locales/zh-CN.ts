@@ -852,6 +852,8 @@ export default {
     noPermissionTip: '当前菜单暂无权限配置',
     selectedPermissionCount: '已选择 {count} 个权限',
     selectAll: '全选',
+    selectAllMenuPermission: '全选菜单和权限',
+    unselectAllMenuPermission: '取消全选',
     roleDetail: '角色详情',
     roleDetailTip: '查看角色的详细信息及拥有的菜单和权限',
     roleInfo: '角色信息',
