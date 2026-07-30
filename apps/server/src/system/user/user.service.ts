@@ -225,7 +225,7 @@ export class UserService {
   }
 
   async getUserInfo(userId: string) {
-    const userInfo = await this.pgService.user.findUnique({
+    const userinfo = await this.pgService.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -238,11 +238,7 @@ export class UserService {
         roles: { select: { role: { select: { id: true, name: true } } } },
       },
     })
-    const shaped = {
-      ...userInfo,
-      createdAt: formatDateToYMDHMS(userInfo?.createdAt),
-    }
-    return { userinfo: shaped, message: '获取个人信息成功' }
+    return { userinfo, message: '获取个人信息成功' }
   }
   async updateInfo(updateUserinfoDto: UpdatePersonalInfo) {
     // 用户更新自己的 一般信息

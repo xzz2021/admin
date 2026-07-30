@@ -17,7 +17,7 @@ import { Editor, RichTextPreview } from '@/components/Editor'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useMessageStore } from '@/store/modules/message'
-import dayjs from 'dayjs'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { ElInput, ElMessage, ElMessageBox, ElOption, ElSelect, ElTag } from 'element-plus'
 import { onMounted, reactive, ref, unref } from 'vue'
 
@@ -263,7 +263,7 @@ const tableColumns = reactive<TableColumn[]>([
     field: 'createdAt',
     label: t('message.time'),
     width: 170,
-    formatter: (row: MessageItem) => dayjs(row.createdAt).format('YYYY-MM-DD HH:mm:ss')
+    formatter: (row: MessageItem) => formatToDateTime(row.createdAt)
   },
   {
     field: 'readAt',
@@ -399,7 +399,7 @@ onMounted(fetchList)
             </ElTag>
             <span v-if="previewMessage.sender">{{ t('message.sender') }}：{{ previewMessage.sender }}</span>
             <span v-if="previewMessage.createdAt">
-              {{ dayjs(previewMessage.createdAt).format('YYYY-MM-DD HH:mm:ss') }}
+              {{ formatToDateTime(previewMessage.createdAt) }}
             </span>
           </div>
         </div>

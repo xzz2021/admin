@@ -9,6 +9,7 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
 import { reactive, ref } from 'vue'
 import Write from './components/Write.vue'
@@ -78,7 +79,8 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'createdAt',
     label: t('tableDemo.displayTime'),
-    width: 180
+    width: 180,
+    formatter: (row: DepartmentItem) => formatToDateTime(row.createdAt)
   },
   {
     field: 'action',

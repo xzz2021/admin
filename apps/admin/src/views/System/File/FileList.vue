@@ -9,11 +9,11 @@ import { Table, TableColumn } from '@/components/Table'
 import { UploadBtn } from '@/components/UploadBtn'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { downloadFile, FileUnavailableError, formatFileSize, resolveStaticUrl } from '@/utils/file'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, unref } from 'vue'
 import RenderFile from './components/RenderFile.vue'
-
 const ids = ref<number[]>([])
 const allFileList = ref<FileItem[]>([])
 
@@ -111,7 +111,8 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'createdAt',
     label: t('file.uploadTime'),
-    minWidth: 170
+    minWidth: 170,
+    formatter: (row: FileItem) => formatToDateTime(row.createdAt)
   },
   {
     field: 'action',

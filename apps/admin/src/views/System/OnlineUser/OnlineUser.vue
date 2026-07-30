@@ -6,7 +6,7 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useOnlinePresenceStore } from '@/store/modules/onlinePresence'
-import dayjs from 'dayjs'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { ElInput, ElMessage, ElMessageBox, ElTag } from 'element-plus'
 import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
@@ -19,11 +19,6 @@ const list = ref<OnlineUserItem[]>([])
 const onlineCount = ref(0)
 const awayCount = ref(0)
 let refreshTimer: ReturnType<typeof setInterval> | null = null
-
-const formatTime = (ts?: number) => {
-  if (!ts) return '-'
-  return dayjs(ts).format('YYYY-MM-DD HH:mm:ss')
-}
 
 const statusTag = (status: string) => {
   if (status === 'online') return <ElTag type="success">{t('onlineUser.statusOnline')}</ElTag>
@@ -112,13 +107,13 @@ const tableColumns = reactive<TableColumn[]>([
     field: 'loginAt',
     label: t('onlineUser.loginAt'),
     width: 170,
-    formatter: (row: OnlineUserItem) => formatTime(row.loginAt)
+    formatter: (row: OnlineUserItem) => formatToDateTime(row.loginAt)
   },
   {
     field: 'lastPingAt',
     label: t('onlineUser.lastPingAt'),
     width: 170,
-    formatter: (row: OnlineUserItem) => formatTime(row.lastPingAt)
+    formatter: (row: OnlineUserItem) => formatToDateTime(row.lastPingAt)
   },
   {
     field: 'status',

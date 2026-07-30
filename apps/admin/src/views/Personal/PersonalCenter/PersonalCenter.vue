@@ -6,6 +6,7 @@ import { ContentWrap } from '@/components/ContentWrap'
 import { Dialog } from '@/components/Dialog'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useUserStore } from '@/store/modules/user'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { resolveAvatarUrl } from '@/utils/file'
 import { ElButton, ElDivider, ElImage, ElMessage, ElTabPane, ElTabs, ElTag } from 'element-plus'
 import { computed, ref, unref } from 'vue'
@@ -123,7 +124,7 @@ const saveAvatar = async () => {
       <ElDivider />
       <div class="flex justify-between items-center">
         <div>{{ t('personal.createTime') }}：</div>
-        <div>{{ userInfo?.createdAt ?? '-' }}</div>
+        <div>{{ formatToDateTime(userInfo?.createdAt) ?? '-' }}</div>
       </div>
       <ElDivider />
     </ContentWrap>

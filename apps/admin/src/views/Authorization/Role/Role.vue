@@ -8,6 +8,7 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { ElTag } from 'element-plus'
 import { onActivated, reactive, ref, unref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -67,7 +68,8 @@ const tableColumns = reactive<TableColumn[]>([
   },
   {
     field: 'createdAt',
-    label: t('tableDemo.displayTime')
+    label: t('tableDemo.displayTime'),
+    formatter: (row: RoleItem) => formatToDateTime(row.createdAt)
   },
   {
     field: 'description',

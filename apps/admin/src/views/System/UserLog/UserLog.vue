@@ -9,6 +9,7 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
+import { formatToDateTime } from '@/utils/dateUtil'
 import { ElMessage, ElTag } from 'element-plus'
 import { reactive, ref, unref } from 'vue'
 import Detail from './components/Detail.vue'
@@ -116,7 +117,8 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'createdAt',
     label: t('userLog.operateTime'),
-    minWidth: 170
+    minWidth: 170,
+    formatter: (row: LogItem) => formatToDateTime(row.createdAt)
   },
   {
     field: 'action',
