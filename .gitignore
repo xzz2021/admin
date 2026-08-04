@@ -1,5 +1,8 @@
 node_modules/
 
+# Docker bind-mount data (uploads / DB backups)
+/data/
+
 .env
 !.env.example
 !apps/admin/.env.pro

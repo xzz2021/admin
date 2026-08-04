@@ -34,7 +34,17 @@ workspace 已对 `@hatkom/nestjs-zod-prisma` 设置 `allowBuilds: false`，避�
 
 ## 静态资源 / 头像无法访问
 
-核对 `STATIC_FILE_ROOT_PATH`、`STATIC_FILE_SERVE_ROOT`、卷 `server-public` 挂载，以及 Helmet CORP / 反代路径。
+核对 `STATIC_FILE_ROOT_PATH`、`STATIC_FILE_SERVE_ROOT`、bind mount `./data/server/public`，以及 Helmet CORP / 反代路径。
+
+## 数据库备份 EACCES permission denied
+
+`public`/`backups` 使用宿主机目录 bind mount。若目录由 Docker 以 root 创建，`node`（uid 1000）无法写入。先在宿主机执行：
+
+```bash
+mkdir -p data/server/public data/server/backups
+chown -R 1000:1000 data/server
+docker compose up -d server
+```
 
 ## 前端菜单有、页面空白
 

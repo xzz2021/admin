@@ -67,8 +67,10 @@ services:
         max-size: "10m"
         max-file: "3"
     volumes:
-      - server-public:/app/apps/server/public
-      - server-backups:/app/apps/server/backups
+      # Bind mounts (not named volumes): host dirs should be writable by container user `node` (uid 1000).
+      # Linux: mkdir -p data/server/{public,backups} && chown -R 1000:1000 data/server
+      - ./data/server/public:/app/apps/server/public
+      - ./data/server/backups:/app/apps/server/backups
     networks:
       - app-network
 
@@ -134,5 +136,3 @@ networks:
 volumes:
   postgres-data:
   redis-data:
-  server-public:
-  server-backups:

@@ -15,8 +15,9 @@
 前置准备
 
 1. 复制环境变量：`cp .env.example .env`，按需修改密码与密钥
-2. compose使用了外部的docker代理网络,需要确保 Nginx Proxy Manager 有创建和加入 `shared` 网络,后期优化成独立网络
-3. 提交文件一律为LF `git config core.autocrlf input`
+2. Linux 创建可写数据目录（与容器 `node` uid 1000 对齐）：`mkdir -p data/server/{public,backups} && chown -R 1000:1000 data/server`否则数据库备份会没有权限
+3. compose使用了外部的docker代理网络,需要确保 Nginx Proxy Manager 有创建和加入 `shared` 网络,后期优化成独立网络
+4. 提交文件一律为LF `git config core.autocrlf input`
 
 首次构建启动
 

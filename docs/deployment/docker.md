@@ -4,13 +4,13 @@
 
 根目录 `compose.yml`，服务：
 
-| 服务     | 镜像/构建                            | 说明                                                         |
-| -------- | ------------------------------------ | ------------------------------------------------------------ |
-| postgres | postgres:18-alpine                   | 数据卷 `postgres-data`；挂载 `docker/postgres/init-users.sh` |
-| redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                  |
-| migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`                          |
-| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；卷 `server-public`、`server-backups` |
-| admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                          |
+| 服务     | 镜像/构建                            | 说明                                                                               |
+| -------- | ------------------------------------ | ---------------------------------------------------------------------------------- |
+| postgres | postgres:18-alpine                   | 数据卷 `postgres-data`；挂载 `docker/postgres/init-users.sh`                       |
+| redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                                        |
+| migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`                                                |
+| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；bind mount `./data/server/public`、`./data/server/backups` |
+| admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                                                |
 
 网络：
 
@@ -45,6 +45,9 @@
 
 ```bash
 cp .env.example .env   # 修改密钥与密码
+# Linux：先创建 bind 目录并交给容器内 node（uid 1000），避免 Docker 以 root 建目录导致 EACCES
+mkdir -p data/server/public data/server/backups
+chown -R 1000:1000 data/server
 docker network create shared_net
 docker compose -f compose.yml up -d --build
 docker compose down
@@ -74,7 +77,8 @@ docker exec app-admin nginx -s reload
 
 - `.dockerignore`：排除 node_modules、多数 .env、测试等；放行 `apps/admin/.env.pro`、`dist-pro` 等
 - 已有库角色迁移 SQL：`docker/postgres/migrate-existing-users.sql`（**未**挂入 compose，需手动）
-- 备份文件默认落在 `server-backups` 卷，对外下载统一走后端鉴权接口，不直接暴露卷目录
+- 备份与静态上传走宿主机 bind mount：`./data/server/backups`、`./data/server/public`（勿用命名卷，避免 root 属主导致 `node` 无法写入）；对外下载仍走后端鉴权接口
+- 首次部署前请 `mkdir -p data/server/{public,backups} && chown -R 1000:1000 data/server`（与镜像内 `node` uid 对齐）
 - `server` 生产镜像固定安装 PostgreSQL 18 客户端，与 Compose 中的 PostgreSQL 18 服务端保持主版本一致
 - 数据库备份通过 BullMQ 队列异步执行（Queue 与 Processor 同在 server 容器），定时任务使用 repeatable job；`attempts=1`
 - 立即备份使用固定 `jobId=db-backup:manual` 幂等入队；定时备份使用 `upsertJobScheduler(db-backup:scheduled)`，配置未变时不重设
