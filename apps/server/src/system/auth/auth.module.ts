@@ -5,19 +5,20 @@ import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtRefreshStrategy } from './jwt.refresh.strategy'
 import { JwtStrategy } from './jwt.strategy'
-// import { SmsModule } from '@/utils/sms/sms.module';
-// import { ConfigService } from '@nestjs/config';
 import { CaptchaModule } from '@/system/captcha/captcha.module'
 import { OnlineModule } from '@/system/online/online.module'
+import { UserPersistenceModule } from '@/system/user/user-persistence.module'
 import { JwtRefreshAuthGuard } from '@/processor/guard'
 import { RtTokenService } from './rt.token.service'
+import { SessionRevocationService } from './session-revocation.service'
 import { TokenService } from './token.service'
 
 @Module({
   imports: [
     PassportModule,
-    JwtModule, // 不用传递参数 一律在生成时传递
+    JwtModule,
     CaptchaModule,
+    UserPersistenceModule,
     forwardRef(() => OnlineModule),
   ],
   controllers: [AuthController],
@@ -25,11 +26,12 @@ import { TokenService } from './token.service'
     AuthService,
     TokenService,
     RtTokenService,
+    SessionRevocationService,
     JwtStrategy,
     JwtRefreshStrategy,
     JwtRefreshAuthGuard,
   ],
-  exports: [AuthService, TokenService, RtTokenService],
+  exports: [AuthService, TokenService, RtTokenService, SessionRevocationService],
 })
 export class AuthModule {}
 

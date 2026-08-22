@@ -1,5 +1,6 @@
-import type { PgService } from '@/prisma/pg.service'
 import type { RbacPermissionCacheService } from '@/processor/rbac'
+import type { PgService } from '@/prisma/pg.service'
+import { RoleRepository } from './role.repository'
 import { RoleService } from './role.service'
 
 describe('RoleService seed and queries', () => {
@@ -28,14 +29,14 @@ describe('RoleService seed and queries', () => {
   )
 
   const service = new RoleService(
-    {
+    new RoleRepository({
       $transaction: transaction,
       $executeRaw: executeRaw,
       role: { findMany: roleFindMany, createMany: roleCreateMany, upsert: roleUpsert },
       menu: { findMany: menuFindMany },
       roleMenu: { findMany: roleMenuFindMany },
       rolePermission: { findMany: rolePermissionFindMany },
-    } as unknown as PgService,
+    } as unknown as PgService),
     {} as unknown as RbacPermissionCacheService,
   )
 

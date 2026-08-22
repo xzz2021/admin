@@ -1,8 +1,8 @@
-import { PgService } from '@/prisma/pg.service'
 import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { OnlineGateway } from '@/system/online/online.gateway'
 import { OnlineService } from '@/system/online/online.service'
+import { UserRepository } from '@/system/user/user.repository'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import {
   BadRequestException,
@@ -27,7 +27,7 @@ export class AuthService {
   private wxAppSecret: string
   private wxAppId: string
   constructor(
-    private readonly pgService: PgService,
+    private readonly users: UserRepository,
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
@@ -64,43 +64,17 @@ export class AuthService {
     // }
 
     const hashedPassword = await hashPayPassword(password)
-    const res = await this.pgService.user.create({
-      data: {
-        phone,
-        username,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-      },
+    const res = await this.users.createRegistered({
+      phone,
+      username,
+      password: hashedPassword,
     })
     await this.redis.del('register_' + phone) // 删除缓存的 验证码
     return { message: phone + '注册成功', res }
   }
 
   private async getUserForLogin(phone: string) {
-    const user = await this.pgService.user.findUnique({
-      where: { phone, enabled: true },
-      select: {
-        id: true,
-        username: true,
-        phone: true,
-        password: true,
-        roles: {
-          select: {
-            role: {
-              select: {
-                // id: true,
-                name: true,
-                code: true,
-              },
-            },
-          },
-        },
-        avatar: true,
-        email: true,
-      },
-    })
+    const user = await this.users.findEnabledByPhoneForLogin(phone)
     return user
   }
 
@@ -138,12 +112,7 @@ export class AuthService {
   }
 
   async isUserExist(phone: string) {
-    const user = await this.pgService.user.findUnique({
-      where: { phone },
-      select: {
-        id: true,
-      },
-    })
+    const user = await this.users.findIdByPhone(phone)
     return !!user
   }
 
@@ -199,28 +168,7 @@ export class AuthService {
     // DB 仅用于刷新用户资料。库瞬时不可用时仍换发短 token，避免全站被误判为 401。
     let extraPayload: Record<string, unknown> = { id: userId }
     try {
-      const user = await this.pgService.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          phone: true,
-          enabled: true,
-          roles: {
-            include: {
-              role: {
-                select: {
-                  id: true,
-                  name: true,
-                  code: true,
-                },
-              },
-            },
-          },
-          avatar: true,
-          email: true,
-        },
-      })
+      const user = await this.users.findByIdForRefresh(userId)
       if (!user || !user.enabled) {
         throw new UnauthorizedException('用户不存在或已禁用')
       }

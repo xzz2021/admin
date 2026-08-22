@@ -1,11 +1,8 @@
-import type { PgService } from '@/prisma/pg.service'
 import type { RbacPermissionCacheService } from '@/processor/rbac'
-import type { RtTokenService } from '@/system/auth/rt.token.service'
-import type { TokenService } from '@/system/auth/token.service'
+import type { SessionRevocationService } from '@/system/auth/session-revocation.service'
 import type { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
-import type { OnlineGateway } from '@/system/online/online.gateway'
-import type { OnlineService } from '@/system/online/online.service'
-import type { RedisService } from '@liaoliaots/nestjs-redis'
+import type { PgService } from '@/prisma/pg.service'
+import { UserRepository } from './user.repository'
 import { UserService } from './user.service'
 
 jest.mock('@/processor/utils', () => ({
@@ -30,35 +27,25 @@ describe('UserService session revocation', () => {
   const userUpdate = jest.fn()
   const userFindUnique = jest.fn()
   const invalidateUsers = jest.fn()
-  const revokeAllAccess = jest.fn()
-  const revokeAllRt = jest.fn()
-  const terminateUser = jest.fn()
-  const notifyForceLogout = jest.fn()
-  const notifyForceLogoutByUser = jest.fn()
+  const revokeAll = jest.fn()
 
   const createService = () =>
     new UserService(
-      {
+      new UserRepository({
         user: { update: userUpdate, findUnique: userFindUnique },
         $transaction: jest.fn(),
-      } as unknown as PgService,
-      { getOrThrow: () => ({}) } as unknown as RedisService,
+      } as unknown as PgService),
       { invalidateUsers } as unknown as RbacPermissionCacheService,
-      { revokeAll: revokeAllAccess } as unknown as TokenService,
-      { revokeAll: revokeAllRt } as unknown as RtTokenService,
+      { revokeAll } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue: jest.fn() } as unknown as FileCleanupService,
-      { terminateUser } as unknown as OnlineService,
-      { notifyForceLogout, notifyForceLogoutByUser } as unknown as OnlineGateway,
     )
 
   beforeEach(() => {
     jest.clearAllMocks()
     userUpdate.mockResolvedValue({ id: 'user-1' })
     invalidateUsers.mockResolvedValue(undefined)
-    revokeAllAccess.mockResolvedValue(undefined)
-    revokeAllRt.mockResolvedValue(undefined)
-    terminateUser.mockResolvedValue(['jti-1'])
+    revokeAll.mockResolvedValue(undefined)
   })
 
   it('revokes all sessions after password change', async () => {
@@ -67,9 +54,7 @@ describe('UserService session revocation', () => {
 
     await service.updatePassword({ id: 'user-1', password: 'old-pass', newPassword: 'new-pass-1' })
 
-    expect(terminateUser).toHaveBeenCalledWith('user-1')
-    expect(notifyForceLogout).toHaveBeenCalledWith(['jti-1'], 'revoked')
-    expect(notifyForceLogoutByUser).toHaveBeenCalledWith('user-1', 'revoked')
+    expect(revokeAll).toHaveBeenCalledWith('user-1')
     expect(userUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ passwordChangedAt: expect.any(Date) }),
@@ -82,7 +67,7 @@ describe('UserService session revocation', () => {
 
     await service.resetPassword({ id: 'user-1', password: 'NewPass_123!', operateId: 'admin-1' })
 
-    expect(terminateUser).toHaveBeenCalledWith('user-1')
+    expect(revokeAll).toHaveBeenCalledWith('user-1')
   })
 
   it('revokes all sessions when user is disabled', async () => {
@@ -98,7 +83,7 @@ describe('UserService session revocation', () => {
     })
 
     expect(invalidateUsers).toHaveBeenCalledWith(['user-1'])
-    expect(terminateUser).toHaveBeenCalledWith('user-1')
+    expect(revokeAll).toHaveBeenCalledWith('user-1')
   })
 
   it('does not revoke sessions when user remains enabled', async () => {
@@ -113,7 +98,7 @@ describe('UserService session revocation', () => {
       enabled: true,
     })
 
-    expect(terminateUser).not.toHaveBeenCalled()
+    expect(revokeAll).not.toHaveBeenCalled()
   })
 })
 
@@ -124,11 +109,11 @@ describe('UserService uploadAvatar', () => {
 
   const createService = () =>
     new UserService(
-      { user: { update: userUpdate, findUnique: userFindUnique } } as unknown as PgService,
-      { getOrThrow: () => ({}) } as unknown as RedisService,
+      new UserRepository({
+        user: { update: userUpdate, findUnique: userFindUnique },
+      } as unknown as PgService),
       { invalidateUsers: jest.fn() } as unknown as RbacPermissionCacheService,
-      { revokeAll: jest.fn() } as unknown as TokenService,
-      { revokeAll: jest.fn() } as unknown as RtTokenService,
+      { revokeAll: jest.fn() } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue } as unknown as FileCleanupService,
     )
@@ -204,14 +189,12 @@ describe('UserService list queries', () => {
 
   const createService = () =>
     new UserService(
-      {
+      new UserRepository({
         user: { findMany, count, update: jest.fn(), findUnique: jest.fn() },
         $transaction: jest.fn(),
-      } as unknown as PgService,
-      { getOrThrow: () => ({}) } as unknown as RedisService,
+      } as unknown as PgService),
       { invalidateUsers: jest.fn() } as unknown as RbacPermissionCacheService,
-      { revokeAll: jest.fn() } as unknown as TokenService,
-      { revokeAll: jest.fn() } as unknown as RtTokenService,
+      { revokeAll: jest.fn() } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue: jest.fn() } as unknown as FileCleanupService,
     )
