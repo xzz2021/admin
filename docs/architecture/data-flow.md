@@ -29,7 +29,7 @@ sequenceDiagram
 2. Nginx（生产）去掉 `/api` 前缀
 3. Nest：限流 → JWT → PermissionGuard（可选 Redis 权限缓存）
 4. Service 访问 Prisma / Redis
-5. TransformInterceptor 包装响应
+5. TransformInterceptor 将载荷包装为 `ResOp`；失败走 AllExceptionsFilter，禁止业务层 `return { code }`
 
 ## Token 刷新
 

@@ -6,6 +6,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Post,
   Query,
@@ -56,7 +57,7 @@ export class UserController {
   updatePersonalInfo(@Body() updateUserinfo: UpdatePersonalInfo, @Req() req: JwtReqDto) {
     // 用户更新自己的信息  校验req.user
     if (req.user.id !== updateUserinfo.id) {
-      return { code: 400, message: '无权限更新他人信息' }
+      throw new ForbiddenException('无权限更新他人信息')
     }
     return this.userService.updateInfo(updateUserinfo)
   }
@@ -66,7 +67,7 @@ export class UserController {
   updatePassword(@Body() updatePasswordDto: UpdatePwdDto, @Req() req: JwtReqDto) {
     // 用户更新自己的密码  校验req.user
     if (req.user.id !== updatePasswordDto.id) {
-      return { code: 400, message: '无权限更新他人密码' }
+      throw new ForbiddenException('无权限更新他人密码')
     }
     return this.userService.updatePassword(updatePasswordDto)
   }

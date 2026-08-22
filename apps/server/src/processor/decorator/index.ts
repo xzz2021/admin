@@ -1,6 +1,7 @@
 export * from './captcha'
 export * from './permission'
 export * from './public'
+export * from './skip-wrap'
 export * from './rate-key'
 export * from './user'
 export * from './serialize'

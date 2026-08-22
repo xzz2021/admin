@@ -19,6 +19,15 @@
 
 必须：依赖注入、统一异常过滤、统一响应包装。
 
+### 统一响应
+
+信封只有一套：`ResOp` → `{ code, message, data, timestamp }`。成功由 `TransformInterceptor` 包装；失败由 `AllExceptionsFilter` 写出**相同字段**，且 HTTP status = `code`。
+
+- Controller / Service **只返回业务载荷**，可选 `message`（拦截器会提升到信封）
+- 失败只 `throw new BadRequestException / ForbiddenException / ...`，禁止 `return { code: 400 }`
+- 文件流、WebSocket、`@SkipWrap()` 不包装
+- 已删除未使用的 `Result` / `R`，不要再引入第二套信封
+
 ## Prisma
 
 - Schema 字段与注释清晰；复杂写操作使用 transaction

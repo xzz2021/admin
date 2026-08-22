@@ -167,7 +167,7 @@ export class AuthService {
         throw new BadRequestException('用户已存在, 请直接登录!')
       }
     }
-    return { code: 200, message: '演示模式, 模拟验证码已发送,请60秒后再试!' }
+    return { message: '演示模式, 模拟验证码已发送,请60秒后再试!' }
     // return this.smsService.generateSmsCode(phone, cachekey);
   }
 

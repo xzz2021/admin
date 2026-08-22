@@ -50,13 +50,13 @@
 
 ## 横切能力（processor）
 
-| 类型        | 已启用                    | 说明                                  |
-| ----------- | ------------------------- | ------------------------------------- |
-| Pipe        | GlobalZodValidationPipe   | 请求体校验                            |
-| Filter      | AllExceptionsFilter       | 统一异常                              |
-| Interceptor | TransformInterceptor      | 统一响应包装                          |
-| Interceptor | OperationLogInterceptor   | 写 `UserOperationLog`（部分路径跳过） |
-| Interceptor | MonitorLatencyInterceptor | 监控延迟采样                          |
+| 类型        | 已启用                    | 说明                                                        |
+| ----------- | ------------------------- | ----------------------------------------------------------- |
+| Pipe        | GlobalZodValidationPipe   | 请求体校验                                                  |
+| Filter      | AllExceptionsFilter       | 统一异常                                                    |
+| Interceptor | TransformInterceptor      | 成功响应包装为 `ResOp` `{ code, data, message, timestamp }` |
+| Interceptor | OperationLogInterceptor   | 写 `UserOperationLog`（部分路径跳过）                       |
+| Interceptor | MonitorLatencyInterceptor | 监控延迟采样                                                |
 
 未全局启用但代码库存在的示例：部分 Middleware、Timeout/Idempotence Interceptor、PoliciesGuard（CASL 设想）等。
 

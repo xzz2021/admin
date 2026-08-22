@@ -96,8 +96,8 @@ Controller（HTTP / 权限装饰器）
 全局能力：
 
 - 校验：`GlobalZodValidationPipe`
-- 响应：`TransformInterceptor` → `{ code, data, message, timestamp }`
-- 异常：`AllExceptionsFilter`
+- 响应：`TransformInterceptor` → `ResOp` `{ code, data, message, timestamp }`
+- 异常：`AllExceptionsFilter` 写出同一信封，HTTP status = `code`
 - 操作日志：`OperationLogInterceptor` → `UserOperationLog`
 
 ## 权限设计（摘要）

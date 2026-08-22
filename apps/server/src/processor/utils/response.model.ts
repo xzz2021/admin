@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { RESPONSE_SUCCESS_CODE, RESPONSE_SUCCESS_MSG } from '@/processor/constants'
+import { formatDateToYMDHMS } from './date'
 
-const RESPONSE_SUCCESS_CODE = 200
-const RESPONSE_SUCCESS_MSG = 'success'
-export class ResOp<T = any> {
-  @ApiProperty({ type: 'object', additionalProperties: true })
-  data?: T
+export class ResOp<T = unknown> {
+  @ApiProperty({ type: 'object', additionalProperties: true, nullable: true })
+  data: T | null
 
   @ApiProperty({ type: 'number', default: RESPONSE_SUCCESS_CODE })
   code: number
@@ -12,28 +12,58 @@ export class ResOp<T = any> {
   @ApiProperty({ type: 'string', default: RESPONSE_SUCCESS_MSG })
   message: string
 
-  constructor(code: number, data: T, message = RESPONSE_SUCCESS_MSG) {
+  @ApiProperty({ type: 'string', description: '响应时间' })
+  timestamp: string
+
+  constructor(code: number, data: T | null, message = RESPONSE_SUCCESS_MSG) {
     this.code = code
-    this.data = data
+    this.data = data ?? null
     this.message = message
+    this.timestamp = formatDateToYMDHMS(new Date())
   }
 
-  static success<T>(data?: T, message?: string) {
-    return new ResOp(RESPONSE_SUCCESS_CODE, data, message)
+  static success<T>(data?: T, message = RESPONSE_SUCCESS_MSG) {
+    return new ResOp<T>(RESPONSE_SUCCESS_CODE, data === undefined ? null : data, message)
   }
 
-  static error(code: number, message: string) {
-    return new ResOp(code, {}, message)
+  static error(code: number, message: string, data: unknown = null) {
+    return new ResOp(code, data, message)
   }
 }
 
-export class TreeResult<T> {
-  @ApiProperty()
-  id: number
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
-  @ApiProperty()
-  parentId: number
+/**
+ * 将 Controller/Service 返回值收成统一成功信封。
+ * handler 里的 `message` 提升到信封；数字 `code` 视为误用的状态码并丢弃（失败应抛 HttpException）。
+ */
+export function wrapSuccess(payload: unknown, defaultMessage = RESPONSE_SUCCESS_MSG): ResOp {
+  if (payload instanceof ResOp) {
+    return payload
+  }
 
-  @ApiProperty()
-  children?: TreeResult<T>[]
+  if (!isPlainObject(payload)) {
+    return ResOp.success(payload, defaultMessage)
+  }
+
+  const rest: Record<string, unknown> = { ...payload }
+  let resolvedMessage = defaultMessage
+  if (typeof rest.message === 'string' && rest.message.length > 0) {
+    resolvedMessage = rest.message
+    delete rest.message
+  }
+  if (typeof rest.code === 'number') {
+    delete rest.code
+  }
+
+  const keys = Object.keys(rest)
+  if (keys.length === 0) {
+    return ResOp.success(null, resolvedMessage)
+  }
+  if (keys.length === 1 && keys[0] === 'data') {
+    return ResOp.success(rest.data, resolvedMessage)
+  }
+  return ResOp.success(rest, resolvedMessage)
 }

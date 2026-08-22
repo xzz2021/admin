@@ -3,7 +3,9 @@
 ## 约定
 
 - Nest **无**全局前缀；开发/生产通过网关的 `/api` 前缀转发并剥离
-- 统一响应（TransformInterceptor）：`{ code, data, message, timestamp }`
+- 统一响应信封（`ResOp`）：`{ code, data, message, timestamp }`
+  - 成功：HTTP 200 + `code === 200`，由 `TransformInterceptor` 包装
+  - 失败：HTTP status = `code`，由 `AllExceptionsFilter` 写出同一信封（`data: null`）
 - 成功业务码前端约定为 `200`
 - 鉴权：`Authorization: Bearer <access_token>`；刷新依赖 cookie `rt`
 - 校验：Zod（nestjs-zod）；限流默认 100 次 / 60s（验证码更严）

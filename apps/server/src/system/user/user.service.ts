@@ -186,7 +186,7 @@ export class UserService {
         },
       })
 
-      return { code: 200, message: '新增用户成功', id: userSave.id }
+      return { message: '新增用户成功', id: userSave.id }
     })
   }
 
@@ -275,7 +275,7 @@ export class UserService {
       data: { password: hashPassword, passwordChangedAt: new Date() },
     })
     await this.revokeAllSessions(id)
-    return { code: 200, message: '更新个人密码成功', id: res.id }
+    return { message: '更新个人密码成功', id: res.id }
   }
 
   async resetPassword({ id, password, operateId }: AdminUpdatePwdDto & { operateId: string }) {

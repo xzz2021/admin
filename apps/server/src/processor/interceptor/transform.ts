@@ -1,5 +1,5 @@
-// 这里用于 对正常响应数据 做统一格式转换处理
-
+import { SKIP_WRAP_KEY } from '@/processor/decorator/skip-wrap'
+import { wrapSuccess } from '@/processor/utils/response.model'
 import {
   CallHandler,
   ExecutionContext,
@@ -7,39 +7,33 @@ import {
   NestInterceptor,
   StreamableFile,
 } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
 import { Observable } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { formatDateToYMDHMS } from '../utils/date'
 
-/**
- * 统一处理接口请求与响应结果
- */
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, any> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+export class TransformInterceptor implements NestInterceptor {
+  constructor(private readonly reflector: Reflector) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (context.getType() !== 'http') {
+      return next.handle()
+    }
+
+    const skipWrap = this.reflector.getAllAndOverride<boolean>(SKIP_WRAP_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ])
+    if (skipWrap) {
+      return next.handle()
+    }
+
     return next.handle().pipe(
-      // 对所有响应数据进行包装
-      map((data: any) => {
-        //  如果数据不存在 也直接返回  这样可以看到未知异常
-        if (data == null) return data
-        // 如果返回的是文件流 则不记录日志
-        if (data instanceof ReadableStream || data instanceof StreamableFile) {
+      map((data: unknown) => {
+        if (data instanceof StreamableFile || data instanceof ReadableStream) {
           return data
         }
-        if (typeof data !== 'object' || Array.isArray(data)) {
-          return {
-            data,
-            code: 200,
-            timestamp: formatDateToYMDHMS(new Date()),
-          }
-        }
-        const { message, ...rest } = data
-        return {
-          message,
-          data: rest, // 返回数据  一律用  data 包裹
-          code: 200,
-          timestamp: formatDateToYMDHMS(new Date()),
-        }
+        return wrapSuccess(data)
       }),
     )
   }

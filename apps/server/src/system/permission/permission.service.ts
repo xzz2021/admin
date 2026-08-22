@@ -30,15 +30,11 @@ export class PermissionService {
   }
 
   async remove(id: string) {
-    try {
-      await this.rbacPermissionCache.invalidateByPermissionIds([id], this.pgService)
-      const res = await this.pgService.permission.delete({
-        where: { id },
-        select: { id: true },
-      })
-      return { id: res.id, message: '删除权限成功' }
-    } catch (error) {
-      return { code: 400, message: error instanceof Error ? error.message : '删除权限失败' }
-    }
+    await this.rbacPermissionCache.invalidateByPermissionIds([id], this.pgService)
+    const res = await this.pgService.permission.delete({
+      where: { id },
+      select: { id: true },
+    })
+    return { id: res.id, message: '删除权限成功' }
   }
 }

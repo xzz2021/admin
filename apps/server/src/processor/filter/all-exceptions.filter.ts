@@ -1,8 +1,9 @@
 //  这里是捕获所未知异常  无法拿到源信息
 // 如果需要源信息   后期考虑 实现return next.handle().pipe() 来捕获
 
-import { MonitorService } from '@/system/monitor/monitor.service'
 import { PgService } from '@/prisma/pg.service'
+import { MonitorService } from '@/system/monitor/monitor.service'
+import { ResOp } from '@/processor/utils/response.model'
 import {
   ArgumentsHost,
   Catch,
@@ -75,10 +76,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const isDev = process.env.NODE_ENV === 'development'
     response.status(status).json({
-      code: status,
-      timestamp: new Date(),
+      ...ResOp.error(status, message || '未捕获异常,请检查后端代码!'),
       path,
-      message: message || '未捕获异常,请检查后端代码!',
       meta: isDev ? meta : undefined,
     })
   }
