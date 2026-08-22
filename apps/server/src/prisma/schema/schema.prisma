@@ -457,9 +457,12 @@ model File {
   /// @z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' })
   url  String @db.VarChar(255)
   createdAt DateTime @default(now())
+  /// @z.coerce.date().optional().meta({ description: '软删除时间，待异步清理磁盘', example: '2026-01-01T12:00:00.000Z' })
+  deletedAt DateTime?
 
   @@index([extension])
   @@index([createdAt])
+  @@index([deletedAt])
 }
 
 model UserOperationLog {

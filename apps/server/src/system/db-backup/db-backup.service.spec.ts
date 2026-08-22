@@ -1,10 +1,11 @@
-import { ConflictException } from '@nestjs/common'
+import { ConflictException, NotFoundException } from '@nestjs/common'
 
 import { BackupStatus, BackupTrigger } from '@/prisma/generated/prisma/client'
-import type { ConfigService } from '@nestjs/config'
 import type { RedisService } from '@liaoliaots/nestjs-redis'
+import type { ConfigService } from '@nestjs/config'
 import type { Queue } from 'bullmq'
 
+import type { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
 import { DbBackupService } from './db-backup.service'
 
 describe('DbBackupService', () => {
@@ -61,6 +62,10 @@ describe('DbBackupService', () => {
     run: jest.fn(),
   }
 
+  const fileCleanup = {
+    enqueue: jest.fn(),
+  }
+
   const createService = () =>
     new DbBackupService(
       pgService as never,
@@ -68,6 +73,7 @@ describe('DbBackupService', () => {
       pgDumpRunner,
       { getOrThrow: () => redis } as unknown as RedisService,
       queue as unknown as Queue,
+      fileCleanup as unknown as FileCleanupService,
     )
 
   beforeEach(() => {
@@ -230,5 +236,46 @@ describe('DbBackupService', () => {
         opts: expect.objectContaining({ attempts: 1 }),
       }),
     )
+  })
+
+  it('marks a backup expired and enqueues cleanup instead of unlinking in the request', async () => {
+    const service = createService()
+    pgService.dbBackupJob.findUnique.mockResolvedValue({
+      id: 'job-1',
+      status: BackupStatus.SUCCESS,
+      filePath: '/backups/a.sql.gz',
+    })
+    pgService.dbBackupJob.update.mockResolvedValue({})
+    fileCleanup.enqueue.mockResolvedValue(undefined)
+
+    await service.deleteJob('job-1')
+
+    expect(pgService.dbBackupJob.update).toHaveBeenCalledWith({
+      where: { id: 'job-1' },
+      data: { status: BackupStatus.EXPIRED },
+    })
+    expect(fileCleanup.enqueue).toHaveBeenCalledWith([
+      { kind: 'backup-job', backupJobId: 'job-1', path: '/backups/a.sql.gz' },
+    ])
+    expect(pgService.dbBackupJob.delete).not.toHaveBeenCalled()
+  })
+
+  it('rejects deleting a running backup job', async () => {
+    const service = createService()
+    pgService.dbBackupJob.findUnique.mockResolvedValue({
+      id: 'job-1',
+      status: BackupStatus.RUNNING,
+      filePath: '/backups/a.sql.gz',
+    })
+
+    await expect(service.deleteJob('job-1')).rejects.toBeInstanceOf(ConflictException)
+    expect(fileCleanup.enqueue).not.toHaveBeenCalled()
+  })
+
+  it('rejects deleting a missing backup job', async () => {
+    const service = createService()
+    pgService.dbBackupJob.findUnique.mockResolvedValue(null)
+
+    await expect(service.deleteJob('missing')).rejects.toBeInstanceOf(NotFoundException)
   })
 })

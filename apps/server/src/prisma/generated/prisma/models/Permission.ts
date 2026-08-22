@@ -800,6 +800,9 @@ export type $PermissionPayload<ExtArgs extends runtime.Types.Extensions.Internal
     roles: Prisma.$RolePermissionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
+    /**
+     * @z.string().meta({ description: '所属菜单 ID', example: 'clxxx' })
+     */
     id: string
     /**
      * @z.string().min(1).max(50).meta({ description: '权限名称', example: '用户列表' })
@@ -814,7 +817,6 @@ export type $PermissionPayload<ExtArgs extends runtime.Types.Extensions.Internal
      */
     type: $Enums.PermissionType
     /**
-     * @z.string().meta({ description: '所属菜单 ID', example: 'clxxx' })
      * @z.number().int().min(0).optional().meta({ description: '排序', example: 0 })
      */
     sort: number

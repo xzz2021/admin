@@ -1,5 +1,6 @@
 import { BackupStatus, BackupTrigger, Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
+import { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { InjectQueue } from '@nestjs/bullmq'
 import {
@@ -56,6 +57,7 @@ export class DbBackupService implements OnModuleInit {
     private readonly pgDumpRunner: PgDumpRunner,
     redisService: RedisService,
     @InjectQueue(DB_BACKUP_QUEUE) private readonly queue: Queue,
+    private readonly fileCleanupService: FileCleanupService,
     @Optional() private readonly messageService?: MessageService,
   ) {
     this.redis = redisService.getOrThrow('default')
@@ -166,8 +168,18 @@ export class DbBackupService implements OnModuleInit {
     if (!job) {
       throw new NotFoundException('备份任务不存在')
     }
-    await safeUnlink(job.filePath)
-    await this.pgService.dbBackupJob.delete({ where: { id } })
+    if (job.status === BackupStatus.RUNNING) {
+      throw new ConflictException('备份任务执行中，无法删除')
+    }
+    if (job.status !== BackupStatus.EXPIRED) {
+      await this.pgService.dbBackupJob.update({
+        where: { id },
+        data: { status: BackupStatus.EXPIRED },
+      })
+    }
+    await this.fileCleanupService.enqueue([
+      { kind: 'backup-job', backupJobId: job.id, path: job.filePath },
+    ])
     return { message: '备份任务已删除' }
   }
 
@@ -476,13 +488,18 @@ export class DbBackupService implements OnModuleInit {
       orderBy: { createdAt: 'desc' },
     })
     const removable = successJobs.slice(Math.max(retentionMax, 0))
-    for (const job of removable) {
-      await safeUnlink(job.filePath)
-    }
     if (!removable.length) return 0
-    await this.pgService.dbBackupJob.deleteMany({
+    await this.pgService.dbBackupJob.updateMany({
       where: { id: { in: removable.map(item => item.id) } },
+      data: { status: BackupStatus.EXPIRED },
     })
+    await this.fileCleanupService.enqueue(
+      removable.map(job => ({
+        kind: 'backup-job' as const,
+        backupJobId: job.id,
+        path: job.filePath,
+      })),
+    )
     return removable.length
   }
 
@@ -558,14 +575,6 @@ export class DbBackupService implements OnModuleInit {
       ...item,
       fileSize: item.fileSize == null ? null : item.fileSize.toString(),
     }
-  }
-}
-
-async function safeUnlink(path: string): Promise<void> {
-  try {
-    await fs.unlink(path)
-  } catch {
-    // ignore
   }
 }
 

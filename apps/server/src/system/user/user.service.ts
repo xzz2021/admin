@@ -4,9 +4,14 @@ import { RbacPermissionCacheService } from '@/processor/rbac'
 import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { RtTokenService } from '@/system/auth/rt.token.service'
 import { TokenService } from '@/system/auth/token.service'
+import { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
 import { OnlineGateway } from '@/system/online/online.gateway'
 import { OnlineService } from '@/system/online/online.service'
-import { sanitizePathSegment } from '@/system/staticfile/multer.config'
+import {
+  getStaticFileRoot,
+  sanitizePathSegment,
+  tryResolvePathInsideRoot,
+} from '@/system/staticfile/multer.config'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, forwardRef, Inject, Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -30,6 +35,7 @@ export class UserService {
     private readonly tokenService: TokenService,
     private readonly rtTokenService: RtTokenService,
     private readonly configService: ConfigService,
+    private readonly fileCleanupService: FileCleanupService,
     @Optional()
     @Inject(forwardRef(() => OnlineService))
     private readonly onlineService?: OnlineService,
@@ -357,7 +363,37 @@ export class UserService {
     const serveRoot = this.configService.get<string>('staticFileServeRoot') || ''
     const phoneSegment = sanitizePathSegment(phone ?? 'anonymous')
     const filePath = `${serveRoot}/avatar/${phoneSegment}/${file.filename}`
-    await this.pgService.user.update({ where: { id: userId }, data: { avatar: filePath } })
+    const current = await this.pgService.user.findUnique({
+      where: { id: userId },
+      select: { avatar: true },
+    })
+    try {
+      await this.pgService.user.update({ where: { id: userId }, data: { avatar: filePath } })
+    } catch (error) {
+      await this.fileCleanupService.enqueue([{ kind: 'orphan-path', path: file.path }])
+      throw error
+    }
+    const previousDiskPath = this.toAvatarDiskPath(current?.avatar)
+    if (previousDiskPath) {
+      await this.fileCleanupService.enqueue([{ kind: 'orphan-path', path: previousDiskPath }])
+    }
     return { filePath, message: '更新头像成功' }
+  }
+
+  private toAvatarDiskPath(avatar: string | null | undefined): string | null {
+    if (!avatar) return null
+    const serveRoot = (this.configService.get<string>('staticFileServeRoot') || '').replace(
+      /\/$/,
+      '',
+    )
+    const relative =
+      serveRoot && (avatar === serveRoot || avatar.startsWith(`${serveRoot}/`))
+        ? avatar.slice(serveRoot.length).replace(/^\//, '')
+        : avatar
+    try {
+      return tryResolvePathInsideRoot(getStaticFileRoot(), relative)
+    } catch {
+      return null
+    }
   }
 }

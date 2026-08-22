@@ -14,6 +14,7 @@ export class DeleteFileDto extends createZodDto(DeleteFileSchema) {}
 const UploadFileSchema = FileModel.omit({
   id: true,
   createdAt: true,
+  deletedAt: true,
 }).extend({
   name: z.string().nonempty().meta({ description: '文件名称', example: '文件名称' }),
   mimeType: z.string().nonempty().meta({ description: '文件MIME类型', example: 'application/pdf' }),

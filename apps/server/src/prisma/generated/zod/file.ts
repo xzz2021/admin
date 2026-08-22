@@ -10,6 +10,7 @@ export const FileModel = z.object({
   size: z.number().int().min(0).meta({ description: '文件大小（字节）', example: 1024 }),
   url: z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' }),
   createdAt: z.date(),
+  deletedAt: z.coerce.date().optional().meta({ description: '软删除时间，待异步清理磁盘', example: '2026-01-01T12:00:00.000Z' }).nullish(),
 })
 
 export class FileDto extends createZodDto(FileModel) {

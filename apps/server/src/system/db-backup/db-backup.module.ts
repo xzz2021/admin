@@ -1,3 +1,4 @@
+import { FileCleanupModule } from '@/system/file-cleanup/file-cleanup.module'
 import { MessageModule } from '@/system/message/message.module'
 import { BullModule } from '@nestjs/bullmq'
 import { Module } from '@nestjs/common'
@@ -9,7 +10,7 @@ import { DbBackupService } from './db-backup.service'
 import { PgDumpRunner } from './pg-dump.runner'
 
 @Module({
-  imports: [MessageModule, BullModule.registerQueue({ name: DB_BACKUP_QUEUE })],
+  imports: [MessageModule, FileCleanupModule, BullModule.registerQueue({ name: DB_BACKUP_QUEUE })],
   controllers: [DbBackupController],
   providers: [DbBackupService, DbBackupProcessor, PgDumpRunner],
   exports: [DbBackupService],
