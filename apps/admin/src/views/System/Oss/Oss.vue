@@ -1,5 +1,12 @@
 <script setup lang="tsx">
-import { createFolderApi, deleteObjectApi, getPublicFileUrlApi, searchOssApi, uploadFileOssApi } from '@/api/oss'
+import {
+  createFolderApi,
+  deleteObjectApi,
+  getOssListApi,
+  getPublicFileUrlApi,
+  searchOssApi,
+  uploadFileOssApi
+} from '@/api/oss'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
 import { FormSchema } from '@/components/Form'
@@ -8,7 +15,6 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { UploadBtn } from '@/components/UploadBtn'
 import { useTable } from '@/hooks/web/useTable'
-import { useOssStore } from '@/store/modules/oss'
 import { formatToDateTime } from '@/utils/dateUtil'
 import { formatFileSize, getFileIcon2 } from '@/utils/file'
 import { safeName } from '@/utils/safeName'
@@ -18,14 +24,13 @@ import { onUnmounted, reactive, ref, unref } from 'vue'
 import S3UploadBtn from './components/S3UploadBtn.vue'
 import { downloadFile, previewFile } from './components/utils'
 
-const { getOssList } = useOssStore()
 const { tableRegister, tableState, tableMethods } = useTable({
   fetchDataApi: async () => {
-    const params = {
+    const res = await getOssListApi({
       ...unref(searchParams)
-    }
-    // 后端返回的array数据  必须有唯一字段? 比如id 不然table组件勾选会变成全选
-    return await getOssList(params)
+    })
+    const { list = [], total = 0 } = res?.data || {}
+    return { list, total }
   }
 })
 const { loading, dataList, total } = tableState

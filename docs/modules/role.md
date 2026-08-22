@@ -28,4 +28,3 @@
 - 分配：`AssignMenuPermission.vue`（隐藏路由 `/role/assign/:id?`）
 - 详情：`RoleDetail.vue`
 - API：`api/role/`
-- Store：`store/modules/role.ts`
