@@ -9,8 +9,10 @@ export class StaticfileService {
   constructor(private readonly pgService: PgService) {}
 
   async getFileList() {
-    const fileList = await this.pgService.file.findMany()
-    const total = await this.pgService.file.count()
+    const [fileList, total] = await Promise.all([
+      this.pgService.file.findMany(),
+      this.pgService.file.count(),
+    ])
     return { message: '文件列表获取成功', list: fileList, total }
   }
 

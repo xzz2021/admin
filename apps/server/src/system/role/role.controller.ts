@@ -74,7 +74,7 @@ export class RoleController {
   @Post('generateRoleSeed')
   @RequiredPermission('role:seed')
   @ApiOperation({ summary: '生成角色种子数据' })
-  generateDictionarySeed(@Body() data: RoleSeedArrayDto) {
+  generateRoleSeed(@Body() data: RoleSeedArrayDto) {
     return this.roleService.generateRoleSeed(data.data)
   }
 }

@@ -1,5 +1,6 @@
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
+import { sqlReplaceDescendantPaths } from '@/processor/utils/sql-batch'
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateDepartmentDto, DepartmentSeedDto, UpdateDepartmentDto } from './dto/department.dto'
@@ -37,26 +38,28 @@ export class DepartmentService {
   }
 
   async findAll() {
-    const list = await this.pgService.department.findMany({
-      where: {
-        parentId: null,
-      },
-      include: {
-        children: {
-          include: {
-            children: {
-              include: {
-                children: true,
+    const [list, total] = await Promise.all([
+      this.pgService.department.findMany({
+        where: {
+          parentId: null,
+        },
+        include: {
+          children: {
+            include: {
+              children: {
+                include: {
+                  children: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: {
-        id: 'asc',
-      },
-    })
-    const total = await this.pgService.department.count()
+        orderBy: {
+          id: 'asc',
+        },
+      }),
+      this.pgService.department.count(),
+    ])
     return { list, total, message: '获取部门列表成功' }
   }
 
@@ -74,8 +77,6 @@ export class DepartmentService {
 
       const parent = nextParentId ? departments.find(item => item.id === nextParentId) : null
       const nextPath = parent ? `${parent.path}/${id}` : `/${id}`
-      const oldPathPrefix = `${current.path}/`
-      const descendants = departments.filter(item => item.path.startsWith(oldPathPrefix))
 
       const updated = await tx.department.update({
         where: { id },
@@ -87,13 +88,8 @@ export class DepartmentService {
         select: { id: true },
       })
 
-      for (const descendant of descendants) {
-        const suffix = descendant.path.slice(current.path.length)
-        await tx.department.update({
-          where: { id: descendant.id },
-          data: { path: `${nextPath}${suffix}` },
-          select: { id: true },
-        })
+      if (nextPath !== current.path) {
+        await tx.$executeRaw(sqlReplaceDescendantPaths(current.path, nextPath))
       }
 
       return updated

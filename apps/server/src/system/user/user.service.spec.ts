@@ -145,3 +145,53 @@ describe('UserService uploadAvatar', () => {
     expect(userUpdate).not.toHaveBeenCalled()
   })
 })
+
+describe('UserService list queries', () => {
+  const findMany = jest.fn()
+  const count = jest.fn()
+
+  const createService = () =>
+    new UserService(
+      {
+        user: { findMany, count, update: jest.fn(), findUnique: jest.fn() },
+        $transaction: jest.fn(),
+      } as unknown as PgService,
+      { getOrThrow: () => ({}) } as unknown as RedisService,
+      { invalidateUsers: jest.fn() } as unknown as RbacPermissionCacheService,
+      { revokeAll: jest.fn() } as unknown as TokenService,
+      { revokeAll: jest.fn() } as unknown as RtTokenService,
+      { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
+    )
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('loads user list and count in parallel', async () => {
+    let resolveList!: (value: unknown[]) => void
+    let resolveCount!: (value: number) => void
+    findMany.mockReturnValue(
+      new Promise(resolve => {
+        resolveList = resolve
+      }),
+    )
+    count.mockReturnValue(
+      new Promise(resolve => {
+        resolveCount = resolve
+      }),
+    )
+
+    const pending = createService().findAll({ pageIndex: 1, pageSize: 10, enabled: undefined })
+
+    expect(findMany).toHaveBeenCalled()
+    expect(count).toHaveBeenCalled()
+
+    resolveList([])
+    resolveCount(0)
+    await expect(pending).resolves.toEqual({
+      list: [],
+      total: 0,
+      message: '获取用户列表成功',
+    })
+  })
+})

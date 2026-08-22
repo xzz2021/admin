@@ -1,5 +1,7 @@
 import { PgService } from '@/prisma/pg.service'
+import { uniqueBy } from '@/processor/utils/array'
 import { listToTree } from '@/processor/utils/list2tree.util'
+import { sqlBatchUpdateIntById } from '@/processor/utils/sql-batch'
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateMenuDto, MenuSortDto, UpdateMenuDto } from './dto/menu.dto'
@@ -95,13 +97,14 @@ export class MenuService {
   }
 
   async sortMenu(sortMenu: MenuSortDto[]) {
+    const rows = uniqueBy(sortMenu, item => item.id).map(item => ({
+      id: item.id,
+      value: item.sort ?? 0,
+    }))
+    if (rows.length === 0) return { message: '菜单排序成功' }
+
     await this.pgService.$transaction(async tx => {
-      for (const item of sortMenu) {
-        await tx.menu.update({
-          where: { id: item.id },
-          data: { sort: item.sort },
-        })
-      }
+      await tx.$executeRaw(sqlBatchUpdateIntById('"Menu"', 'sort', rows))
     })
     return { message: '菜单排序成功' }
   }

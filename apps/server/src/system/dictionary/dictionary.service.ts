@@ -1,4 +1,9 @@
 import { PgService } from '@/prisma/pg.service'
+import { uniqueBy } from '@/processor/utils/array'
+import {
+  sqlBatchUpdateDictionaryItems,
+  sqlBatchUpdateDictionaryTypes,
+} from '@/processor/utils/sql-batch'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { DictionarySeedArrayDto, UpsertDictionaryDto } from './dto/dictionary.dto'
 import { UpsertItemDto } from './dto/entry.dto'
@@ -97,39 +102,85 @@ export class DictionaryService {
   }
 
   async generateDictionarySeed(data: DictionarySeedArrayDto) {
+    const dictionaries = uniqueBy(data.data, dict => dict.code)
+    if (dictionaries.length === 0) {
+      return { message: '新增字典成功', success: true }
+    }
+
     await this.pgService.$transaction(async tx => {
-      for (const dict of data.data) {
-        const { code, entries, status, ...rest } = dict
-        const dictionary = await tx.dictionaryType.upsert({
-          where: { code: dict.code },
-          create: {
-            code: dict.code,
-            name: rest.name,
-            ...(status !== undefined ? { enabled: status } : {}),
-          },
-          update: {
-            name: rest.name,
-            ...(status !== undefined ? { enabled: status } : {}),
-          },
+      const codes = dictionaries.map(dict => dict.code)
+      const existingTypes = await tx.dictionaryType.findMany({
+        where: { code: { in: codes } },
+        select: { id: true, code: true },
+      })
+      const existingByCode = new Map(existingTypes.map(item => [item.code, item.id]))
+      const toCreate = dictionaries.filter(dict => !existingByCode.has(dict.code))
+      const toUpdate = dictionaries.filter(dict => existingByCode.has(dict.code))
+
+      const createdTypes =
+        toCreate.length > 0
+          ? await tx.dictionaryType.createManyAndReturn({
+              data: toCreate.map(dict => ({
+                code: dict.code,
+                name: dict.name,
+                ...(dict.status !== undefined ? { enabled: dict.status } : {}),
+              })),
+              select: { id: true, code: true },
+            })
+          : []
+
+      if (toUpdate.length) {
+        await tx.$executeRaw(
+          sqlBatchUpdateDictionaryTypes(
+            toUpdate.map(dict => ({
+              code: dict.code,
+              name: dict.name,
+              enabled: dict.status ?? null,
+            })),
+          ),
+        )
+      }
+
+      const typeIdByCode = new Map<string, string>([
+        ...existingTypes.map(item => [item.code, item.id] as const),
+        ...createdTypes.map(item => [item.code, item.id] as const),
+      ])
+
+      const items = dictionaries.flatMap(dict => {
+        const typeId = typeIdByCode.get(dict.code)
+        if (!typeId) return []
+        return uniqueBy(dict.entries ?? [], entry => entry.code).map(entry => ({
+          typeId,
+          label: entry.name,
+          value: entry.code,
+          sort: entry.sort ?? 0,
+          enabled: entry.enabled ?? null,
+        }))
+      })
+      if (items.length === 0) return
+
+      const existingItems = await tx.dictionaryItem.findMany({
+        where: { typeId: { in: [...new Set(items.map(item => item.typeId))] } },
+        select: { typeId: true, value: true },
+      })
+      const existingItemKeys = new Set(existingItems.map(item => `${item.typeId}:${item.value}`))
+      const itemsToCreate = items.filter(
+        item => !existingItemKeys.has(`${item.typeId}:${item.value}`),
+      )
+      const itemsToUpdate = items.filter(item =>
+        existingItemKeys.has(`${item.typeId}:${item.value}`),
+      )
+
+      if (itemsToCreate.length) {
+        await tx.dictionaryItem.createMany({
+          data: itemsToCreate.map(({ enabled, ...rest }) => ({
+            ...rest,
+            ...(enabled !== null ? { enabled } : {}),
+          })),
         })
-        for (const e of entries ?? []) {
-          await tx.dictionaryItem.upsert({
-            where: { typeId_value: { typeId: dictionary.id, value: e.code } },
-            create: {
-              label: e.name,
-              value: e.code,
-              sort: e.sort ?? 0,
-              ...(e.enabled !== undefined ? { enabled: e.enabled } : {}),
-              typeId: dictionary.id,
-            },
-            update: {
-              label: e.name,
-              value: e.code,
-              sort: e.sort ?? 0,
-              ...(e.enabled !== undefined ? { enabled: e.enabled } : {}),
-            },
-          })
-        }
+      }
+      if (itemsToUpdate.length) {
+        await tx.$executeRaw(sqlBatchUpdateDictionaryItems(itemsToUpdate))
       }
     })
 

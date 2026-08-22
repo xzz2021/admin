@@ -2,6 +2,7 @@ import { PgService } from '@/prisma/pg.service'
 import { RbacPermissionCacheService } from '@/processor/rbac'
 import { uniqueBy } from '@/processor/utils/array'
 import { listToTree } from '@/processor/utils/list2tree.util'
+import { sqlBatchUpdateRoles } from '@/processor/utils/sql-batch'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/lib/prisma'
 import { CreateRoleDto, QueryRoleParams, RoleSeedDto, UpdateRoleDto } from './dto/role.dto'
@@ -32,18 +33,22 @@ export class RoleService {
     permissionIds: string[],
     tx: Prisma.TransactionClient,
   ) {
-    const menus = await tx.menu.findMany({
-      where: { id: { in: menuIds }, enabled: true },
-      select: { id: true },
-    })
+    const [menus, permissions] = await Promise.all([
+      tx.menu.findMany({
+        where: { id: { in: menuIds }, enabled: true },
+        select: { id: true },
+      }),
+      permissionIds.length
+        ? tx.permission.findMany({
+            where: { id: { in: permissionIds }, enabled: true },
+            select: { id: true, menuId: true },
+          })
+        : Promise.resolve([]),
+    ])
     if (menus.length !== menuIds.length) throw new BadRequestException('存在无效或被禁用的菜单')
 
     if (!permissionIds.length) return
 
-    const permissions = await tx.permission.findMany({
-      where: { id: { in: permissionIds }, enabled: true },
-      select: { id: true, menuId: true },
-    })
     if (permissions.length !== permissionIds.length)
       throw new BadRequestException('存在无效或被禁用的权限')
 
@@ -161,20 +166,21 @@ export class RoleService {
       })
       return { list: listToTree(list), message: '获取角色菜单及权限列表成功' }
     }
-    // 1. 查出所有menu 2. 查出角色所拥有的menu 3. 查出角色所拥有的permission 4. 将拥有的项加上checked  5. 将menu和permission组装成树形结构
-    const menus = await this.pgService.menu.findMany({
-      where: { enabled: true },
-      include: { permissions: { orderBy: { sort: 'asc' } } },
-      orderBy: { sort: 'asc' },
-    })
-    const roleMenus = await this.pgService.roleMenu.findMany({
-      where: { roleId: id },
-      select: { menuId: true },
-    })
-    const rolePermissions = await this.pgService.rolePermission.findMany({
-      where: { roleId: id },
-      select: { permissionId: true },
-    })
+    const [menus, roleMenus, rolePermissions] = await Promise.all([
+      this.pgService.menu.findMany({
+        where: { enabled: true },
+        include: { permissions: { orderBy: { sort: 'asc' } } },
+        orderBy: { sort: 'asc' },
+      }),
+      this.pgService.roleMenu.findMany({
+        where: { roleId: id },
+        select: { menuId: true },
+      }),
+      this.pgService.rolePermission.findMany({
+        where: { roleId: id },
+        select: { permissionId: true },
+      }),
+    ])
     const menuSet = new Set(roleMenus.map(i => i.menuId))
     const permissionSet = new Set(rolePermissions.map(i => i.permissionId))
     const nodes = menus.map(menu => ({
@@ -246,19 +252,20 @@ export class RoleService {
 
   async getUserMenusWithPermissionCodes(roleIds: string[]) {
     if (roleIds.length === 0) return []
-    // 先查询roleMenu表 获取到每个角色拥有的菜单并去重
-    const roleMenus = await this.pgService.roleMenu.findMany({
-      where: { roleId: { in: roleIds } },
-      include: {
-        menu: true,
-      },
-    })
-    const rolePermissions = await this.pgService.rolePermission.findMany({
-      where: { roleId: { in: roleIds } },
-      include: {
-        permission: true,
-      },
-    })
+    const [roleMenus, rolePermissions] = await Promise.all([
+      this.pgService.roleMenu.findMany({
+        where: { roleId: { in: roleIds } },
+        include: {
+          menu: true,
+        },
+      }),
+      this.pgService.rolePermission.findMany({
+        where: { roleId: { in: roleIds } },
+        include: {
+          permission: true,
+        },
+      }),
+    ])
     const menus = uniqueBy(
       roleMenus.map(r => r.menu),
       menu => menu.id,
@@ -347,15 +354,41 @@ export class RoleService {
   }
 
   async generateRoleSeed(data: RoleSeedDto[]) {
-    // 创建或更新  如果当前项已存在相同的name 和code  则只更新当前项
+    const roles = uniqueBy(data, role => role.code)
+    if (roles.length === 0) {
+      return { message: '生成角色种子数据成功', success: true }
+    }
 
     await this.pgService.$transaction(async tx => {
-      for (const role of data) {
-        await tx.role.upsert({
-          where: { code: role.code },
-          update: { ...role, id: undefined },
-          create: { ...role, id: undefined },
+      const existing = await tx.role.findMany({
+        where: { code: { in: roles.map(role => role.code) } },
+        select: { code: true },
+      })
+      const existingCodes = new Set(existing.map(role => role.code))
+      const toCreate = roles.filter(role => !existingCodes.has(role.code))
+      const toUpdate = roles.filter(role => existingCodes.has(role.code))
+
+      if (toCreate.length) {
+        await tx.role.createMany({
+          data: toCreate.map(role => ({
+            code: role.code,
+            name: role.name,
+            ...(role.enabled !== undefined ? { enabled: role.enabled } : {}),
+            ...(role.description !== undefined ? { description: role.description } : {}),
+          })),
         })
+      }
+      if (toUpdate.length) {
+        await tx.$executeRaw(
+          sqlBatchUpdateRoles(
+            toUpdate.map(role => ({
+              code: role.code,
+              name: role.name,
+              description: role.description ?? null,
+              enabled: role.enabled ?? null,
+            })),
+          ),
+        )
       }
     })
     return { message: '生成角色种子数据成功', success: true }

@@ -146,18 +146,19 @@ export class UserService {
       take: Number(take),
     }
 
-    const rawlist = await this.pgService.user.findMany({
-      ...newQueryParams,
-      distinct: ['id'],
-    })
+    const [rawlist, total] = await Promise.all([
+      this.pgService.user.findMany({
+        ...newQueryParams,
+        distinct: ['id'],
+      }),
+      this.pgService.user.count({ where }),
+    ])
 
     const list = rawlist.map(u => ({
       ...u,
       createdAt: formatDateToYMDHMS(u.createdAt),
       roles: u.roles.map(r => r.role.id), // 把 { role: {...} } 提取成 {...}
     }))
-
-    const total = await this.pgService.user.count({ where })
 
     return { list, total, message: '部门用户列表查询成功' }
   }
@@ -331,16 +332,18 @@ export class UserService {
       where.departmentId = id
     }
 
-    const list = await this.pgService.user.findMany({
-      where,
-      skip,
-      take,
-      orderBy: { id: 'desc' },
-      omit: {
-        password: true,
-      },
-    })
-    const total = await this.pgService.user.count({ where })
+    const [list, total] = await Promise.all([
+      this.pgService.user.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { id: 'desc' },
+        omit: {
+          password: true,
+        },
+      }),
+      this.pgService.user.count({ where }),
+    ])
     return { list, total, message: '获取用户列表成功' }
   }
 

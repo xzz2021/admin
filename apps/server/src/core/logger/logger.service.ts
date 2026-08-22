@@ -88,21 +88,23 @@ export class LogService implements LoggerService {
       }
     }
 
-    const list = await this.pgService.userOperationLog.findMany({
-      where,
-      skip,
-      take,
-      include: {
-        user: {
-          select: {
-            username: true,
-            phone: true,
+    const [list, total] = await Promise.all([
+      this.pgService.userOperationLog.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          user: {
+            select: {
+              username: true,
+              phone: true,
+            },
           },
         },
-      },
-      orderBy: { id: 'desc' },
-    })
-    const total = await this.pgService.userOperationLog.count({ where })
+        orderBy: { id: 'desc' },
+      }),
+      this.pgService.userOperationLog.count({ where }),
+    ])
     return { list, total, message: '获取日志列表成功' }
   }
 

@@ -4,12 +4,14 @@ import { MenuService } from './menu.service'
 describe('MenuService tree updates', () => {
   const findMany = jest.fn()
   const update = jest.fn()
+  const executeRaw = jest.fn()
   const transaction = jest.fn(
     async (
       callback: (tx: {
         menu: { findMany: typeof findMany; update: typeof update }
+        $executeRaw: typeof executeRaw
       }) => Promise<unknown>,
-    ) => callback({ menu: { findMany, update } }),
+    ) => callback({ menu: { findMany, update }, $executeRaw: executeRaw }),
   )
 
   const service = new MenuService({ $transaction: transaction } as unknown as PgService)
@@ -17,6 +19,7 @@ describe('MenuService tree updates', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     update.mockResolvedValue({ id: 'menu-1' })
+    executeRaw.mockResolvedValue(2)
     findMany.mockResolvedValue([
       { id: 'menu-1', parentId: 'root' },
       { id: 'child', parentId: 'menu-1' },
@@ -57,5 +60,18 @@ describe('MenuService tree updates', () => {
       }),
     ).rejects.toThrow('不能将菜单移动到自己的后代节点下')
     expect(update).not.toHaveBeenCalled()
+  })
+
+  it('sorts menus with one SQL statement instead of per-row updates', async () => {
+    await service.sortMenu([
+      { id: 'menu-1', sort: 2 },
+      { id: 'child', sort: 1 },
+    ])
+
+    expect(update).not.toHaveBeenCalled()
+    expect(executeRaw).toHaveBeenCalledTimes(1)
+    const sql = executeRaw.mock.calls[0][0] as { sql: string; values: unknown[] }
+    expect(sql.sql).toMatch(/UPDATE\s+"Menu"/i)
+    expect(sql.values).toEqual(expect.arrayContaining(['menu-1', 2, 'child', 1]))
   })
 })
