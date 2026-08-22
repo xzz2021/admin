@@ -205,7 +205,7 @@ export default {
     fileManagement: 'File',
     userLog: 'User log',
     message: 'My messages',
-    messageAdmin: 'Message admin',
+    notification: 'Message notification',
     // 权限测试页面
     permission: 'Permission test page',
     function: 'Function',

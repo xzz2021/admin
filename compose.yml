@@ -13,7 +13,7 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - app-network
+      - default
       - shared_net
 
   migrate:
@@ -25,13 +25,11 @@ services:
     env_file:
       - .env
     environment:
-      PG_DATABASE_URL: ${MIGRATION_DATABASE_URL:?MIGRATION_DATABASE_URL is required}
+      PG_DATABASE_URL: ${PG_DATABASE_URL:?PG_DATABASE_URL is required}
     depends_on:
       postgres:
         condition: service_healthy
     restart: "no"
-    networks:
-      - app-network
 
   server:
     build:
@@ -43,7 +41,7 @@ services:
     env_file:
       - .env
     environment:
-      PG_DATABASE_URL: ${APP_DATABASE_URL:?APP_DATABASE_URL is required}
+      PG_DATABASE_URL: ${PG_DATABASE_URL:?PG_DATABASE_URL is required}
       DB_BACKUP_DIR: ${DB_BACKUP_DIR:-/app/apps/server/backups}
     depends_on:
       migrate:
@@ -71,8 +69,6 @@ services:
       # Linux: mkdir -p data/server/{public,backups} && chown -R 1000:1000 data/server
       - ./data/server/public:/app/apps/server/public
       - ./data/server/backups:/app/apps/server/backups
-    networks:
-      - app-network
 
   postgres:
     image: postgres:18-alpine
@@ -103,8 +99,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    networks:
-      - app-network
 
   redis:
     image: redis:8-alpine
@@ -124,14 +118,11 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-    networks:
-      - app-network
 
+# 用于访问到其他compose的共享网络
 networks:
-  app-network:
   shared_net:
     external: true
-    name: shared_net
 
 volumes:
   postgres-data:

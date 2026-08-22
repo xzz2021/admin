@@ -117,7 +117,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <ContentWrap :title="t('router.messageAdmin')">
+  <ContentWrap :title="t('router.notification')">
     <p class="mb-16px mt-0 text-13px text-[var(--el-text-color-secondary)]">
       {{ t('message.adminHint') }}
     </p>
@@ -159,7 +159,7 @@ onMounted(() => {
       <div class="flex items-center justify-end gap-8px">
         <BaseButton @click="resetForm">{{ t('common.reset') }}</BaseButton>
         <BaseButton @click="openComposePreview">{{ t('message.preview') }}</BaseButton>
-        <BaseButton type="primary" :loading="submitting" v-hasPermi="'message:send'" @click="submitSend">
+        <BaseButton type="primary" :loading="submitting" v-hasPermi="'notification:send'" @click="submitSend">
           {{ t('message.send') }}
         </BaseButton>
       </div>

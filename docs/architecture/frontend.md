@@ -41,7 +41,7 @@ src/
 | ----------------------------------- | ------------------------------------------------------------------------ |
 | Authorization/                      | Department、User、Menu、Role、Dictionary                                 |
 | Dashboard/                          | Analysis、Workplace                                                      |
-| System/                             | File、Message、MessageAdmin、OnlineUser、Server、UserLog、DatabaseBackup |
+| System/                             | File、Message、Notification、OnlineUser、Server、UserLog、DatabaseBackup |
 | Login / Personal / Error / Redirect | 登录、个人中心、错误页                                                   |
 
 Dictionary 与 System 下页面**未全部写入**本地 `asyncRouterMap`，依赖服务端菜单动态挂载。

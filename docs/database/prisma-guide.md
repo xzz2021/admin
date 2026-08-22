@@ -39,14 +39,7 @@ Docker `migrate` 服务：`prisma migrate deploy && prisma db seed`。
 
 ## 实践注意
 
-1. 运行时与迁移均使用环境变量 **`PG_DATABASE_URL`**（Compose 分别从 APP_/MIGRATION_ 映射）
+1. 运行时与迁移均使用环境变量 **`PG_DATABASE_URL`**（Compose 分别从 APP*/MIGRATION* 映射）
 2. 复杂写入使用事务（Seed、角色权限分配等）
 3. Prisma 7 与 Node 26 不兼容；镜像使用 Node 24（见根 README）
 4. Windows 上 `@hatkom/nestjs-zod-prisma` 的 preinstall 被 workspace `allowBuilds` 跳过
-
-## Schema 与代码差异（勿误用）
-
-| 模型     | 状态                                       |
-| -------- | ------------------------------------------ |
-| Notice   | 仅 Schema，无业务 API                      |
-| AuditLog | 仅 Schema；线上操作日志走 UserOperationLog |

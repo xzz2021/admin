@@ -1,15 +1,15 @@
-import { AuthModule } from '@/system/auth/auth.module'
 import { buildRedisOptions, type AppRedisConfig } from '@/core/cache/redis-options'
+import { AuthModule } from '@/system/auth/auth.module'
 import { BullModule } from '@nestjs/bullmq'
 import { Module, forwardRef } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
-import { MESSAGE_QUEUE } from './message.constants'
-import { MessageAdminController } from './message-admin.controller'
-import { MessageGateway } from './message.gateway'
 import { MessageInboxController } from './message-inbox.controller'
+import { MESSAGE_QUEUE } from './message.constants'
+import { MessageGateway } from './message.gateway'
 import { MessageProcessor } from './message.processor'
 import { MessageService } from './message.service'
+import { NotificationController } from './notification.controller'
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import { MessageService } from './message.service'
     }),
     BullModule.registerQueue({ name: MESSAGE_QUEUE }),
   ],
-  controllers: [MessageInboxController, MessageAdminController],
+  controllers: [MessageInboxController, NotificationController],
   providers: [MessageService, MessageProcessor, MessageGateway],
   exports: [MessageService],
 })

@@ -52,16 +52,16 @@ erDiagram
 
 Compose 区分三类 Postgres 用户（密码必须不同）：
 
-| 用途     | 环境变量               | 注入方式                    |
-| -------- | ---------------------- | --------------------------- |
-| 超级用户 | POSTGRES_ADMIN_*       | postgres 容器               |
-| 迁移     | MIGRATION_DATABASE_URL | migrate → `PG_DATABASE_URL` |
-| 运行时   | APP_DATABASE_URL       | server → `PG_DATABASE_URL`  |
+| 用途     | 环境变量          | 注入方式                    |
+| -------- | ----------------- | --------------------------- |
+| 超级用户 | POSTGRES*ADMIN*\* | postgres 容器               |
+| 迁移     | PG_DATABASE_URL   | migrate → `PG_DATABASE_URL` |
+| 运行时   | PG_DATABASE_URL   | server → `PG_DATABASE_URL`  |
 
 初始化脚本：`docker/postgres/init-users.sh`。
 
 ## Seed
 
 - 入口：`apps/server/src/prisma/seed.ts`（菜单为空才灌入）
-- 数据：`sql.ts`（菜单/角色/权限）+ `seed-admin.ts`（SEED_ADMIN_*）
+- 数据：`sql.ts`（菜单/角色/权限）+ `seed-admin.ts`（SEED*ADMIN*\*）
 - 命令：`pnpm --filter server prisma:seed`

@@ -58,7 +58,3 @@
 | `hooks/fn/useRoleMenu.ts`   | 拉菜单并生成路由         |
 | `utils/routerHelper.ts`     | 动态路由组件映射         |
 | `nginx.conf` / `Dockerfile` | 前端镜像与反代           |
-
-## 文档
-
-见 [docs/README.md](./README.md)。

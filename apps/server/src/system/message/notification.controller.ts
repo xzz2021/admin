@@ -7,18 +7,18 @@ import { MessageService } from './message.service'
 
 @ApiTags('消息管理')
 @Controller('message')
-export class MessageAdminController {
+export class NotificationController {
   constructor(private readonly messageService: MessageService) {}
 
   @Get('receivers')
-  @RequiredPermission('messageAdmin:send')
+  @RequiredPermission('notification:send')
   @ApiOperation({ summary: '获取站内信接收人列表' })
   receivers(@Query() query: ReceiversQueryDto, @User() user: JwtUser) {
     return this.messageService.searchReceivers(query.keyword, user.id)
   }
 
   @Post('mail')
-  @RequiredPermission('messageAdmin:send')
+  @RequiredPermission('notification:send')
   @ApiOperation({ summary: '发送站内信' })
   sendMail(@Body() body: SendMailDto, @User() user: JwtUser) {
     return this.messageService.enqueueMail({
@@ -31,7 +31,7 @@ export class MessageAdminController {
   }
 
   @Post('system')
-  @RequiredPermission('messageAdmin:send')
+  @RequiredPermission('notification:send')
   @ApiOperation({ summary: '发送系统通知（全体用户）' })
   sendSystem(@Body() body: SendSystemDto, @User() user: JwtUser) {
     return this.messageService.enqueueSystem({

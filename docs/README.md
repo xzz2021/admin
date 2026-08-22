@@ -45,6 +45,6 @@ backstage/
 ## 快速入口
 
 - 本地开发：见 [local-development](./development/local-development.md)
-- Docker 部署：见 [docker](./deployment/docker.md) 与根目录 `README.md`
+- Docker 部署：见 [docker](./deployment/docker.md)
 - 权限模型：见 [permission](./architecture/permission.md)
 - 代码定位：见 [code-map](./code-map.md)

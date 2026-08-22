@@ -3,6 +3,7 @@ import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { OnlineGateway } from '@/system/online/online.gateway'
 import { OnlineService } from '@/system/online/online.service'
+import { RedisService } from '@liaoliaots/nestjs-redis'
 import {
   BadRequestException,
   ConflictException,
@@ -12,12 +13,11 @@ import {
   Optional,
   UnauthorizedException,
 } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
-import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
-import { RedisService } from '@liaoliaots/nestjs-redis'
 import { ConfigService } from '@nestjs/config'
+import { JwtService } from '@nestjs/jwt'
 import { Response } from 'express'
 import Redis from 'ioredis'
+import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
 import { RtTokenService } from './rt.token.service'
 import { TokenService } from './token.service'
 
@@ -90,7 +90,7 @@ export class AuthService {
           select: {
             role: {
               select: {
-                id: true,
+                // id: true,
                 name: true,
                 code: true,
               },
@@ -124,7 +124,7 @@ export class AuthService {
       id,
       roles: roles.map(item => item.role),
     })
-
+    delete (result as any).id
     return {
       message: `${username}登录成功`,
       userinfo: result,

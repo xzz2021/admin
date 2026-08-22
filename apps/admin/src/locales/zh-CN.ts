@@ -204,7 +204,7 @@ export default {
     fileManagement: '文件管理',
     userLog: '用户日志',
     message: '我的消息',
-    messageAdmin: '消息管理',
+    notification: '消息通知',
 
     permission: '权限测试页',
     function: '功能',

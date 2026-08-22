@@ -27,7 +27,7 @@ FROM nginx:1.31-alpine
 
 COPY --from=builder /app/apps/admin/dist-pro /usr/share/nginx/html
 
-COPY apps/admin/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
