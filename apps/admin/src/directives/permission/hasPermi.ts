@@ -6,7 +6,7 @@ const { t } = useI18n()
 
 const hasPermission = (value: string): boolean => {
   const permission = (router.currentRoute.value.meta.permissions || []) as string[]
-  console.log('TCL: permission', permission)
+  // console.log('TCL: permission', permission)
   if (!value) {
     throw new Error(t('permission.hasPermission'))
   }

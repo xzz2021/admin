@@ -1,6 +1,6 @@
 import { MenuModel, PermissionModel } from '@prisma/generated/zod'
-import { z } from 'zod'
 import { createZodDto } from 'nestjs-zod'
+import { z } from 'zod'
 
 const MetaSchema = MenuModel.pick({
   title: true,
@@ -20,7 +20,6 @@ const PermissionSchema = PermissionModel.pick({
   name: true,
   code: true,
 })
-export class PermissionDto extends createZodDto(PermissionSchema) {}
 
 export class PermissionNoIdDto extends createZodDto(PermissionSchema) {}
 

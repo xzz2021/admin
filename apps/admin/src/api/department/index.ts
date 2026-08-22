@@ -7,15 +7,6 @@ export const getDepartmentListApi = (): Promise<IResponse<{ list: DepartmentItem
   return request.get({ url: 'department/list' })
 }
 
-/** @deprecated 使用 getDepartmentListApi */
-export const getDepartmentApi = getDepartmentListApi
-
-/** @deprecated 使用 getDepartmentListApi */
-export const getAllDepartmentListApi = getDepartmentListApi
-
-/** @deprecated 使用 getDepartmentListApi */
-export const getDepartmentTableApi = getDepartmentListApi
-
 export const addDepartmentApi = (data: CreateDepartmentDto): Promise<IResponse<{ id: string }>> => {
   return request.post({ url: 'department/add', data })
 }

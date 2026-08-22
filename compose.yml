@@ -41,7 +41,7 @@ services:
     env_file:
       - .env
     environment:
-      PG_DATABASE_URL: ${PG_DATABASE_URL:?PG_DATABASE_URL is required}
+      PG_DATABASE_URL: ${APP_DATABASE_URL:?APP_DATABASE_URL is required}
       DB_BACKUP_DIR: ${DB_BACKUP_DIR:-/app/apps/server/backups}
     depends_on:
       migrate:

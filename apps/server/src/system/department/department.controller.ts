@@ -5,7 +5,6 @@ import { DepartmentService } from './department.service'
 import {
   CreateDepartmentDto,
   DeleteDepartmentDto,
-  DepartmentListDto,
   DepartmentListResDto,
   DepartmentSeedArrayDto,
   UpdateDepartmentDto,
@@ -27,7 +26,7 @@ export class DepartmentController {
   @RequiredPermission('department:view')
   @ApiOperation({ summary: '获取部门列表' })
   @Serialize(DepartmentListResDto)
-  @ApiResponse({ type: DepartmentListDto, isArray: true })
+  @ApiResponse({ type: DepartmentListResDto, isArray: true })
   findAll() {
     return this.departmentService.findAll()
   }

@@ -3,7 +3,7 @@ import router from '@/router'
 
 export const hasPermi = (value: string) => {
   const { t } = useI18n()
-  const permission = (router.currentRoute.value.meta.permission || []) as string[]
+  const permission = (router.currentRoute.value.meta.permissions || []) as string[]
   if (!value) {
     throw new Error(t('permission.hasPermission'))
   }

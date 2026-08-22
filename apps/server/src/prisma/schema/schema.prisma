@@ -194,6 +194,7 @@ model Menu {
 }
 
 model Permission {
+  /// @z.string().meta({ description: '所属菜单 ID', example: 'clxxx' })
   id   String @id @default(cuid())
   /// @z.string().min(1).max(50).meta({ description: '权限名称', example: '用户列表' })
   name String
@@ -201,7 +202,6 @@ model Permission {
   code String @unique
   /// @z.nativeEnum(PermissionType).meta({ description: '权限类型', example: 'BUTTON' })
   type PermissionType
-  /// @z.string().meta({ description: '所属菜单 ID', example: 'clxxx' })
   /// @z.number().int().min(0).optional().meta({ description: '排序', example: 0 })
   sort Int @default(0)
   /// @z.boolean().optional().meta({ description: '是否启用', example: true })

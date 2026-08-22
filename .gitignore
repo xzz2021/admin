@@ -6,7 +6,6 @@ node_modules/
 .env
 !.env.example
 !apps/admin/.env.pro
-!apps/server/.env
 
 *.log
 admin/dist/

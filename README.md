@@ -1,11 +1,37 @@
 > 项目整体结构,目录,架构设计详细文档在根目录[/docs](./docs/)下
 
-### 本地开发
+### 项目说明
 
-前置准备
+> 这是一个前端基于[vue-element-plus-admin](https://github.com/kailong321200875/vue-element-plus-admin)二开, 后端使用nestjs + prisma + postgresql, 通过docker构建部署的项目
 
-- git/node24/pnpm11.13.1
-- 准备redis和postgres数据库,配置参数在[server](./apps/server/)的.env文件定义,可以连接远端服务或参考[compose.local.yml](./compose.local.yml)在本机安装
-- prisma首次初始化数据库表`prisma migrate dev --name init`,还需要初始化种子数据,[server](./apps/server/)项目下执行`pnpm prisma:seed`,为了避免数据冲突,增量需要自行构造查询写入逻辑,文件在[seeds](./apps/./server/src/prisma/seed.ts),用于初始化菜单和超级管理员账号; 如果是后期开发已有迁移数据而开发时数据库有重置,则执行`pnpm exec prisma migrate deploy`再执行`pnpm exec prisma db seed`以保持迁移记录一致
-- 每次更新schema后需要执行`pnpm generate`同步prisma client,执行`prisma migrate dev --name anyname`同步数据库
-- 如果想调试数据库备份功能,需要本机(win10)安装PostgreSQL Command Line Tools命令行工具并设置环境变量
+## 技术栈
+
+| 框架                                                                 | 说明                  | 版本   |
+| -------------------------------------------------------------------- | --------------------- | ------ |
+| [Vue](https://staging-cn.vuejs.org/)                                 | Vue 框架              | 3.3.8  |
+| [Vite](https://cn.vitejs.dev//)                                      | 开发与构建工具        | 4.5.0  |
+| [Element Plus](https://element-plus.org/zh-CN/)                      | Element Plus          | 2.4.2  |
+| [TypeScript](https://www.typescriptlang.org/docs/)                   | JavaScript 的超集     | 5.2.2  |
+| [pinia](https://pinia.vuejs.org/)                                    | Vue 存储库 替代 vuex5 | 2.1.7  |
+| [vueuse](https://vueuse.org/)                                        | 常用工具集            | 10.6.1 |
+| [vue-i18n](https://kazupon.github.io/vue-i18n/zh/introduction.html/) | 国际化                | 9.6.5  |
+| [vue-router](https://router.vuejs.org/)                              | Vue 路由              | 4.2.5  |
+| [unocss](https://uno.antfu.me/)                                      | 原子 css              | 0.57.4 |
+| [iconify](https://icon-sets.iconify.design/)                         | 在线图标库            | 3.1.1  |
+| [wangeditor](https://www.wangeditor.com/)                            | 富文本编辑器          | 5.1.23 |
+
+### 系统功能实现
+
+| 功能列表      | 功能描述                                                                                                                                                  | 是否完成 |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| SIMPLE 设计器 | 仿钉钉/飞书设计器，支持拖拽搭建表单流程，10 分钟快速完成审批流程配置                                                                                      | ✅       |
+| BPMN 设计器   | 基于 BPMN 标准开发，适配复杂业务场景，满足多层级审批及流程自动化需求                                                                                      | ✅       |
+| 会签          | 同一个审批节点设置多个人（如 A、B、C 三人，三人会同时收到待办任务），需全部同意之后，审批才可到下一审批节点                                               | ✅       |
+| 或签          | 同一个审批节点设置多个人，任意一个人处理后，就能进入下一个节点                                                                                            | ✅       |
+| 依次审批      | （顺序会签）同一个审批节点设置多个人（如 A、B、C 三人），三人按顺序依次收到待办，即 A 先审批，A 提交后 B 才能审批，需全部同意之后，审批才可到下一审批节点 | ✅       |
+| 抄送          | 将审批结果通知给抄送人，同一个审批默认排重，不重复抄送给同一人                                                                                            | ✅       |
+| 驳回          | （退回）将审批重置发送给某节点，重新审批。可驳回至发起人、上一节点、任意节点                                                                              | ✅       |
+| 转办          | A 转给其 B 审批，B 审批后，进入下一节点                                                                                                                   | ✅       |
+| 委派          | A 转给其 B 审批，B 审批后，转给 A，A 继续审批后进入下一节点                                                                                               | ✅       |
+| 加签          | 允许当前审批人根据需要，自行增加当前节点的审批人，支持向前、向后加签                                                                                      | ✅       |
+| 减签          | （取消加签）在当前审批人操作之前，减少审批人                                                                                                              | ✅       |

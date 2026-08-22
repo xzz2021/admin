@@ -1,3 +1,4 @@
+import { ServiceUnavailableException } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import Redis from 'ioredis'
 
@@ -43,26 +44,32 @@ export class SessionRegistry {
     return `${this.options.lockPrefix}${userId}`
   }
 
+  private static readonly UNLOCK_LUA = `
+  if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+  end
+  return 0
+`
+  private async releaseLock(key: string, owner: string) {
+    await this.redis.eval(SessionRegistry.UNLOCK_LUA, 1, key, owner)
+  }
+
   private async withUserLock<T>(userId: string, fn: () => Promise<T>): Promise<T> {
     const key = this.lockKey(userId)
     const owner = randomUUID()
-    const startedAt = Date.now()
-    let acquired = false
-
-    while (!acquired && Date.now() - startedAt <= this.lockMaxWaitMs) {
-      acquired = (await this.redis.set(key, owner, 'PX', this.lockTtlMs, 'NX')) === 'OK'
-      if (!acquired) {
-        await new Promise(resolve => setTimeout(resolve, Math.floor(10 + Math.random() * 20)))
+    const deadline = Date.now() + this.lockMaxWaitMs
+    while (Date.now() <= deadline) {
+      const ok = await this.redis.set(key, owner, 'PX', this.lockTtlMs, 'NX')
+      if (ok === 'OK') {
+        try {
+          return await fn()
+        } finally {
+          await this.releaseLock(key, owner)
+        }
       }
+      await new Promise(resolve => setTimeout(resolve, 10 + Math.random() * 20))
     }
-
-    try {
-      return await fn()
-    } finally {
-      if (acquired && (await this.redis.get(key)) === owner) {
-        await this.redis.del(key)
-      }
-    }
+    throw new ServiceUnavailableException('会话繁忙，请稍后重试')
   }
 
   private async loadList(userId: string): Promise<string[]> {

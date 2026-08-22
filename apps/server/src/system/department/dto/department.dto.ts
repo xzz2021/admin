@@ -35,7 +35,7 @@ export class UpdateDepartmentDto extends createZodDto(UpdateDepartmentSchema) {}
 const FindDepartmentSchema = z.object({
   id: DepartmentIdSchema,
 })
-export class FindDepartmentDto extends createZodDto(FindDepartmentSchema) {}
+
 export class DeleteDepartmentDto extends createZodDto(FindDepartmentSchema) {}
 
 // 排除updatedAt字段
@@ -47,7 +47,7 @@ const DepartmentTreeSchema = DepartmentModel.omit({
     return z.array(DepartmentTreeSchema).optional()
   },
 })
-export class DepartmentListDto extends createZodDto(DepartmentTreeSchema) {}
+
 export class DepartmentListResDto extends createZodDto(DepartmentTreeSchema) {}
 
 const DepartmentSeedSchema = DepartmentBaseSchema.omit({
@@ -57,7 +57,7 @@ const DepartmentSeedSchema = DepartmentBaseSchema.omit({
     return z.array(DepartmentSeedSchema).optional()
   },
 })
-export class UpsertDepartmentDto extends createZodDto(DepartmentSeedSchema) {}
+
 export class DepartmentSeedDto extends createZodDto(DepartmentSeedSchema) {}
 
 const DepartmentSeedArraySchema = z.object({

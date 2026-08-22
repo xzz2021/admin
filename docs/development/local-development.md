@@ -16,18 +16,14 @@ Workspace：`apps/*`、`packages/*`（见 `pnpm-workspace.yaml`）。
 
 ## 环境变量
 
-1. 根目录可参考 `.env.example`
-2. Server 本地常用 `apps/server/.env`，需包含 `PG_DATABASE_URL`、`TOKEN_*`、`REDIS_*` 等
-3. Admin 使用 Vite mode：`dev` 脚本为 `--mode base`（`.env.base`）
+1. 后端Server使用 `apps/server/.env`，需包含 `PG_DATABASE_URL`、`TOKEN_*`、`REDIS_*` 等
+2. 前端Admin 使用 Vite mode：`dev` 脚本为 `--mode base`（`.env.base`）
 
 ## 数据库
 
-```bash
-cd apps/server
-# 配置 PG_DATABASE_URL 后
-pnpm prisma migrate dev
-pnpm prisma:seed
-```
+- prisma首次初始化数据库表prisma migrate dev --name init,还需要初始化种子数据,server项目下执行pnpm prisma:seed,为了避免数据冲突,增量需要自行构造查询写入逻辑,文件在seeds,用于初始化菜单和超级管理员账号; 如果是后期开发已有迁移数据而开发时数据库有重置,则执行pnpm exec prisma migrate deploy再执行pnpm exec prisma db seed以保持迁移记录一致
+- 每次更新schema后需要执行pnpm generate同步prisma client,执行prisma migrate dev --name anyname同步数据库
+- 如果想调试数据库备份功能,需要本机(win10)安装PostgreSQL Command Line Tools命令行工具并设置环境变量
 
 ## 启动
 
@@ -53,10 +49,3 @@ pnpm check
 ```
 
 Husky + lint-staged + commitlint（conventional）。
-
-## 包过滤
-
-```bash
-pnpm --filter server <script>
-pnpm --filter admin <script>
-```

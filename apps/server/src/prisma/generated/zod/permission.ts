@@ -1,7 +1,6 @@
 import * as z from "zod"
-import { createZodDto } from "nestjs-zod/dto"
 import { PermissionType } from "./enums"
-import { CompleteMenu, RelatedMenuModel, CompleteRolePermission, RelatedRolePermissionModel } from "./index"
+import { CompleteMenu, CompleteRolePermission, RelatedMenuModel, RelatedRolePermissionModel } from "./index"
 
 export const PermissionModel = z.object({
   id: z.string(),
@@ -15,8 +14,6 @@ export const PermissionModel = z.object({
   updatedAt: z.date(),
 })
 
-export class PermissionDto extends createZodDto(PermissionModel) {
-}
 
 export interface CompletePermission extends z.infer<typeof PermissionModel> {
   menu: CompleteMenu
