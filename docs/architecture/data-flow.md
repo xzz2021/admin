@@ -58,7 +58,7 @@ flowchart LR
 ## 文件上传
 
 - `POST /staticfile/upload` 写入文件管理目录；头像走 `POST /user/upload/avatar`
-- ServeStatic 以配置的 serveRoot 对外提供访问（示例：`api/public`）
+- 静态文件由独立中间件按 `STATIC_FILE_ROOT_PATH` 前缀提供（磁盘目录示例：`public`，对外 URL 示例：`api/public`）
 - 元数据可写入 `File` 模型
 
 ## 操作日志

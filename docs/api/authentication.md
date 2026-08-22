@@ -54,7 +54,7 @@ Throttler → RtJwtAuthGuard → PermissionGuard
 
 - `@Public()`：跳过 JWT
 - 无 `@RequiredPermission`：跳过权限码检查
-- 静态路径前缀 `/public/`：JWT Guard 放行
+- 静态文件：由独立中间件按 `STATIC_FILE_ROOT_PATH` 前缀提供，不经过 JWT Guard
 - WebSocket：全局 JWT 返回 false，由各 Gateway 自行验 token
 
 ## 密钥与过期（环境变量）

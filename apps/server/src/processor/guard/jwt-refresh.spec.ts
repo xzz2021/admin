@@ -9,10 +9,13 @@ describe('JwtRefreshAuthGuard', () => {
   const listSessions = jest.fn()
   const rtTokenService = { isBlacklisted, listSessions } as unknown as RtTokenService
 
-  const createContext = (user?: { id?: string; jti?: string }): ExecutionContext =>
+  const createContext = (
+    user?: { id?: string; jti?: string },
+    url = '/auth/refresh',
+  ): ExecutionContext =>
     ({
       switchToHttp: () => ({
-        getRequest: () => ({ url: '/auth/refresh', user }),
+        getRequest: () => ({ url, user }),
       }),
     }) as unknown as ExecutionContext
 
@@ -51,5 +54,17 @@ describe('JwtRefreshAuthGuard', () => {
     await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).resolves.toBe(
       true,
     )
+  })
+
+  it('does not skip refresh JWT for /public/ URLs', async () => {
+    const jwtSpy = jest
+      .spyOn(AuthGuard('jwt-refresh').prototype, 'canActivate')
+      .mockResolvedValue(false)
+    const guard = new JwtRefreshAuthGuard(rtTokenService)
+
+    await expect(
+      guard.canActivate(createContext(undefined, '/public/refresh-bypass')),
+    ).resolves.toBe(false)
+    expect(jwtSpy).toHaveBeenCalled()
   })
 })

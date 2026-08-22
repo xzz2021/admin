@@ -45,7 +45,7 @@
 ## 全局 Guard 顺序
 
 1. `GlobalThrottlerGuard` — 限流
-2. `RtJwtAuthGuard` — Access JWT（`@Public()` 跳过；`/public/` 放行；WS 交由 Gateway 自鉴权）
+2. `RtJwtAuthGuard` — Access JWT（仅 `@Public()` 跳过；静态资源由独立中间件处理，不走 Guard；WS 交由 Gateway 自鉴权）
 3. `PermissionGuard` — `@RequiredPermission` 校验
 
 ## 横切能力（processor）

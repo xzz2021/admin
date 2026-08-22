@@ -1,32 +1,66 @@
-import { ConfigService } from '@nestjs/config'
-import { ServeStaticModule, ServeStaticModuleOptions } from '@nestjs/serve-static'
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
+import type { NextFunction, Request, RequestHandler, Response } from 'express'
+import express from 'express'
 import { join } from 'path'
 
-// 静态资源模块
-export const SERVER_STATIC_MODULE = ServeStaticModule.forRootAsync({
-  inject: [ConfigService],
-  useFactory: (configService: ConfigService): ServeStaticModuleOptions[] => {
-    const staticFileRootPath = configService.get('staticFileRootPath') as string
+// 创建静态文件中间件 与可能的同名路由作出区别 避免和路由混淆 确保静态文件在 Guard 之前响应 GET/HEAD
 
-    //  绝对路径
-    const staticFileRootPathAbsolute = join(process.cwd(), staticFileRootPath)
-    // const staticFileServeRoot = configService.get('staticFileServeRoot') as string;
-    // console.log('staticFileRootPathAbsolute', staticFileRootPathAbsolute);
-    return [
-      {
-        //  进程启动目录  不推荐
-        // rootPath: join(process.cwd(), 'static'), // 静态文件的根路径  不能设置为dist 因为编译会清理
-        rootPath: staticFileRootPathAbsolute,
-        serveRoot: `/${staticFileRootPath}/`, // 设置 URL 路径访问前缀
-        // 如果需要设置 CORS，可以在这里自定义 headers
-        serveStaticOptions: {
-          setHeaders: (res: any) => {
-            res.setHeader('Access-Control-Allow-Origin', '*') // 允许所有源访问
-            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE') // 允许的请求方法
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept') // 允许的请求头
-          },
-        },
-      },
-    ]
-  },
+export function createStaticFileMiddleware(diskRoot: string, urlPrefix: string): RequestHandler {
+  const prefix = `/${urlPrefix.replace(/^\/+|\/+$/g, '')}`
+  const serve = express.static(diskRoot, {
+    fallthrough: true,
+    index: false,
+    setHeaders(res) {
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD')
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept')
+    },
+  })
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      next()
+      return
+    }
+    if (req.path !== prefix && !req.path.startsWith(`${prefix}/`)) {
+      next()
+      return
+    }
+
+    const queryIndex = req.url.indexOf('?')
+    const query = queryIndex >= 0 ? req.url.slice(queryIndex) : ''
+    const rest = req.path.slice(prefix.length) || '/'
+    const originalUrl = req.url
+    req.url = `${rest}${query}`
+    serve(req, res, (err?: Error) => {
+      req.url = originalUrl
+      if (err) {
+        next(err)
+        return
+      }
+      res.status(404).end()
+    })
+  }
+}
+
+@Module({
+  imports: [ConfigModule],
 })
+export class StaticAssetsModule implements NestModule {
+  constructor(private readonly configService: ConfigService) {}
+
+  configure(consumer: MiddlewareConsumer) {
+    const staticFileRootPath = this.configService.get<string>('staticFileRootPath')
+    if (!staticFileRootPath) return
+
+    const urlPrefix = staticFileRootPath.replace(/^\/+|\/+$/g, '')
+    const diskRoot = join(process.cwd(), staticFileRootPath)
+    consumer.apply(createStaticFileMiddleware(diskRoot, urlPrefix)).forRoutes({
+      path: '{*path}',
+      method: RequestMethod.ALL,
+    })
+  }
+}
+
+export const SERVER_STATIC_MODULE = StaticAssetsModule

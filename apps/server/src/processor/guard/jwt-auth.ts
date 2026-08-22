@@ -1,9 +1,7 @@
-import { IS_PUBLIC_KEY } from '@/processor/decorator'
-// import { TokenService } from '@/table/auth/token.service';
 import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
-// import { Request } from 'express';
+import { isPublicRoute } from './is-public'
 
 //    ==============重要=============
 // NotAcceptableException  406  此异常码专门用于短token过期提示  ??  废弃
@@ -19,20 +17,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // 判断是否是public前缀的路由  避免和静态文件路径混淆
+    if (isPublicRoute(this.reflector, context)) {
+      return true
+    }
+
     const request = context.switchToHttp().getRequest()
-    // console.log('xzz2021: JwtAuthGuard -> canActivate:', request);
-    // 允许对 `/public/` 开头的资源访问
-    if (request.url.startsWith('/public/')) {
-      return true
-    }
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])
-    // 先跑 JWT 校验（签名/过期/解析 payload）
-    if (isPublic) {
-      return true
-    }
     const ok = (await super.canActivate(context)) as boolean
 
     if (!ok) return false

@@ -13,11 +13,6 @@ export class JwtRefreshAuthGuard extends AuthGuard('jwt-refresh') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest()
 
-    // 允许对 `/public/` 开头的资源访问
-    if (request.url.startsWith('/public/')) {
-      return true
-    }
-
     const ok = (await super.canActivate(context)) as boolean
     if (!ok) return false
 

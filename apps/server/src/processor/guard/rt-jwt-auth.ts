@@ -1,9 +1,9 @@
-import { IS_PUBLIC_KEY } from '@/processor/decorator'
 import { RtTokenService } from '@/system/auth/rt.token.service'
 import { TokenService } from '@/system/auth/token.service'
 import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { AuthGuard } from '@nestjs/passport'
+import { isPublicRoute } from './is-public'
 
 // 用于全局 配合 短token 拦截
 @Injectable()
@@ -17,11 +17,7 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ])
-    if (isPublic) return true
+    if (isPublicRoute(this.reflector, context)) return true
 
     // WebSocket 走各自 Gateway 鉴权，避免 HTTP Guard 误伤
     if (context.getType?.() === 'ws') {
@@ -29,10 +25,6 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
     }
 
     const request = context.switchToHttp().getRequest()
-    // 允许对 `/public/` 开头的资源访问
-    if (request?.url?.startsWith('/public/')) {
-      return true
-    }
 
     const ok = (await super.canActivate(context)) as boolean
     if (!ok) return false

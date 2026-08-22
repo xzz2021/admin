@@ -12,10 +12,11 @@ describe('RtJwtAuthGuard', () => {
   const tokenService = { isBlacklisted: isAccessBlacklisted } as unknown as TokenService
   const rtTokenService = { isBlacklisted: isRtBlacklisted } as unknown as RtTokenService
 
-  const createContext = (user?: { jti?: string }): ExecutionContext =>
+  const createContext = (user?: { jti?: string }, url = '/user/list'): ExecutionContext =>
     ({
+      getType: () => 'http',
       switchToHttp: () => ({
-        getRequest: () => ({ url: '/user/list', user }),
+        getRequest: () => ({ url, user }),
       }),
       getHandler: () => ({}),
       getClass: () => class {},
@@ -45,5 +46,26 @@ describe('RtJwtAuthGuard', () => {
     isRtBlacklisted.mockResolvedValue(false)
 
     await expect(guard.canActivate(createContext({ jti: 'jti-1' }))).resolves.toBe(true)
+  })
+
+  it('does not skip JWT for /public/ URLs without @Public()', async () => {
+    const jwtSpy = jest.spyOn(AuthGuard('jwt').prototype, 'canActivate').mockResolvedValue(false)
+    const guard = new RtJwtAuthGuard(new Reflector(), tokenService, rtTokenService)
+
+    await expect(guard.canActivate(createContext(undefined, '/public/secret-api'))).resolves.toBe(
+      false,
+    )
+    expect(jwtSpy).toHaveBeenCalled()
+  })
+
+  it('skips JWT only when @Public() is set', async () => {
+    const reflector = {
+      getAllAndOverride: () => true,
+    } as unknown as Reflector
+    const jwtSpy = jest.spyOn(AuthGuard('jwt').prototype, 'canActivate').mockResolvedValue(false)
+    const guard = new RtJwtAuthGuard(reflector, tokenService, rtTokenService)
+
+    await expect(guard.canActivate(createContext(undefined, '/auth/register'))).resolves.toBe(true)
+    expect(jwtSpy).not.toHaveBeenCalled()
   })
 })
