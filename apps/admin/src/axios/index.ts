@@ -1,30 +1,14 @@
 import { axiosInstance } from './client'
 import { cancelAllRequest, cancelRequest, createPending, removePending } from './pending'
-import type { CancellablePromise, RequestConfig } from './types'
+import type { CancellablePromise, DownloadResponse, RequestConfig } from './types'
 
-/**
- * 对外 HTTP 门面。
- * Token 由请求拦截器注入；此处只组装方法与可选 headers。
- */
-const request = <T>(option: AxiosConfig): CancellablePromise<T> => {
-  const { url, method, params, data, headers, responseType, withCredentials } = option
+type JsonAxiosConfig = Omit<AxiosConfig, 'responseType'>
+
+const withCancel = <T>(url: string, send: (config: RequestConfig) => Promise<T>): CancellablePromise<T> => {
   const { controller, requestId } = createPending(url || '')
-
-  const config: RequestConfig = {
-    url,
-    method,
-    params,
-    data,
-    responseType,
-    headers,
-    withCredentials,
+  const promise = send({
     signal: controller.signal,
     requestId
-  }
-
-  const axiosPromise = axiosInstance.request<T>(config)
-  const promise = axiosPromise.then((response) => {
-    return responseType === 'blob' ? (response as unknown as T) : response.data
   }) as CancellablePromise<T>
 
   promise.cancel = () => {
@@ -35,22 +19,66 @@ const request = <T>(option: AxiosConfig): CancellablePromise<T> => {
   return promise
 }
 
+/** JSON 业务请求：始终返回拦截器解包后的 `response.data`（IResponse）。 */
+const requestData = <T>(option: JsonAxiosConfig): CancellablePromise<T> => {
+  const { url, method, params, data, headers, withCredentials } = option
+
+  return withCancel(url || '', (pending) =>
+    axiosInstance
+      .request<T>({
+        url,
+        method,
+        params,
+        data,
+        headers,
+        withCredentials,
+        ...pending
+      })
+      .then((response) => response.data)
+  )
+}
+
+/** 文件下载：固定 blob，返回文件体和响应头（用于 Content-Disposition 文件名）。 */
+const download = (option: JsonAxiosConfig): CancellablePromise<DownloadResponse> => {
+  const { url, method = 'get', params, data, headers, withCredentials } = option
+
+  return withCancel(url || '', (pending) =>
+    axiosInstance
+      .request<Blob>({
+        url,
+        method,
+        params,
+        data,
+        headers,
+        withCredentials,
+        responseType: 'blob',
+        ...pending
+      })
+      .then((response) => ({
+        data: response.data,
+        headers: response.headers
+      }))
+  )
+}
+
 const http = {
-  get: <T = any>(option: AxiosConfig) => {
-    return request<IResponse<T>>({ method: 'get', ...option })
+  get: <T = any>(option: JsonAxiosConfig) => {
+    return requestData<IResponse<T>>({ method: 'get', ...option })
   },
-  post: <T = any>(option: AxiosConfig) => {
-    return request<IResponse<T>>({ method: 'post', ...option })
+  post: <T = any>(option: JsonAxiosConfig) => {
+    return requestData<IResponse<T>>({ method: 'post', ...option })
   },
-  delete: <T = any>(option: AxiosConfig) => {
-    return request<IResponse<T>>({ method: 'delete', ...option })
+  delete: <T = any>(option: JsonAxiosConfig) => {
+    return requestData<IResponse<T>>({ method: 'delete', ...option })
   },
-  put: <T = any>(option: AxiosConfig) => {
-    return request<IResponse<T>>({ method: 'put', ...option })
+  put: <T = any>(option: JsonAxiosConfig) => {
+    return requestData<IResponse<T>>({ method: 'put', ...option })
   },
+  download,
   cancelRequest,
   cancelAllRequest
 }
 
 export default http
 export { PATH_URL } from './client'
+export type { CancellablePromise, DownloadResponse } from './types'

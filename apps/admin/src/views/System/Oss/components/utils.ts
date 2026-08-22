@@ -3,7 +3,7 @@ import { createAudioViewer } from '@/components/AudioPlayer'
 import { createImageViewer } from '@/components/ImageViewer'
 import { createTxtViewer } from '@/components/TxtViewer'
 import { createVideoViewer } from '@/components/VideoPlayer'
-import { AxiosResponse, AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios'
+import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios'
 import { ElMessage } from 'element-plus'
 
 // 根据后端返回的headers里传递的文件名进行命名
@@ -22,7 +22,7 @@ const getFilenameFromHeader = (headers: RawAxiosResponseHeaders | AxiosResponseH
 export const downloadFile = async (rawName: string) => {
   const isFolder = rawName.endsWith('/')
   try {
-    const blob: AxiosResponse<Blob> = isFolder
+    const file = isFolder
       ? await downloadFolderApi({
           folderPath: rawName
         })
@@ -30,14 +30,13 @@ export const downloadFile = async (rawName: string) => {
           objectName: rawName
         })
 
-    // 创建下载链接
-    const url = window.URL.createObjectURL(blob.data)
+    const url = window.URL.createObjectURL(file.data)
     const link = document.createElement('a')
     link.href = url
 
     // 从文件名中提取实际的文件名（去掉路径前缀）
     const fileName = rawName.split('/').pop() || rawName
-    link.download = isFolder ? getFilenameFromHeader(blob.headers) : fileName
+    link.download = isFolder ? getFilenameFromHeader(file.headers) : fileName
 
     // 触发下载
     document.body.appendChild(link)

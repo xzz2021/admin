@@ -1,5 +1,4 @@
-import request from '@/axios'
-import type { AxiosResponse } from 'axios'
+import request, { type DownloadResponse } from '@/axios'
 
 import type { DbBackupConfig, DbBackupJobListResponse, DbBackupJobQuery, UpdateDbBackupConfigDto } from './types'
 
@@ -27,9 +26,8 @@ export const cleanupDbBackupJobsApi = (): Promise<IResponse<{ count: number }>> 
   return request.post({ url: '/db-backup/cleanup' })
 }
 
-export const downloadDbBackupJobApi = (id: string): Promise<AxiosResponse<Blob>> => {
-  return request.get({
-    url: `/db-backup/download/${id}`,
-    responseType: 'blob'
-  }) as unknown as Promise<AxiosResponse<Blob>>
+export const downloadDbBackupJobApi = (id: string): Promise<DownloadResponse> => {
+  return request.download({
+    url: `/db-backup/download/${id}`
+  })
 }

@@ -36,6 +36,7 @@ console.log(response.data)
 - `post`
 - `put`
 - `delete`
+- `download`
 - `cancelRequest`
 - `cancelAllRequest`
 
@@ -59,7 +60,7 @@ interface IResponse<T> {
 2. 业务码失败时显示后端 `message` 并拒绝请求。
 3. HTTP 失败时统一映射错误文案并保留 `AxiosError`。
 4. 取消请求只拒绝，不显示错误 Toast。
-5. `responseType: 'blob'` 时返回完整 `AxiosResponse`。
+5. 文件下载必须使用 `request.download()`，不要给 `get/post` 传 `responseType: 'blob'`。
 
 ## 鉴权与刷新
 
@@ -101,16 +102,18 @@ await request.post({
 ## 文件下载
 
 ```ts
-const response = await request.get({
+import request from '@/axios'
+
+const file = await request.download({
   url: 'minio/download',
-  params: { objectName },
-  responseType: 'blob'
+  params: { objectName }
 })
 
-const blob = response.data
+const blob = file.data
+const disposition = file.headers['content-disposition']
 ```
 
-Blob 请求不会执行业务码校验或响应体解包。
+`download` 固定 `responseType: 'blob'`，跳过业务码校验，返回 `{ data: Blob, headers }`。JSON 接口继续用 `get/post/put/delete`，始终得到 `IResponse<T>`。
 
 ## 请求取消
 

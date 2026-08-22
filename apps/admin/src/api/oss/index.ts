@@ -1,5 +1,4 @@
-import request from '@/axios'
-import { AxiosResponse } from 'axios'
+import request, { type DownloadResponse } from '@/axios'
 import { OssListResponse } from './types'
 
 //  此处后端合并了处理分页查询和 带id过滤的分页查询
@@ -40,22 +39,18 @@ export const deleteObjectApi = (params: { objectName: string }): Promise<IRespon
   return request.delete({ url: 'minio/delete', params })
 }
 
-// 下载文件
-export const downloadObjectApi = (params: { objectName: string }): Promise<AxiosResponse<Blob>> => {
-  return request.get({
+export const downloadObjectApi = (params: { objectName: string }): Promise<DownloadResponse> => {
+  return request.download({
     url: 'minio/download',
-    params,
-    responseType: 'blob'
-  }) as unknown as Promise<AxiosResponse<Blob>>
+    params
+  })
 }
 
-// 下载文件夹
-export const downloadFolderApi = (params: { folderPath: string }): Promise<AxiosResponse<Blob>> => {
-  return request.get({
+export const downloadFolderApi = (params: { folderPath: string }): Promise<DownloadResponse> => {
+  return request.download({
     url: 'minio/folder/download',
-    params,
-    responseType: 'blob'
-  }) as unknown as Promise<AxiosResponse<Blob>>
+    params
+  })
 }
 
 // 搜索

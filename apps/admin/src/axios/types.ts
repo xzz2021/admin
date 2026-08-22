@@ -1,6 +1,11 @@
-import type { AxiosRequestConfig } from 'axios'
+import type { AxiosRequestConfig, AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios'
 
 export type CancellablePromise<T> = Promise<T> & { cancel: () => void }
+
+export interface DownloadResponse {
+  data: Blob
+  headers: RawAxiosResponseHeaders | AxiosResponseHeaders
+}
 
 export interface RequestConfig extends AxiosRequestConfig {
   requestId?: string
