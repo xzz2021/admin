@@ -17,6 +17,15 @@ describe('SessionRegistry', () => {
       }
       return Promise.resolve(count)
     }),
+    eval: jest.fn((...args: unknown[]) => {
+      const key = String(args[2])
+      const owner = String(args[3])
+      if (values.get(key) === owner) {
+        values.delete(key)
+        return Promise.resolve(1)
+      }
+      return Promise.resolve(0)
+    }),
   }
 
   const createRegistry = (maxSessions = 2) =>

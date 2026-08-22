@@ -9,6 +9,7 @@ describe('RtTokenService', () => {
     get: jest.fn(),
     set: jest.fn(),
     del: jest.fn(),
+    eval: jest.fn().mockResolvedValue(1),
   }
   const jwt = {
     signAsync: jest.fn(),

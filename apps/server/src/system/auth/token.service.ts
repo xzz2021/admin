@@ -3,47 +3,35 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { randomUUID } from 'crypto'
-import { SessionRegistry } from './session-registry'
-
-interface JwtTokenConfig {
-  secret: string
-  expiresTime: number
-}
+import { ACCESS_SESSION_KEYS, TokenSessionService, type TokenAppConfig } from './token.session'
 
 @Injectable()
-export class TokenService {
-  private readonly tokenConfig: JwtTokenConfig
-  private readonly sessions: SessionRegistry
+export class TokenService extends TokenSessionService {
+  private readonly tokenConfig: TokenAppConfig
 
-  constructor(
-    private readonly jwt: JwtService,
-    redisService: RedisService,
-    configService: ConfigService,
-  ) {
-    this.tokenConfig = configService.get<JwtTokenConfig>('token') ?? {
+  constructor(jwt: JwtService, redisService: RedisService, configService: ConfigService) {
+    const tokenConfig = configService.get<TokenAppConfig>('token') ?? {
       secret: '',
+      refreshSecret: '',
       expiresTime: 60 * 60 * 24 * 7,
+      refreshExpiresTime: 120,
     }
-    this.sessions = new SessionRegistry(redisService.getOrThrow(), {
-      listPrefix: 'user:sessions:',
-      expiryPrefix: 'session:exp:',
-      blacklistPrefix: 'jwt:blacklist:',
-      lockPrefix: 'user:sessions:lock:',
-      ttlSeconds: this.tokenConfig.expiresTime,
+    super(jwt, redisService.getOrThrow(), {
+      ...ACCESS_SESSION_KEYS,
+      ttlSeconds: tokenConfig.expiresTime,
       maxSessions: configService.get<number>('ssoCount') ?? 2,
     })
+    this.tokenConfig = tokenConfig
   }
 
   async issue(userId: string, extraPayload: Record<string, unknown> = {}) {
     const jti = randomUUID()
     const exp = Math.floor(Date.now() / 1000) + this.tokenConfig.expiresTime
-    const token = await this.jwt.signAsync(
+    const token = await this.signJwt(
       { sub: userId, ...extraPayload },
-      {
-        expiresIn: this.tokenConfig.expiresTime,
-        jwtid: jti,
-        secret: this.tokenConfig.secret,
-      },
+      this.tokenConfig.secret,
+      this.tokenConfig.expiresTime,
+      jti,
     )
     await this.sessions.register(userId, jti, exp)
     return { jti, exp, token }
@@ -51,30 +39,5 @@ export class TokenService {
 
   async signToken(userId: string, extraPayload: Record<string, unknown> = {}) {
     return (await this.issue(userId, extraPayload)).token
-  }
-
-  async revoke(userId: string, jti: string) {
-    await this.sessions.revoke(userId, jti)
-  }
-
-  async revokeAll(userId: string, exceptJti?: string) {
-    await this.sessions.revokeAll(userId, exceptJti)
-  }
-
-  async blacklistByJti(jti: string, exp: number) {
-    await this.sessions.blacklist(jti, exp)
-  }
-
-  async isBlacklisted(jti: string): Promise<boolean> {
-    return this.sessions.isBlacklisted(jti)
-  }
-
-  async listSessions(userId: string) {
-    return this.sessions.listSessions(userId)
-  }
-
-  async logout(userId: string, jti: string) {
-    await this.revoke(userId, jti)
-    return { ok: true }
   }
 }

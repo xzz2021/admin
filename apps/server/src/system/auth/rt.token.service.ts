@@ -3,40 +3,30 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { randomUUID } from 'crypto'
-import type { Response } from 'express'
-import { SessionRegistry } from './session-registry'
-
-interface JwtTokenConfig {
-  secret: string
-  refreshSecret: string
-  expiresTime: number
-  refreshExpiresTime: number
-}
+import type { CookieOptions, Response } from 'express'
+import { REFRESH_SESSION_KEYS, TokenSessionService, type TokenAppConfig } from './token.session'
 
 @Injectable()
-export class RtTokenService {
-  private readonly tokenConfig: JwtTokenConfig
-  private readonly sessions: SessionRegistry
+export class RtTokenService extends TokenSessionService {
+  private readonly tokenConfig: TokenAppConfig
 
   constructor(
-    private readonly jwt: JwtService,
+    jwt: JwtService,
     redisService: RedisService,
     private readonly configService: ConfigService,
   ) {
-    this.tokenConfig = configService.get<JwtTokenConfig>('token') ?? {
+    const tokenConfig = configService.get<TokenAppConfig>('token') ?? {
       secret: '',
       refreshSecret: '',
       expiresTime: 60,
       refreshExpiresTime: 120,
     }
-    this.sessions = new SessionRegistry(redisService.getOrThrow(), {
-      listPrefix: 'user:cookies:',
-      expiryPrefix: 'cookies:exp:',
-      blacklistPrefix: 'rt:jwt:blacklist:',
-      lockPrefix: 'user:cookies:lock:',
-      ttlSeconds: this.tokenConfig.refreshExpiresTime,
+    super(jwt, redisService.getOrThrow(), {
+      ...REFRESH_SESSION_KEYS,
+      ttlSeconds: tokenConfig.refreshExpiresTime,
       maxSessions: configService.get<number>('ssoCount') ?? 2,
     })
+    this.tokenConfig = tokenConfig
   }
 
   async issue(
@@ -48,21 +38,17 @@ export class RtTokenService {
     const jti = randomUUID()
     const refreshExp = Math.floor(Date.now() / 1000) + this.tokenConfig.refreshExpiresTime
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(
+      this.signJwt(
         { sub: userId, id: userId, ...extraPayload },
-        {
-          expiresIn: this.tokenConfig.expiresTime,
-          jwtid: jti,
-          secret: this.tokenConfig.secret,
-        },
+        this.tokenConfig.secret,
+        this.tokenConfig.expiresTime,
+        jti,
       ),
-      this.jwt.signAsync(
+      this.signJwt(
         { id: userId },
-        {
-          expiresIn: this.tokenConfig.refreshExpiresTime,
-          jwtid: jti,
-          secret: this.tokenConfig.refreshSecret,
-        },
+        this.tokenConfig.refreshSecret,
+        this.tokenConfig.refreshExpiresTime,
+        jti,
       ),
     ])
 
@@ -73,21 +59,13 @@ export class RtTokenService {
 
   setRtCookie(res: Response, refreshToken: string) {
     res.cookie('rt', refreshToken, {
-      httpOnly: true,
-      secure: this.configService.get<boolean>('isProduction') ?? false,
-      sameSite: 'lax',
-      path: '/',
+      ...this.rtCookieBase(),
       maxAge: this.tokenConfig.refreshExpiresTime * 1000,
     })
   }
 
   clearRtCookie(res: Response) {
-    res.clearCookie('rt', {
-      httpOnly: true,
-      secure: this.configService.get<boolean>('isProduction') ?? false,
-      sameSite: 'lax',
-      path: '/',
-    })
+    res.clearCookie('rt', this.rtCookieBase())
   }
 
   async signToken(
@@ -100,28 +78,12 @@ export class RtTokenService {
     return { accessToken, refreshToken }
   }
 
-  async revoke(userId: string, jti: string) {
-    await this.sessions.revoke(userId, jti)
-  }
-
-  async revokeAll(userId: string, exceptJti?: string) {
-    await this.sessions.revokeAll(userId, exceptJti)
-  }
-
-  async blacklistByJti(jti: string, exp: number) {
-    await this.sessions.blacklist(jti, exp)
-  }
-
-  async isBlacklisted(jti: string): Promise<boolean> {
-    return this.sessions.isBlacklisted(jti)
-  }
-
-  async listSessions(userId: string) {
-    return this.sessions.listSessions(userId)
-  }
-
-  async logout(userId: string, jti: string) {
-    await this.revoke(userId, jti)
-    return { ok: true }
+  private rtCookieBase(): CookieOptions {
+    return {
+      httpOnly: true,
+      secure: this.configService.get<boolean>('isProduction') ?? false,
+      sameSite: 'lax',
+      path: '/',
+    }
   }
 }

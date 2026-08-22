@@ -21,14 +21,6 @@ export class AuthController {
     return this.authService.create(createUserinfo)
   }
 
-  @Post('login')
-  @Public()
-  @ApiOperation({ summary: '用户登录' })
-  @UseGuards(CaptchaGuard)
-  login(@Body() loginInfo: LoginInfoDto, @Req() req: Request) {
-    return this.authService.login(loginInfo, extractIP((req as any)['ip'] as string) ?? '')
-  }
-
   @Post('rt/login')
   @Public()
   @ApiOperation({ summary: '用户登录(refreshToken版本)' })

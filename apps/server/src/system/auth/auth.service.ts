@@ -104,34 +104,6 @@ export class AuthService {
     return user
   }
 
-  async login(loginInfo: LoginInfoDto, ip: string) {
-    const user = await this.getUserForLogin(loginInfo.phone)
-
-    if (!user) {
-      throw new BadRequestException('账号或密码错误')
-    }
-
-    const ok = await verifyPayPassword(user.password, loginInfo.password)
-    if (!ok) {
-      throw new BadRequestException('账号或密码错误')
-    }
-
-    const { password, ...result } = user
-    const { username, phone, id, roles } = result
-    const accessToken = await this.tokenService.signToken(id, {
-      username,
-      phone,
-      id,
-      roles: roles.map(item => item.role),
-    })
-    delete (result as any).id
-    return {
-      message: `${username}登录成功`,
-      userinfo: result,
-      access_token: accessToken,
-    }
-  }
-
   async rtLogin(loginInfo: LoginInfoDto, ip: string, res: Response) {
     const user = await this.getUserForLogin(loginInfo.phone)
 
@@ -220,46 +192,6 @@ export class AuthService {
       this.rtTokenService.clearRtCookie(res)
     }
     return { message: '退出登录成功', id }
-  }
-
-  /**
-   * 验证Token是否正确,如果正确则返回所属用户对象
-   * @param token
-   */
-  async verifyAccessToken(token: string): Promise<any> {
-    return await this.jwtService.verifyAsync(token)
-  }
-
-  async login2(loginInfo: { phone: string; password: string }) {
-    const user = await this.pgService.user.findUnique({
-      where: { phone: loginInfo.phone },
-      select: {
-        id: true,
-        username: true,
-        phone: true,
-        password: true,
-        roles: true,
-        avatar: true,
-        email: true,
-      },
-    })
-
-    if (!user) {
-      throw new BadRequestException('账号或密码错误')
-    }
-
-    const ok = await verifyPayPassword(user.password, loginInfo.password)
-    if (!ok) {
-      throw new BadRequestException('账号或密码错误')
-    }
-
-    const { password, ...result } = user
-    const access_token = await this.tokenService.signToken(user.id, result)
-    return {
-      message: `${user.username}登录成功`,
-      userinfo: result,
-      access_token,
-    }
   }
 
   async rtRefresh(userId: string, res: Response, oldJti: string) {
