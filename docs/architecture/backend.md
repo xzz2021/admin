@@ -27,20 +27,21 @@
 
 ## CORE_SYSTEM_MODULE
 
-| 模块             | 职责                                               |
-| ---------------- | -------------------------------------------------- |
-| AuthModule       | 注册/登录/刷新/登出、JWT Strategy                  |
-| CaptchaModule    | SVG 图形/数学验证码                                |
-| UserModule       | 用户 CRUD、个人信息、头像、密码                    |
-| RoleModule       | 角色与菜单权限分配                                 |
-| MenuModule       | 菜单树 CRUD、排序                                  |
-| PermissionModule | 按钮等权限 CRUD（挂菜单）                          |
-| DepartmentModule | 部门树                                             |
-| DictionaryModule | 字典类型/字典项                                    |
-| StaticfileModule | 文件列表/上传/删除（亦在 core 侧挂载）             |
-| MonitorModule    | 系统快照 + `/monitor/ws`                           |
-| OnlineModule     | 在线用户 + `/online/ws`                            |
-| MessageModule    | 站内消息收件箱 + 消息管理 + BullMQ + `/message/ws` |
+| 模块             | 职责                                                  |
+| ---------------- | ----------------------------------------------------- |
+| SessionModule    | Access/RT 令牌、会话吊销、领域事件（不依赖 Presence） |
+| AuthModule       | 注册/登录/刷新/登出、JWT Strategy                     |
+| CaptchaModule    | SVG 图形/数学验证码                                   |
+| UserModule       | 用户 CRUD、个人信息、头像、密码                       |
+| RoleModule       | 角色与菜单权限分配                                    |
+| MenuModule       | 菜单树 CRUD、排序                                     |
+| PermissionModule | 按钮等权限 CRUD（挂菜单）                             |
+| DepartmentModule | 部门树                                                |
+| DictionaryModule | 字典类型/字典项                                       |
+| StaticfileModule | 文件列表/上传/删除（亦在 core 侧挂载）                |
+| MonitorModule    | 系统快照 + `/monitor/ws`                              |
+| OnlineModule     | Presence：在线用户 + `/online/ws`，订阅会话事件踢人   |
+| MessageModule    | 站内消息收件箱 + 消息管理 + BullMQ + `/message/ws`    |
 
 ## 全局 Guard 顺序
 

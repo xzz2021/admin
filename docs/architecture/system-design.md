@@ -74,13 +74,13 @@ sequenceDiagram
 
 ## 模块化设计
 
-| 分层         | 路径                         | 职责                                                                                                      |
-| ------------ | ---------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 核心基础设施 | `apps/server/src/core/`      | Config、Redis、静态资源、Swagger、日志                                                                    |
-| 横切处理器   | `apps/server/src/processor/` | Guard / Decorator / Filter / Interceptor / RBAC 缓存                                                      |
-| 业务系统     | `apps/server/src/system/`    | auth、user、role、menu、permission、department、dictionary、message、online、monitor、captcha、staticfile |
-| 数据访问     | `apps/server/src/prisma/`    | Schema、Client、Seed、PgService                                                                           |
-| 管理前端     | `apps/admin/src/`            | views / api / store / router / permission                                                                 |
+| 分层         | 路径                         | 职责                                                                                                               |
+| ------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 核心基础设施 | `apps/server/src/core/`      | Config、Redis、静态资源、Swagger、日志                                                                             |
+| 横切处理器   | `apps/server/src/processor/` | Guard / Decorator / Filter / Interceptor / RBAC 缓存                                                               |
+| 业务系统     | `apps/server/src/system/`    | session、auth、user、role、menu、permission、department、dictionary、message、online、monitor、captcha、staticfile |
+| 数据访问     | `apps/server/src/prisma/`    | Schema、Client、Seed、PgService                                                                                    |
+| 管理前端     | `apps/admin/src/`            | views / api / store / router / permission                                                                          |
 
 `AppModule` 仅聚合 `CORE_MODULE` + `CORE_SYSTEM_MODULE`，业务以 Nest Module 边界划分。
 
@@ -88,7 +88,7 @@ sequenceDiagram
 
 ```
 Controller（HTTP / 权限装饰器）
-    → Service（业务）
+    → Service（业务）/ Repository (数据库操作)
         → PgService / Prisma Client（持久化）
         → Redis / BullMQ（缓存与异步）
 ```

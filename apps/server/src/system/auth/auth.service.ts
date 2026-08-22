@@ -1,16 +1,11 @@
 import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
-import { OnlineGateway } from '@/system/online/online.gateway'
-import { OnlineService } from '@/system/online/online.service'
 import { UserRepository } from '@/system/user/user.repository'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import {
   BadRequestException,
   ConflictException,
-  forwardRef,
-  Inject,
   Injectable,
-  Optional,
   UnauthorizedException,
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -19,6 +14,7 @@ import { Response } from 'express'
 import Redis from 'ioredis'
 import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
 import { RtTokenService } from './rt.token.service'
+import { SessionRevocationService } from './session-revocation.service'
 import { TokenService } from './token.service'
 
 @Injectable()
@@ -33,12 +29,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
     private readonly rtTokenService: RtTokenService,
-    @Optional()
-    @Inject(forwardRef(() => OnlineService))
-    private readonly onlineService?: OnlineService,
-    @Optional()
-    @Inject(forwardRef(() => OnlineGateway))
-    private readonly onlineGateway?: OnlineGateway,
+    private readonly sessions: SessionRevocationService,
   ) {
     const wechat = this.configService.get<{ appId: string; appSecret: string }>('wechat')
     this.wxAppSecret = wechat?.appSecret || ''
@@ -144,19 +135,13 @@ export class AuthService {
     if (!operatorId) {
       throw new BadRequestException('缺少操作者信息')
     }
-    if (!this.onlineService || !this.onlineGateway) {
-      throw new BadRequestException('在线用户模块不可用')
-    }
-    const jtis = await this.onlineService.terminateUserByOperator(operatorId, id)
-    this.onlineGateway.notifyForceLogout(jtis, 'forced')
-    this.onlineGateway.notifyForceLogoutByUser(id, 'forced')
-
+    await this.sessions.requestForceLogout(operatorId, id)
     return { message: '强制用户下线成功', id }
   }
 
   async logout(id: string, jti: string, res?: Response) {
     await Promise.all([this.tokenService.logout(id, jti), this.rtTokenService.logout(id, jti)])
-    await this.onlineService?.remove(jti)
+    await this.sessions.endSession(jti)
     if (res) {
       this.rtTokenService.clearRtCookie(res)
     }
@@ -181,7 +166,7 @@ export class AuthService {
 
     const { accessToken } = await this.rtTokenService.signToken(userId, extraPayload, res, oldJti)
     // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
-    await this.onlineService?.remove(oldJti)
+    await this.sessions.endSession(oldJti)
     return { access_token: accessToken, message: '获取新的token成功' }
   }
 }

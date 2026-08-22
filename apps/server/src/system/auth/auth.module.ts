@@ -1,37 +1,19 @@
-import { Module, forwardRef } from '@nestjs/common'
-import { JwtModule } from '@nestjs/jwt'
+import { Module } from '@nestjs/common'
 import { PassportModule } from '@nestjs/passport'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtRefreshStrategy } from './jwt.refresh.strategy'
 import { JwtStrategy } from './jwt.strategy'
 import { CaptchaModule } from '@/system/captcha/captcha.module'
-import { OnlineModule } from '@/system/online/online.module'
+import { SessionModule } from '@/system/session/session.module'
 import { UserPersistenceModule } from '@/system/user/user-persistence.module'
 import { JwtRefreshAuthGuard } from '@/processor/guard'
-import { RtTokenService } from './rt.token.service'
-import { SessionRevocationService } from './session-revocation.service'
-import { TokenService } from './token.service'
 
 @Module({
-  imports: [
-    PassportModule,
-    JwtModule,
-    CaptchaModule,
-    UserPersistenceModule,
-    forwardRef(() => OnlineModule),
-  ],
+  imports: [PassportModule, SessionModule, CaptchaModule, UserPersistenceModule],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    TokenService,
-    RtTokenService,
-    SessionRevocationService,
-    JwtStrategy,
-    JwtRefreshStrategy,
-    JwtRefreshAuthGuard,
-  ],
-  exports: [AuthService, TokenService, RtTokenService, SessionRevocationService],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, JwtRefreshAuthGuard],
+  exports: [AuthService, SessionModule],
 })
 export class AuthModule {}
 

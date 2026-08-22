@@ -52,7 +52,7 @@ flowchart LR
 ## 在线用户 / 监控
 
 - 登录后前端建立 `/online/ws`、`/monitor/ws`（经 `/api` 反代）
-- Presence 与踢人依赖 Redis + Gateway
+- 会话吊销由 `SessionModule` 发领域事件；`OnlineModule`（Presence）监听后清 Redis 并通知 Gateway
 - 监控快照：`GET /monitor/snapshot`（权限 `server:view`）
 
 ## 文件上传

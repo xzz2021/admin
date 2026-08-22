@@ -1,7 +1,7 @@
 import { buildRedisOptions, type AppRedisConfig } from '@/core/cache/redis-options'
-import { AuthModule } from '@/system/auth/auth.module'
+import { SessionModule } from '@/system/session/session.module'
 import { BullModule } from '@nestjs/bullmq'
-import { Module, forwardRef } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { MessageInboxController } from './message-inbox.controller'
@@ -13,7 +13,7 @@ import { NotificationController } from './notification.controller'
 
 @Module({
   imports: [
-    forwardRef(() => AuthModule),
+    SessionModule,
     JwtModule.register({}),
     BullModule.forRootAsync({
       inject: [ConfigService],
