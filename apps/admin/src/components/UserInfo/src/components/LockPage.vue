@@ -46,13 +46,10 @@ async function unLock() {
 
 // 返回登录
 async function goLogin() {
-  // const res = await loginOutApi().catch(() => {})
-  // if (res) {
   clear()
   tagsViewStore.delAllViews()
   lockStore.resetLockInfo()
   userStore.reset() //  直接退出登录
-  // }
 }
 
 const passwordInputRef = ref<ComponentRef<typeof ElInput>>()

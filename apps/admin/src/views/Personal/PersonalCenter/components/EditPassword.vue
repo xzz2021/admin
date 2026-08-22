@@ -98,29 +98,27 @@ const save = async () => {
     confirmButtonText: t('common.confirm'),
     cancelButtonText: t('common.cancel'),
     type: 'warning'
+  }).then(async () => {
+    try {
+      saveLoading.value = true
+      const formData = await getFormData()
+      await updatePasswordApi({
+        id: userId,
+        password: formData.password,
+        newPassword: formData.newPassword
+      })
+      setValues({
+        password: '',
+        newPassword: '',
+        newPassword2: ''
+      })
+      ElMessage.success(t('personal.passwordModifySuccess'))
+    } catch (error) {
+      console.error(error)
+    } finally {
+      saveLoading.value = false
+    }
   })
-    .then(async () => {
-      try {
-        saveLoading.value = true
-        const formData = await getFormData()
-        await updatePasswordApi({
-          id: userId,
-          password: formData.password,
-          newPassword: formData.newPassword
-        })
-        setValues({
-          password: '',
-          newPassword: '',
-          newPassword2: ''
-        })
-        ElMessage.success(t('personal.passwordModifySuccess'))
-      } catch (error) {
-        console.error(error)
-      } finally {
-        saveLoading.value = false
-      }
-    })
-    .catch(() => {})
 }
 </script>
 

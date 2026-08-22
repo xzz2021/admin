@@ -96,16 +96,9 @@ export const useUserStore = defineStore('user', {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
         type: 'warning'
+      }).then(async () => {
+        this.reset()
       })
-        .then(async () => {
-          this.reset()
-
-          // const res = await loginOutApi().catch(() => {})
-          // if (res) {
-          //   this.reset()
-          // }
-        })
-        .catch(() => {})
     },
     async cmdLogout() {
       // const res = await forceLogoutApi(id).catch(() => {})

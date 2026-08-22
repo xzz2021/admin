@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ElRow, ElCol, ElCard, ElSkeleton } from 'element-plus'
+import { getCountApi } from '@/api/dashboard/analysis'
+import type { AnalysisTotalTypes } from '@/api/dashboard/analysis/types'
 import { CountTo } from '@/components/CountTo'
 import { useDesign } from '@/hooks/web/useDesign'
 import { useI18n } from '@/hooks/web/useI18n'
-import { ref, reactive } from 'vue'
-import { getCountApi } from '@/api/dashboard/analysis'
-import type { AnalysisTotalTypes } from '@/api/dashboard/analysis/types'
+import { ElCard, ElCol, ElRow, ElSkeleton } from 'element-plus'
+import { reactive, ref } from 'vue'
 
 const { t } = useI18n()
 
@@ -23,11 +23,9 @@ let totalState = reactive<AnalysisTotalTypes>({
 })
 
 const getCount = async () => {
-  const res = await getCountApi()
-    .catch(() => {})
-    .finally(() => {
-      loading.value = false
-    })
+  const res = await getCountApi().finally(() => {
+    loading.value = false
+  })
   totalState = Object.assign(totalState, res?.data || {})
 }
 

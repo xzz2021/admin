@@ -86,26 +86,24 @@ const save = async () => {
     confirmButtonText: t('common.confirm'),
     cancelButtonText: t('common.cancel'),
     type: 'warning'
+  }).then(async () => {
+    try {
+      saveLoading.value = true
+      const formData = await getFormData()
+      await updatePersonApi({
+        id: props.userInfo!.id,
+        username: formData.username,
+        phone: formData.phone,
+        email: formData.email || undefined
+      })
+      ElMessage.success(t('personal.modifySuccess'))
+      emit('success')
+    } catch (error) {
+      console.error(error)
+    } finally {
+      saveLoading.value = false
+    }
   })
-    .then(async () => {
-      try {
-        saveLoading.value = true
-        const formData = await getFormData()
-        await updatePersonApi({
-          id: props.userInfo!.id,
-          username: formData.username,
-          phone: formData.phone,
-          email: formData.email || undefined
-        })
-        ElMessage.success(t('personal.modifySuccess'))
-        emit('success')
-      } catch (error) {
-        console.error(error)
-      } finally {
-        saveLoading.value = false
-      }
-    })
-    .catch(() => {})
 }
 </script>
 
