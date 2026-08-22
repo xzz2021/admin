@@ -10,7 +10,7 @@ import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
+import { ElMessage, ElTag } from 'element-plus'
 import { reactive, ref } from 'vue'
 import Write from './components/Write.vue'
 import { filterDepartmentTree } from './utils/departmentTree'
@@ -27,7 +27,7 @@ const applyFilter = (list: DepartmentItem[] = sourceList.value) =>
     enabled: searchParams.value.enabled
   })
 
-const { tableRegister, tableState, tableMethods } = useTable({
+const { tableRegister, tableState, tableMethods } = useTable<DepartmentItem, string>({
   fetchDataApi: async () => {
     const res = await getDepartmentListApi()
     sourceList.value = res.data.list || []
@@ -36,11 +36,21 @@ const { tableRegister, tableState, tableMethods } = useTable({
       list,
       total: list.length
     }
-  }
+  },
+  getRowId: (row) => row.id,
+  confirmMessage: (rows) => t('department.confirmDelete', { name: rows[0].name }),
+  confirmTitle: () => t('common.tip'),
+  beforeDelete: (rows) => {
+    if (rows.some((row) => row.children?.length)) {
+      ElMessage.warning(t('department.deleteHasChildren'))
+      return false
+    }
+  },
+  deleteApi: (ids) => delDepartmentApi(ids[0])
 })
 
 const { dataList, loading } = tableState
-const { getList } = tableMethods
+const { getList, removeRows } = tableMethods
 
 const tableColumns = reactive<TableColumn[]>([
   {
@@ -94,7 +104,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton type="primary" onClick={() => openDialog(row)}>
               {t('exampleDemo.edit')}
             </BaseButton>
-            <BaseButton type="danger" onClick={() => handleDelete(row)}>
+            <BaseButton type="danger" onClick={() => removeRows(row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -138,22 +148,6 @@ const openDialog = (row?: DepartmentItem) => {
   dialogTitle.value = row ? t('exampleDemo.edit') : t('exampleDemo.add')
   currentRow.value = row ?? null
   dialogVisible.value = true
-}
-
-const handleDelete = async (row: DepartmentItem) => {
-  if (row.children?.length) {
-    ElMessage.warning(t('department.deleteHasChildren'))
-    return
-  }
-
-  try {
-    await ElMessageBox.confirm(t('department.confirmDelete', { name: row.name }), t('common.tip'), { type: 'warning' })
-    await delDepartmentApi(row.id)
-    ElMessage.success(t('common.delSuccess'))
-    getList()
-  } catch (error) {
-    if (error === 'cancel' || error === 'close') return
-  }
 }
 
 const handleSave = async () => {

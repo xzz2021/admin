@@ -14,7 +14,8 @@ import { downloadFile, FileUnavailableError, formatFileSize, resolveStaticUrl } 
 import { ElMessage } from 'element-plus'
 import { reactive, ref, unref } from 'vue'
 import RenderFile from './components/RenderFile.vue'
-const ids = ref<number[]>([])
+
+const { t } = useI18n()
 const allFileList = ref<FileItem[]>([])
 
 const filterFileList = (list: FileItem[], params: FileListParams) => {
@@ -27,7 +28,7 @@ const filterFileList = (list: FileItem[], params: FileListParams) => {
   })
 }
 
-const { tableRegister, tableState, tableMethods } = useTable({
+const { tableRegister, tableState, tableMethods } = useTable<FileItem, number>({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
     const res = await getFileListApi()
@@ -37,8 +38,10 @@ const { tableRegister, tableState, tableMethods } = useTable({
     const list = filteredList.slice(start, start + unref(pageSize))
     return { list, total: filteredList.length }
   },
-  fetchDelApi: async () => {
-    const res = await deleteFileApi(unref(ids))
+  getRowId: (row) => row.id,
+  emptySelectionMessage: () => t('file.selectToDelete'),
+  deleteApi: async (ids) => {
+    const res = await deleteFileApi(ids)
     if (!res) return false
     const message = typeof res.message === 'string' ? res.message : ''
     if (message.includes('路径不存在')) {
@@ -48,8 +51,8 @@ const { tableRegister, tableState, tableMethods } = useTable({
     return true
   }
 })
-const { loading, dataList, total, currentPage, pageSize } = tableState
-const { getList, getElTableExpose, delList } = tableMethods
+const { loading, dataList, total, currentPage, pageSize, delLoading } = tableState
+const { getList, removeRows, removeSelection } = tableMethods
 
 const searchParams = ref<FileListParams>({})
 const setSearchParams = (params: FileListParams) => {
@@ -57,8 +60,6 @@ const setSearchParams = (params: FileListParams) => {
   currentPage.value = 1
   getList()
 }
-
-const { t } = useI18n()
 
 const handleDownload = async (row: FileItem) => {
   const fileUrl = resolveStaticUrl(row.url)
@@ -127,7 +128,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton type="primary" onClick={() => handleDownload(row)}>
               {t('formDemo.download')}
             </BaseButton>
-            <BaseButton type="danger" onClick={() => delData(row.id)}>
+            <BaseButton type="danger" onClick={() => removeRows(row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -136,25 +137,6 @@ const tableColumns = reactive<TableColumn[]>([
     }
   }
 ])
-
-const delLoading = ref(false)
-
-const delData = async (id?: number) => {
-  if (id) {
-    ids.value = [id]
-  } else {
-    const elTableExpose = await getElTableExpose()
-    ids.value = elTableExpose?.getSelectionRows().map((v: FileItem) => v.id) || []
-  }
-  if (ids.value.length === 0) {
-    ElMessage.warning(t('file.selectToDelete'))
-    return
-  }
-  delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
-    delLoading.value = false
-  })
-}
 
 const searchSchema = reactive<FormSchema[]>([
   {
@@ -182,7 +164,7 @@ const startUpload = async (file: File) => {
 
     <div class="mb-10px flex items-center gap-10px">
       <UploadBtn :upload-api="startUpload" />
-      <BaseButton :loading="delLoading" type="danger" @click="delData()">
+      <BaseButton :loading="delLoading" type="danger" @click="removeSelection()">
         {{ t('exampleDemo.batchDel') }}
       </BaseButton>
     </div>

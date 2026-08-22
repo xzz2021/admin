@@ -24,8 +24,6 @@ const currentNodeKey = ref('')
 const departmentList = ref<DepartmentItem[]>([])
 const roleMap = ref<Record<string, string>>({})
 const searchParams = ref<Recordable>({})
-const ids = ref<string[]>([])
-const delLoading = ref(false)
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const actionType = ref<'add' | 'edit' | 'detail' | ''>('')
@@ -36,7 +34,7 @@ const saveLoading = ref(false)
 const treeEl = ref<InstanceType<typeof ElTree>>()
 const currentDepartment = ref('')
 
-const { tableRegister, tableState, tableMethods } = useTable({
+const { tableRegister, tableState, tableMethods } = useTable<UserItem, string>({
   fetchDataApi: async () => {
     const { pageSize, currentPage } = tableState
     const res = await getUserByDepartmentIdApi({
@@ -50,14 +48,12 @@ const { tableRegister, tableState, tableMethods } = useTable({
       total: res.data.total || 0
     }
   },
-  fetchDelApi: async () => {
-    const res = await deleteUserApi(unref(ids))
-    return !!res
-  }
+  getRowId: (row) => row.id,
+  deleteApi: (ids) => deleteUserApi(ids)
 })
 
-const { total, loading, dataList, pageSize, currentPage } = tableState
-const { getList, getElTableExpose, delList } = tableMethods
+const { total, loading, dataList, pageSize, currentPage, delLoading } = tableState
+const { getList, removeRows, removeSelection } = tableMethods
 
 const searchSchema = reactive<FormSchema[]>([
   {
@@ -160,7 +156,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton type="success" onClick={() => openDialog(row, 'detail')}>
               {t('exampleDemo.detail')}
             </BaseButton>
-            <BaseButton type="danger" onClick={() => delData(row)}>
+            <BaseButton type="danger" onClick={() => removeRows(row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -195,17 +191,6 @@ const openDialog = (row: UserItem | undefined, type: 'add' | 'edit' | 'detail') 
     type === 'add' ? 'exampleDemo.add' : type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail'
   )
   dialogVisible.value = true
-}
-
-const delData = async (row?: UserItem) => {
-  const elTableExpose = await getElTableExpose()
-  ids.value = row ? [row.id] : elTableExpose?.getSelectionRows().map((item: UserItem) => item.id) || []
-  if (!ids.value.length) return
-
-  delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
-    delLoading.value = false
-  })
 }
 
 const save = async () => {
@@ -280,7 +265,7 @@ onMounted(() => {
         <BaseButton type="primary" @click="openDialog(undefined, 'add')">
           {{ t('exampleDemo.add') }}
         </BaseButton>
-        <BaseButton :loading="delLoading" type="danger" @click="delData()">
+        <BaseButton :loading="delLoading" type="danger" @click="removeSelection()">
           {{ t('exampleDemo.del') }}
         </BaseButton>
       </div>

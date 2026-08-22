@@ -10,13 +10,13 @@ import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { ElMessage, ElTag } from 'element-plus'
+import { ElTag } from 'element-plus'
 import { reactive, ref, unref } from 'vue'
 import Detail from './components/Detail.vue'
 
-const ids = ref<number[]>([])
+const { t } = useI18n()
 
-const { tableRegister, tableState, tableMethods } = useTable({
+const { tableRegister, tableState, tableMethods } = useTable<LogItem, number>({
   fetchDataApi: async () => {
     const { currentPage, pageSize } = tableState
     const params = {
@@ -28,13 +28,12 @@ const { tableRegister, tableState, tableMethods } = useTable({
     const { list, total } = res.data
     return { list, total }
   },
-  fetchDelApi: async () => {
-    const res = await delLogApi(unref(ids))
-    return !!res
-  }
+  getRowId: (row) => row.id,
+  emptySelectionMessage: () => t('userLog.selectToDelete'),
+  deleteApi: (ids) => delLogApi(ids)
 })
-const { loading, dataList, total, currentPage, pageSize } = tableState
-const { getList, getElTableExpose, delList } = tableMethods
+const { loading, dataList, total, currentPage, pageSize, delLoading } = tableState
+const { getList, removeRows, removeSelection } = tableMethods
 
 const searchParams = ref<Recordable>({})
 const setSearchParams = (params: Recordable) => {
@@ -45,8 +44,6 @@ const setSearchParams = (params: Recordable) => {
   }
   getList()
 }
-
-const { t } = useI18n()
 
 const formatDuration = (duration?: number) => {
   if (duration == null) return '-'
@@ -132,7 +129,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton type="success" onClick={() => action(data.row, 'detail')}>
               {t('exampleDemo.detail')}
             </BaseButton>
-            <BaseButton type="danger" onClick={() => delData(data.row)}>
+            <BaseButton type="danger" onClick={() => removeRows(data.row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -147,25 +144,6 @@ const dialogTitle = ref('')
 
 const currentRow = ref<LogItem | null>(null)
 const actionType = ref('')
-
-const delLoading = ref(false)
-
-const delData = async (row?: LogItem | null) => {
-  if (row?.id) {
-    ids.value = [row.id]
-  } else {
-    const elTableExpose = await getElTableExpose()
-    ids.value = elTableExpose?.getSelectionRows().map((v: LogItem) => v.id) || []
-  }
-  if (ids.value.length === 0) {
-    ElMessage.warning(t('userLog.selectToDelete'))
-    return
-  }
-  delLoading.value = true
-  await delList(unref(ids).length).finally(() => {
-    delLoading.value = false
-  })
-}
 
 const action = (row: LogItem, type: string) => {
   dialogTitle.value = t(type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail')
@@ -231,7 +209,7 @@ const searchSchema = reactive<FormSchema[]>([
     <Search :schema="searchSchema" @search="setSearchParams" @reset="setSearchParams" />
 
     <div class="mb-10px">
-      <BaseButton :loading="delLoading" type="danger" @click="delData()">
+      <BaseButton :loading="delLoading" type="danger" @click="removeSelection()">
         {{ t('exampleDemo.batchDel') }}
       </BaseButton>
     </div>

@@ -3,35 +3,75 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
 import { nextTick, onMounted, ref, unref, watch } from 'vue'
 
-const { t } = useI18n()
+type DeleteApiResult = boolean | string | void | unknown
 
-interface UseTableConfig {
-  /**
-   * 是否初始化的时候请求一次
-   */
+export interface UseTableConfig<T extends object, Id = string> {
+  /** 是否初始化的时候请求一次 */
   immediate?: boolean
-  fetchDataApi: () => Promise<{
-    list: any[]
+  fetchDataApi?: () => Promise<{
+    list: T[]
     total?: number
   }>
-  /** 返回 true 使用默认成功提示；返回字符串则展示该提示；返回 'silenced' 表示调用方已自行提示 */
-  fetchDelApi?: () => Promise<boolean | string>
+  getRowId?: (row: T) => Id
+  deleteApi?: (ids: Id[]) => Promise<DeleteApiResult>
+  emptySelectionMessage?: string | (() => string)
+  confirmMessage?: string | ((rows: T[]) => string)
+  confirmTitle?: string | (() => string)
+  beforeDelete?: (rows: T[]) => boolean | void | Promise<boolean | void>
+  afterDelete?: (ids: Id[], rows: T[]) => void | Promise<void>
 }
 
-export const useTable = (config: UseTableConfig) => {
+const isCancel = (error: unknown) => error === 'cancel' || error === 'close'
+
+const resolveMessage = <T>(value: string | ((rows: T[]) => string) | undefined, rows: T[], fallback: string) => {
+  if (typeof value === 'function') return value(rows)
+  return value ?? fallback
+}
+
+const resolveTitle = (value: string | (() => string) | undefined, fallback: string) => {
+  if (typeof value === 'function') return value()
+  return value ?? fallback
+}
+
+const interpretDeleteResult = (res: DeleteApiResult): 'fail' | 'silenced' | 'success' | { message: string } => {
+  if (res === false) return 'fail'
+  if (res === 'silenced') return 'silenced'
+  if (typeof res === 'string') return { message: res }
+  return 'success'
+}
+
+export const useTable = <T extends object, Id = string>(config: UseTableConfig<T, Id>) => {
+  const { t } = useI18n()
   const { immediate = true } = config
 
   const loading = ref(false)
+  const delLoading = ref(false)
   const currentPage = ref(1)
   const pageSize = ref(10)
   const total = ref(0)
-  const dataList = ref<any[]>([])
+  const dataList = ref<T[]>([])
   let isPageSizeChange = false
+
+  const getList = async () => {
+    if (!config.fetchDataApi) return
+    loading.value = true
+    try {
+      const res = await config.fetchDataApi()
+      if (res) {
+        dataList.value = res.list
+        total.value = res.total || 0
+      }
+    } catch {
+      // Axios interceptor already reported the error
+    } finally {
+      loading.value = false
+    }
+  }
 
   watch(
     () => currentPage.value,
     () => {
-      if (!isPageSizeChange) methods.getList()
+      if (!isPageSizeChange) getList()
       isPageSizeChange = false
     }
   )
@@ -40,29 +80,89 @@ export const useTable = (config: UseTableConfig) => {
     () => pageSize.value,
     () => {
       if (unref(currentPage) === 1) {
-        methods.getList()
+        getList()
       } else {
         currentPage.value = 1
         isPageSizeChange = true
-        methods.getList()
+        getList()
       }
     }
   )
 
   onMounted(() => {
     if (immediate) {
-      methods.getList()
+      getList()
     }
   })
 
-  // Table实例
-  const tableRef = ref<typeof Table & TableExpose>()
+  const refreshAfterDelete = async (idsLength: number) => {
+    if (!config.fetchDataApi) return
+    const nextPage =
+      unref(total) % unref(pageSize) === idsLength || unref(pageSize) === 1
+        ? Math.max(unref(currentPage) - 1, 1)
+        : unref(currentPage)
 
-  // ElTable实例
+    if (nextPage !== unref(currentPage)) {
+      currentPage.value = nextPage
+      return
+    }
+    await getList()
+  }
+
+  const removeRows = async (rows: T | T[]) => {
+    const list = Array.isArray(rows) ? rows : [rows]
+    const { getRowId, deleteApi } = config
+    if (!getRowId || !deleteApi) {
+      console.warn('getRowId or deleteApi is undefined')
+      return false
+    }
+    if (!list.length) return false
+
+    if (config.beforeDelete) {
+      const allowed = await config.beforeDelete(list)
+      if (allowed === false) return false
+    }
+
+    try {
+      await ElMessageBox.confirm(
+        resolveMessage(config.confirmMessage, list, t('common.delMessage')),
+        resolveTitle(config.confirmTitle, t('common.delWarning')),
+        {
+          confirmButtonText: t('common.delOk'),
+          cancelButtonText: t('common.delCancel'),
+          type: 'warning'
+        }
+      )
+    } catch (error) {
+      if (isCancel(error)) return false
+      throw error
+    }
+
+    const ids = list.map(getRowId)
+    delLoading.value = true
+    try {
+      const result = interpretDeleteResult(await deleteApi(ids))
+      if (result === 'fail') return false
+      if (result === 'success') {
+        ElMessage.success(t('common.delSuccess'))
+      } else if (result !== 'silenced') {
+        ElMessage.success(result.message)
+      }
+      await config.afterDelete?.(ids, list)
+      await refreshAfterDelete(ids.length)
+      return true
+    } catch {
+      return false
+    } finally {
+      delLoading.value = false
+    }
+  }
+
+  const tableRef = ref<(typeof Table & TableExpose) | undefined>()
   const elTableRef = ref<ComponentRef<typeof ElTable>>()
 
-  const register = (ref: typeof Table & TableExpose, elRef: ComponentRef<typeof ElTable>) => {
-    tableRef.value = ref
+  const register = (refInstance: typeof Table & TableExpose, elRef: ComponentRef<typeof ElTable>) => {
+    tableRef.value = refInstance
     elTableRef.value = unref(elRef)
   }
 
@@ -75,115 +175,51 @@ export const useTable = (config: UseTableConfig) => {
     return table
   }
 
-  const methods = {
-    /**
-     * 获取表单数据
-     */
-    getList: async () => {
-      loading.value = true
-      try {
-        const res = await config?.fetchDataApi()
-        // console.log('fetchDataApi res', res)
-        if (res) {
-          dataList.value = res.list
-          total.value = res.total || 0
-        }
-      } catch (err) {
-        console.log('fetchDataApi error')
-      } finally {
-        loading.value = false
-      }
-    },
+  const getElTableExpose = async () => {
+    await getTable()
+    return unref(elTableRef)
+  }
 
-    /**
-     * @description 设置table组件的props
-     * @param props table组件的props
-     */
+  const resolveEmptySelectionMessage = () => {
+    const value = config.emptySelectionMessage
+    if (typeof value === 'function') return value()
+    return value ?? t('common.delNoData')
+  }
+
+  const removeSelection = async () => {
+    const elTableExpose = await getElTableExpose()
+    const selected = (elTableExpose?.getSelectionRows() ?? []) as T[]
+    if (!selected.length) {
+      ElMessage.warning(resolveEmptySelectionMessage())
+      return false
+    }
+    return removeRows(selected)
+  }
+
+  const methods = {
+    getList,
     setProps: async (props: TableProps = {}) => {
       const table = await getTable()
       table?.setProps(props)
     },
-
-    /**
-     * @description 设置column
-     * @param columnProps 需要设置的列
-     */
     setColumn: async (columnProps: TableSetProps[]) => {
       const table = await getTable()
       table?.setColumn(columnProps)
     },
-
-    /**
-     * @description 新增column
-     * @param tableColumn 需要新增数据
-     * @param index 在哪里新增
-     */
     addColumn: async (tableColumn: TableColumn, index?: number) => {
       const table = await getTable()
       table?.addColumn(tableColumn, index)
     },
-
-    /**
-     * @description 删除column
-     * @param field 删除哪个数据
-     */
     delColumn: async (field: string) => {
       const table = await getTable()
       table?.delColumn(field)
     },
-
-    /**
-     * @description 获取ElTable组件的实例
-     * @returns ElTable instance
-     */
-    getElTableExpose: async () => {
-      await getTable()
-      return unref(elTableRef)
-    },
-
+    getElTableExpose,
     refresh: () => {
-      methods.getList()
+      getList()
     },
-
-    // sortableChange: (e: any) => {
-    //   console.log('sortableChange', e)
-    //   const { oldIndex, newIndex } = e
-    //   dataList.value.splice(newIndex, 0, dataList.value.splice(oldIndex, 1)[0])
-    //   // to do something
-    // }
-    // 删除数据
-    delList: async (idsLength: number) => {
-      const { fetchDelApi } = config
-      if (!fetchDelApi) {
-        console.warn('fetchDelApi is undefined')
-        return
-      }
-      ElMessageBox.confirm(t('common.delMessage'), t('common.delWarning'), {
-        confirmButtonText: t('common.delOk'),
-        cancelButtonText: t('common.delCancel'),
-        type: 'warning'
-      }).then(async () => {
-        const res = await fetchDelApi()
-        if (res) {
-          if (res === true) {
-            ElMessage.success(t('common.delSuccess'))
-          } else if (res !== 'silenced') {
-            ElMessage.success(res)
-          }
-
-          // 计算出临界点
-          const current =
-            unref(total) % unref(pageSize) === idsLength || unref(pageSize) === 1
-              ? unref(currentPage) > 1
-                ? unref(currentPage) - 1
-                : unref(currentPage)
-              : unref(currentPage)
-
-          currentPage.value = current
-          methods.getList()
-        }
-      })
-    }
+    removeRows,
+    removeSelection
   }
 
   return {
@@ -194,7 +230,8 @@ export const useTable = (config: UseTableConfig) => {
       pageSize,
       total,
       dataList,
-      loading
+      loading,
+      delLoading
     }
   }
 }

@@ -11,7 +11,7 @@ import { Table, TableColumn } from '@/components/Table'
 import { useRoleMenu } from '@/hooks/fn/useRoleMenu'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
-import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
+import { ElMessage, ElTag } from 'element-plus'
 import { cloneDeep } from 'lodash-es'
 import { onActivated, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -34,18 +34,29 @@ const applyFilter = (list: MenuItem[] = sourceList.value) =>
     (node) => t(node.title)
   )
 
-const { tableRegister, tableState, tableMethods } = useTable({
+const { tableRegister, tableState, tableMethods } = useTable<MenuItem, string>({
   fetchDataApi: async () => {
     const res = await getMenuListApi()
     sourceList.value = res.data.list || []
     return {
       list: applyFilter(sourceList.value)
     }
-  }
+  },
+  getRowId: (row) => row.id ?? '',
+  confirmMessage: () => t('menu.confirmDelete'),
+  confirmTitle: () => t('common.tip'),
+  beforeDelete: (rows) => {
+    if (rows.some((row) => !row.id)) return false
+    if (rows.some((row) => row.children?.length)) {
+      ElMessage.warning(t('menu.deleteHasChildren'))
+      return false
+    }
+  },
+  deleteApi: (ids) => delMenuApi(ids[0])
 })
 
 const { dataList, loading } = tableState
-const { getList } = tableMethods
+const { getList, removeRows } = tableMethods
 
 const tableColumns = reactive<TableColumn[]>([
   {
@@ -118,7 +129,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton type="primary" onClick={() => handleEdit(row)}>
               {t('exampleDemo.edit')}
             </BaseButton>
-            <BaseButton type="danger" onClick={() => handleDelete(row)}>
+            <BaseButton type="danger" onClick={() => removeRows(row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -165,22 +176,6 @@ const handleEdit = (row: MenuItem) => {
 
 const AddAction = () => {
   router.push({ name: 'MenuEdit' })
-}
-
-const handleDelete = async (row: MenuItem) => {
-  if (!row.id) return
-  if (row.children?.length) {
-    ElMessage.warning(t('menu.deleteHasChildren'))
-    return
-  }
-  try {
-    await ElMessageBox.confirm(t('menu.confirmDelete'), t('common.tip'), { type: 'warning' })
-    await delMenuApi(row.id)
-    ElMessage.success(t('common.delSuccess'))
-    getList()
-  } catch (error) {
-    if (error === 'cancel' || error === 'close') return
-  }
 }
 
 const sortDialogVisible = ref(false)

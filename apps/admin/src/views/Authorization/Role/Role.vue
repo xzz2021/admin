@@ -15,11 +15,10 @@ import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const router = useRouter()
-const ids = ref<string[]>([])
 
 const searchParams = ref<Recordable>({})
 
-const { tableRegister, tableState, tableMethods } = useTable({
+const { tableRegister, tableState, tableMethods } = useTable<RoleItem, string>({
   fetchDataApi: async () => {
     const { pageSize, currentPage } = tableState
     const res = await getRoleListApi({
@@ -32,14 +31,12 @@ const { tableRegister, tableState, tableMethods } = useTable({
       total: res.data.total || 0
     }
   },
-  fetchDelApi: async () => {
-    const res = await delRoleApi(unref(ids))
-    return !!res
-  }
+  getRowId: (row) => row.id,
+  deleteApi: (ids) => delRoleApi(ids[0])
 })
 
 const { dataList, loading, total, currentPage, pageSize } = tableState
-const { getList, delList } = tableMethods
+const { getList, removeRows } = tableMethods
 
 const tableColumns = reactive<TableColumn[]>([
   {
@@ -90,7 +87,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton disabled={row.isSystem} type="primary" onClick={() => handleEdit(row)}>
               {t('exampleDemo.edit')}
             </BaseButton>
-            <BaseButton disabled={row.isSystem} type="danger" onClick={() => delAction(row.id)}>
+            <BaseButton disabled={row.isSystem} type="danger" onClick={() => removeRows(row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -149,11 +146,6 @@ const handleDetail = (row: RoleItem) => {
       }
     }
   })
-}
-
-const delAction = async (id: string) => {
-  ids.value = [id]
-  await delList(unref(ids).length)
 }
 
 const AddAction = () => {

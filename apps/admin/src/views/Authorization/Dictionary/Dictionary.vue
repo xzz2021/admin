@@ -9,8 +9,9 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { useClipboard } from '@/hooks/web/useClipboard'
 import { useI18n } from '@/hooks/web/useI18n'
+import { useTable } from '@/hooks/web/useTable'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { ElEmpty, ElLink, ElMessage, ElMessageBox, ElTag } from 'element-plus'
+import { ElEmpty, ElLink, ElMessage, ElTag } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
 import TypeWrite from './components/TypeWrite.vue'
 import Write from './components/Write.vue'
@@ -31,6 +32,21 @@ const {
   setEntryKeyword,
   removeEntriesLocally
 } = useDictionaryPage()
+
+const { tableMethods } = useTable<DictionaryEntryItem, string>({
+  immediate: false,
+  getRowId: (row) => row.id,
+  confirmMessage: (rows) => t('dict.confirmDeleteEntry', { name: rows[0].label }),
+  confirmTitle: () => t('common.tip'),
+  beforeDelete: () => {
+    if (!currentTypeId.value) return false
+  },
+  deleteApi: (ids) => delDictionaryEntryApi(ids),
+  afterDelete: (ids) => {
+    if (currentTypeId.value) removeEntriesLocally(currentTypeId.value, ids)
+  }
+})
+const { removeRows } = tableMethods
 
 onMounted(() => {
   refreshList()
@@ -91,7 +107,7 @@ const tableColumns = reactive<TableColumn[]>([
             <BaseButton type="primary" onClick={() => openDialog(row)}>
               {t('exampleDemo.edit')}
             </BaseButton>
-            <BaseButton type="danger" onClick={() => handleDelete(row)}>
+            <BaseButton type="danger" onClick={() => removeRows(row)}>
               {t('exampleDemo.del')}
             </BaseButton>
           </>
@@ -135,19 +151,6 @@ const openDialog = (row?: DictionaryEntryItem) => {
 const syncEntryAfterSave = async () => {
   if (!currentTypeId.value) return
   await refreshList(currentTypeId.value)
-}
-
-const handleDelete = async (row: DictionaryEntryItem) => {
-  if (!currentTypeId.value) return
-
-  try {
-    await ElMessageBox.confirm(t('dict.confirmDeleteEntry', { name: row.label }), t('common.tip'), { type: 'warning' })
-    await delDictionaryEntryApi([row.id])
-    removeEntriesLocally(currentTypeId.value, [row.id])
-    ElMessage.success(t('common.delSuccess'))
-  } catch (error) {
-    if (error === 'cancel' || error === 'close') return
-  }
 }
 
 const handleSave = async () => {
