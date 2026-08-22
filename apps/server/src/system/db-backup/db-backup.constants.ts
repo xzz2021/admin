@@ -10,9 +10,14 @@ export const DB_BACKUP_SCHEDULED_SCHEDULER_ID = 'db-backup-scheduled'
 export const DB_BACKUP_LEGACY_SCHEDULER_IDS = ['db-backup:scheduled']
 export const DB_BACKUP_LOCK_KEY = 'db-backup:lock'
 export const DB_BACKUP_LOCK_TTL_MS = 30 * 60 * 1000
+/** 仅当锁持有者 token 匹配时删除，避免误释别人的锁 */
+export const DB_BACKUP_RELEASE_LOCK_LUA =
+  "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end"
 export const DB_BACKUP_DEFAULT_CRON = '0 0 * * * *'
 export const DB_BACKUP_DEFAULT_RETENTION_MAX = 24
 export const DB_BACKUP_DEFAULT_TIMEZONE = 'Asia/Shanghai'
 export const DB_BACKUP_DEFAULT_PREFIX = 'backstage_db'
 export const DB_BACKUP_DEFAULT_GZIP = true
 export const DB_BACKUP_MAX_PAGE_SIZE = 100
+export const DB_BACKUP_ALERT_KEY = 'db-backup-failed'
+export const DB_BACKUP_ALERT_DEBOUNCE_SEC = 600

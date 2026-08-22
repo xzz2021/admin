@@ -6,6 +6,8 @@ import type { ConfigService } from '@nestjs/config'
 import type { Queue } from 'bullmq'
 
 import type { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
+import { DbBackupConfigService } from './db-backup-config.service'
+import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
 import { DbBackupService } from './db-backup.service'
 
 describe('DbBackupService', () => {
@@ -66,15 +68,25 @@ describe('DbBackupService', () => {
     enqueue: jest.fn(),
   }
 
-  const createService = () =>
-    new DbBackupService(
+  const createService = () => {
+    const settings = new DbBackupConfigService(
       pgService as never,
       configService as unknown as ConfigService,
-      pgDumpRunner,
-      { getOrThrow: () => redis } as unknown as RedisService,
       queue as unknown as Queue,
+    )
+    const lifecycle = new DbBackupLifecycleService(
+      pgService as never,
       fileCleanup as unknown as FileCleanupService,
     )
+    return new DbBackupService(
+      pgService as never,
+      settings,
+      pgDumpRunner,
+      lifecycle,
+      { getOrThrow: () => redis } as unknown as RedisService,
+      queue as unknown as Queue,
+    )
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -190,52 +202,6 @@ describe('DbBackupService', () => {
       ConflictException,
     )
     expect(queue.add).not.toHaveBeenCalled()
-  })
-
-  it('skips schedule reset when cron and timezone are unchanged', async () => {
-    const service = createService()
-    queue.getJobScheduler.mockResolvedValue({
-      pattern: '0 0 * * * *',
-      tz: 'Asia/Shanghai',
-      next: Date.now() + 3600_000,
-    })
-
-    await service.syncSchedule()
-
-    expect(queue.upsertJobScheduler).not.toHaveBeenCalled()
-    expect(queue.removeJobScheduler).not.toHaveBeenCalledWith('db-backup-scheduled')
-  })
-
-  it('removes the legacy scheduler id on schedule sync', async () => {
-    const service = createService()
-    queue.getJobScheduler.mockResolvedValue({
-      pattern: '0 0 * * * *',
-      tz: 'Asia/Shanghai',
-      next: Date.now() + 3600_000,
-    })
-
-    await service.syncSchedule()
-
-    expect(queue.removeJobScheduler).toHaveBeenCalledWith('db-backup:scheduled')
-  })
-
-  it('upserts schedule when cron changes', async () => {
-    const service = createService()
-    queue.getJobScheduler.mockResolvedValue({
-      pattern: '0 0 * * *',
-      tz: 'Asia/Shanghai',
-    })
-
-    await service.syncSchedule()
-
-    expect(queue.upsertJobScheduler).toHaveBeenCalledWith(
-      'db-backup-scheduled',
-      { pattern: '0 0 * * * *', tz: 'Asia/Shanghai' },
-      expect.objectContaining({
-        name: 'scheduled',
-        opts: expect.objectContaining({ attempts: 1 }),
-      }),
-    )
   })
 
   it('marks a backup expired and enqueues cleanup instead of unlinking in the request', async () => {

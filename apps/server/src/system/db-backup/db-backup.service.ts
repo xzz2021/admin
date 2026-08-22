@@ -1,6 +1,5 @@
 import { BackupStatus, BackupTrigger, Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
-import { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { InjectQueue } from '@nestjs/bullmq'
 import {
@@ -11,37 +10,31 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
 import { Job, Queue } from 'bullmq'
 import type Redis from 'ioredis'
 import { randomUUID } from 'node:crypto'
-import { promises as fs } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { MessageService } from '../message/message.service'
+import { DbBackupConfigService } from './db-backup-config.service'
+import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
 import {
+  DB_BACKUP_ALERT_DEBOUNCE_SEC,
+  DB_BACKUP_ALERT_KEY,
   DB_BACKUP_CONFIG_ID,
-  DB_BACKUP_DEFAULT_CRON,
-  DB_BACKUP_DEFAULT_GZIP,
-  DB_BACKUP_DEFAULT_PREFIX,
-  DB_BACKUP_DEFAULT_RETENTION_MAX,
-  DB_BACKUP_DEFAULT_TIMEZONE,
   DB_BACKUP_JOB_RUN,
-  DB_BACKUP_JOB_SCHEDULED,
-  DB_BACKUP_LEGACY_SCHEDULER_IDS,
   DB_BACKUP_LOCK_KEY,
   DB_BACKUP_LOCK_TTL_MS,
   DB_BACKUP_MANUAL_JOB_ID,
   DB_BACKUP_MAX_PAGE_SIZE,
   DB_BACKUP_QUEUE,
-  DB_BACKUP_SCHEDULED_SCHEDULER_ID,
+  DB_BACKUP_RELEASE_LOCK_LUA,
 } from './db-backup.constants'
 import type {
   BackupConfigPayload,
   BackupExecutionResult,
   BackupJobListItem,
   BackupJobQuery,
-  BackupRuntimeConfig,
   DbBackupQueueJob,
 } from './db-backup.types'
 import { PgDumpRunner } from './pg-dump.runner'
@@ -53,11 +46,11 @@ export class DbBackupService implements OnModuleInit {
 
   constructor(
     private readonly pgService: PgService,
-    private readonly configService: ConfigService,
+    private readonly settings: DbBackupConfigService,
     private readonly pgDumpRunner: PgDumpRunner,
+    private readonly lifecycle: DbBackupLifecycleService,
     redisService: RedisService,
     @InjectQueue(DB_BACKUP_QUEUE) private readonly queue: Queue,
-    private readonly fileCleanupService: FileCleanupService,
     @Optional() private readonly messageService?: MessageService,
   ) {
     this.redis = redisService.getOrThrow('default')
@@ -65,12 +58,15 @@ export class DbBackupService implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     await this.failOrphanRunningJobs()
-    await this.reconcile()
-    await this.syncSchedule()
+    await this.lifecycle.reconcile()
+    await this.settings.syncSchedule()
   }
 
   async getConfigPayload(): Promise<BackupConfigPayload> {
-    const [config, nextRunAt] = await Promise.all([this.getOrCreateConfig(), this.getNextRunAt()])
+    const [config, nextRunAt] = await Promise.all([
+      this.settings.getOrCreate(),
+      this.settings.getNextRunAt(),
+    ])
     return {
       ...config,
       nextRunAt,
@@ -85,33 +81,21 @@ export class DbBackupService implements OnModuleInit {
     filePrefix: string
     gzip: boolean
   }) {
-    const config = await this.pgService.dbBackupConfig.upsert({
-      where: { id: DB_BACKUP_CONFIG_ID },
-      create: {
-        id: DB_BACKUP_CONFIG_ID,
-        ...input,
-      },
-      update: input,
-    })
-    await this.syncSchedule()
+    const config = await this.settings.upsert(input)
+    await this.settings.syncSchedule()
     return {
       ...config,
-      nextRunAt: await this.getNextRunAt(),
+      nextRunAt: await this.settings.getNextRunAt(),
       message: '备份配置已更新',
     }
   }
 
-  async getRuntimeConfig(): Promise<BackupRuntimeConfig> {
-    const config = await this.getOrCreateConfig()
-    return {
-      dir: resolve(this.getBackupDir()),
-      enabled: config.enabled,
-      cron: config.cron,
-      timezone: config.timezone,
-      retentionMax: config.retentionMax,
-      filePrefix: config.filePrefix,
-      gzip: config.gzip,
-    }
+  async getRuntimeConfig() {
+    return this.settings.getRuntime()
+  }
+
+  async syncSchedule() {
+    return this.settings.syncSchedule()
   }
 
   async listJobs(query: BackupJobQuery) {
@@ -156,7 +140,7 @@ export class DbBackupService implements OnModuleInit {
     if (job.status !== BackupStatus.SUCCESS && job.status !== BackupStatus.EXPIRED) {
       throw new ConflictException('该备份尚未生成可下载文件')
     }
-    await this.assertFileExists(job.filePath)
+    await this.lifecycle.assertFileExists(job.filePath)
     if (job.status === BackupStatus.EXPIRED) {
       throw new NotFoundException('备份文件已失效')
     }
@@ -171,50 +155,18 @@ export class DbBackupService implements OnModuleInit {
     if (job.status === BackupStatus.RUNNING) {
       throw new ConflictException('备份任务执行中，无法删除')
     }
-    if (job.status !== BackupStatus.EXPIRED) {
-      await this.pgService.dbBackupJob.update({
-        where: { id },
-        data: { status: BackupStatus.EXPIRED },
-      })
-    }
-    await this.fileCleanupService.enqueue([
-      { kind: 'backup-job', backupJobId: job.id, path: job.filePath },
-    ])
+    await this.lifecycle.expireAndEnqueue(job)
     return { message: '备份任务已删除' }
   }
 
   async cleanup() {
-    const config = await this.getRuntimeConfig()
-    const removed = await this.applyRetention(config.retentionMax)
+    const config = await this.settings.getRuntime()
+    const removed = await this.lifecycle.applyRetention(config.retentionMax)
     return { count: removed, message: `已清理 ${removed} 个历史备份` }
   }
 
   async reconcile(): Promise<number> {
-    const jobs = await this.pgService.dbBackupJob.findMany({
-      where: {
-        status: BackupStatus.SUCCESS,
-      },
-      select: {
-        id: true,
-        filePath: true,
-      },
-    })
-
-    const expiredIds: string[] = []
-    for (const job of jobs) {
-      try {
-        await fs.access(job.filePath)
-      } catch {
-        expiredIds.push(job.id)
-      }
-    }
-
-    if (!expiredIds.length) return 0
-    await this.pgService.dbBackupJob.updateMany({
-      where: { id: { in: expiredIds } },
-      data: { status: BackupStatus.EXPIRED },
-    })
-    return expiredIds.length
+    return this.lifecycle.reconcile()
   }
 
   /** 手动备份：固定 jobId 幂等入队，队列中已有则拒绝 */
@@ -260,54 +212,6 @@ export class DbBackupService implements OnModuleInit {
     await this.performBackup(dbJobId)
   }
 
-  /**
-   * 同步定时备份调度：
-   * - 关闭：按稳定 schedulerId 删除
-   * - 开启且配置未变：不重设
-   * - 开启且配置变化：upsertJobScheduler 幂等更新
-   */
-  async syncSchedule(): Promise<void> {
-    await this.removeLegacyRepeatableJobs()
-
-    const config = await this.getRuntimeConfig()
-    if (!config.enabled) {
-      await this.queue.removeJobScheduler(DB_BACKUP_SCHEDULED_SCHEDULER_ID)
-      return
-    }
-
-    const existing = await this.queue.getJobScheduler(DB_BACKUP_SCHEDULED_SCHEDULER_ID)
-    if (
-      existing &&
-      existing.pattern === config.cron &&
-      (existing.tz || undefined) === (config.timezone || undefined)
-    ) {
-      return
-    }
-
-    await this.queue.upsertJobScheduler(
-      DB_BACKUP_SCHEDULED_SCHEDULER_ID,
-      {
-        pattern: config.cron,
-        tz: config.timezone,
-      },
-      {
-        name: DB_BACKUP_JOB_SCHEDULED,
-        data: { trigger: BackupTrigger.SCHEDULED },
-        opts: {
-          attempts: 1,
-          removeOnComplete: true,
-          removeOnFail: true,
-        },
-      },
-    )
-  }
-
-  async getNextRunAt(): Promise<string | null> {
-    const scheduler = await this.queue.getJobScheduler(DB_BACKUP_SCHEDULED_SCHEDULER_ID)
-    if (!scheduler?.next) return null
-    return new Date(scheduler.next).toISOString()
-  }
-
   private async performBackup(dbJobId: string) {
     const job = await this.pgService.dbBackupJob.findUnique({ where: { id: dbJobId } })
     if (!job) {
@@ -320,7 +224,7 @@ export class DbBackupService implements OnModuleInit {
 
     const token = randomUUID()
     await this.acquireLock(token)
-    const runtimeConfig = await this.getRuntimeConfig()
+    const runtimeConfig = await this.settings.getRuntime()
     const startedAt = new Date()
 
     try {
@@ -328,10 +232,10 @@ export class DbBackupService implements OnModuleInit {
         where: { id: dbJobId },
         data: { startedAt },
       })
-      const result = await this.pgDumpRunner.run(runtimeConfig, this.getDatabaseUrl())
+      const result = await this.pgDumpRunner.run(runtimeConfig, this.settings.getDatabaseUrl())
       const durationMs = result.finishedAt.getTime() - result.startedAt.getTime()
       await this.finishSuccess(dbJobId, result, durationMs)
-      await this.applyRetention(runtimeConfig.retentionMax)
+      await this.lifecycle.applyRetention(runtimeConfig.retentionMax)
     } catch (error) {
       const message = getErrorMessage(error)
       await this.finishFailure(dbJobId, startedAt, message)
@@ -343,7 +247,7 @@ export class DbBackupService implements OnModuleInit {
   }
 
   private async createRunningJob(trigger: BackupTrigger, userId?: string | null) {
-    const runtimeConfig = await this.getRuntimeConfig()
+    const runtimeConfig = await this.settings.getRuntime()
     const startedAt = new Date()
     return this.pgService.dbBackupJob.create({
       data: {
@@ -379,25 +283,6 @@ export class DbBackupService implements OnModuleInit {
     }
 
     throw new ConflictException('已有手动备份任务在队列中，请稍后再试')
-  }
-
-  /** 清理历史调度 ID 与旧版 remove+re-add 产生的 repeatable key，避免与当前 Job Scheduler 双触发 */
-  private async removeLegacyRepeatableJobs() {
-    try {
-      for (const legacyId of DB_BACKUP_LEGACY_SCHEDULER_IDS) {
-        if (legacyId === DB_BACKUP_SCHEDULED_SCHEDULER_ID) continue
-        await this.queue.removeJobScheduler(legacyId)
-      }
-
-      const legacyJobs = await this.queue.getRepeatableJobs()
-      for (const job of legacyJobs) {
-        if (job.name !== DB_BACKUP_JOB_SCHEDULED) continue
-        if (job.key === DB_BACKUP_SCHEDULED_SCHEDULER_ID) continue
-        await this.queue.removeRepeatableByKey(job.key)
-      }
-    } catch (error) {
-      this.logger.warn(`清理旧版定时备份任务失败: ${getErrorMessage(error)}`)
-    }
   }
 
   private async failOrphanRunningJobs() {
@@ -469,73 +354,17 @@ export class DbBackupService implements OnModuleInit {
     if (!this.messageService) return
     try {
       await this.messageService.enqueueAlertDebounced(
-        'db-backup-failed',
+        DB_BACKUP_ALERT_KEY,
         {
           title: '数据库备份失败',
           content: message,
           meta: { source: 'db-backup' },
         },
-        600,
+        DB_BACKUP_ALERT_DEBOUNCE_SEC,
       )
     } catch (error) {
       this.logger.warn(`发送备份失败告警失败: ${getErrorMessage(error)}`)
     }
-  }
-
-  private async applyRetention(retentionMax: number): Promise<number> {
-    const successJobs = await this.pgService.dbBackupJob.findMany({
-      where: { status: BackupStatus.SUCCESS },
-      orderBy: { createdAt: 'desc' },
-    })
-    const removable = successJobs.slice(Math.max(retentionMax, 0))
-    if (!removable.length) return 0
-    await this.pgService.dbBackupJob.updateMany({
-      where: { id: { in: removable.map(item => item.id) } },
-      data: { status: BackupStatus.EXPIRED },
-    })
-    await this.fileCleanupService.enqueue(
-      removable.map(job => ({
-        kind: 'backup-job' as const,
-        backupJobId: job.id,
-        path: job.filePath,
-      })),
-    )
-    return removable.length
-  }
-
-  private async getOrCreateConfig() {
-    return this.pgService.dbBackupConfig.upsert({
-      where: { id: DB_BACKUP_CONFIG_ID },
-      create: {
-        id: DB_BACKUP_CONFIG_ID,
-        enabled: true,
-        cron: this.configService.get<string>('dbBackup.cron') || DB_BACKUP_DEFAULT_CRON,
-        timezone: this.configService.get<string>('dbBackup.timezone') || DB_BACKUP_DEFAULT_TIMEZONE,
-        retentionMax:
-          this.configService.get<number>('dbBackup.retentionMax') ||
-          DB_BACKUP_DEFAULT_RETENTION_MAX,
-        filePrefix:
-          this.configService.get<string>('dbBackup.filePrefix') || DB_BACKUP_DEFAULT_PREFIX,
-        gzip: this.configService.get<boolean>('dbBackup.gzip') ?? DB_BACKUP_DEFAULT_GZIP,
-      },
-      update: {},
-    })
-  }
-
-  private getBackupDir(): string {
-    return (
-      this.configService.get<string>('dbBackup.dir') ||
-      this.configService.get<string>('DB_BACKUP_DIR') ||
-      resolve(process.cwd(), 'backups')
-    )
-  }
-
-  private getDatabaseUrl(): string {
-    return (
-      this.configService.get<string>('pgDatabaseUrl') ||
-      this.configService.get<string>('PG_DATABASE_URL') ||
-      ''
-    )
   }
 
   private async acquireLock(token: string) {
@@ -547,26 +376,9 @@ export class DbBackupService implements OnModuleInit {
 
   private async releaseLock(token: string) {
     try {
-      await this.redis.eval(
-        "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
-        1,
-        DB_BACKUP_LOCK_KEY,
-        token,
-      )
+      await this.redis.eval(DB_BACKUP_RELEASE_LOCK_LUA, 1, DB_BACKUP_LOCK_KEY, token)
     } catch (error) {
       this.logger.warn(`释放备份锁失败: ${getErrorMessage(error)}`)
-    }
-  }
-
-  private async assertFileExists(path: string) {
-    try {
-      await fs.access(path)
-    } catch {
-      await this.pgService.dbBackupJob.updateMany({
-        where: { filePath: path, status: BackupStatus.SUCCESS },
-        data: { status: BackupStatus.EXPIRED },
-      })
-      throw new NotFoundException('备份文件不存在或已失效')
     }
   }
 
