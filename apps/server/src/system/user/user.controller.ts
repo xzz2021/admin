@@ -112,13 +112,16 @@ export class UserController {
   }
 
   @Post('upload/avatar')
+  @ApiOperation({ summary: '用户上传更新自己的头像' })
   @UseInterceptors(FileInterceptor('file', multerConfigForAvatar))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: JwtReqDto) {
+  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: JwtReqDto) {
     if (!file) {
       throw new BadRequestException('文件不存在')
     }
     const userId = req.user.id
-    const phone = req.user.phone ?? ''
-    return this.userService.uploadAvatar(file, userId, phone)
+    if (!userId) {
+      throw new BadRequestException('身份识别异常')
+    }
+    return this.userService.uploadAvatar(file, userId, req.user.phone)
   }
 }

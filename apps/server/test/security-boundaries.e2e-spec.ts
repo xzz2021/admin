@@ -41,7 +41,6 @@ describe('Security boundaries (e2e)', () => {
   const listSessions = jest.fn()
   const getFileList = jest.fn()
   const uploadFile = jest.fn()
-  const updateAvatar = jest.fn()
   const deleteFile = jest.fn()
 
   beforeAll(async () => {
@@ -68,7 +67,7 @@ describe('Security boundaries (e2e)', () => {
         },
         {
           provide: StaticfileService,
-          useValue: { getFileList, uploadFile, updateAvatar, deleteFile },
+          useValue: { getFileList, uploadFile, deleteFile },
         },
         {
           provide: PgService,

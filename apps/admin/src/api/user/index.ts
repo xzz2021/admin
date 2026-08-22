@@ -48,7 +48,7 @@ export const updatePasswordApi = (data: UpdatePasswordPayload) => {
 
 export const uploadAvatarApi = (data: FormData): Promise<IResponse<{ filePath: string }>> => {
   return request.post({
-    url: 'staticfile/upload/avatar',
+    url: 'user/upload/avatar',
     data,
     headers: { 'Content-Type': 'multipart/form-data' }
   })

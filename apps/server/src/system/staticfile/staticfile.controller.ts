@@ -1,15 +1,12 @@
 import { RequiredPermission } from '@/processor/decorator'
 import { Serialize } from '@/processor/decorator/serialize'
-import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   Header,
   Post,
-  Req,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
@@ -20,7 +17,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { createReadStream } from 'fs'
 import { join } from 'path'
 import { DeleteFileDto, FileListResDto } from './file.dto'
-import { generateMulterConfig, multerConfigForAvatar, sanitizePathSegment } from './multer.config'
+import { generateMulterConfig } from './multer.config'
 import { StaticfileService } from './staticfile.service'
 
 @ApiTags('静态文件')
@@ -101,21 +98,5 @@ export class StaticfileController {
   @RequiredPermission('fileList:delete')
   deleteFile(@Body() body: DeleteFileDto) {
     return this.staticfileService.deleteFile(body.ids)
-  }
-
-  @Post('upload/avatar')
-  @ApiOperation({ summary: '用户上传更新自己的头像' })
-  @UseInterceptors(FileInterceptor('file', multerConfigForAvatar))
-  uploadAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: JwtReqDto) {
-    if (!file) {
-      throw new BadRequestException('文件不存在')
-    }
-    const userPhone: string = req?.user?.phone ?? ''
-    if (!userPhone) {
-      throw new BadRequestException('用户手机号不存在')
-    }
-    const phoneSegment = sanitizePathSegment(userPhone)
-    const avatarPath = `${this.staticFileServeRoot}/avatar/${phoneSegment}/${file.filename}`
-    return this.staticfileService.updateAvatar(avatarPath, userPhone)
   }
 }

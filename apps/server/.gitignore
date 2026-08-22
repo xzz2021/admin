@@ -3,5 +3,5 @@ logs/
 dist/
 *.log
 
-public/file/
+public/
 backups/

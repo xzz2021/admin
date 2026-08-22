@@ -7,7 +7,6 @@ jest.mock('./staticfile.service', () => ({
 
 jest.mock('./multer.config', () => ({
   generateMulterConfig: () => ({}),
-  multerConfigForAvatar: {},
 }))
 
 jest.mock('@nestjs/config', () => ({
@@ -29,11 +28,5 @@ describe('StaticfileController permission boundary', () => {
     expect(Reflect.getMetadata(PERMISSION_KEY, StaticfileController.prototype[methodName])).toBe(
       permission,
     )
-  })
-
-  it('does not require management permission for personal avatar upload', () => {
-    expect(
-      Reflect.getMetadata(PERMISSION_KEY, StaticfileController.prototype['uploadAvatar']),
-    ).toBeUndefined()
   })
 })

@@ -19,7 +19,7 @@ describe('UserController permission boundary', () => {
     )
   })
 
-  it.each(['detailInfo', 'updatePersonalInfo', 'updatePassword', 'uploadFile'] as const)(
+  it.each(['detailInfo', 'updatePersonalInfo', 'updatePassword', 'uploadAvatar'] as const)(
     'does not require management permission for %s',
     methodName => {
       expect(

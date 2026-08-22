@@ -57,7 +57,7 @@ flowchart LR
 
 ## 文件上传
 
-- `POST /staticfile/upload` 或头像接口写入配置的静态根目录
+- `POST /staticfile/upload` 写入文件管理目录；头像走 `POST /user/upload/avatar`
 - ServeStatic 以配置的 serveRoot 对外提供访问（示例：`api/public`）
 - 元数据可写入 `File` 模型
 

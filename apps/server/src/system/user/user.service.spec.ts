@@ -102,3 +102,46 @@ describe('UserService session revocation', () => {
     expect(terminateUser).not.toHaveBeenCalled()
   })
 })
+
+describe('UserService uploadAvatar', () => {
+  const userUpdate = jest.fn()
+
+  const createService = () =>
+    new UserService(
+      { user: { update: userUpdate } } as unknown as PgService,
+      { getOrThrow: () => ({}) } as unknown as RedisService,
+      { invalidateUsers: jest.fn() } as unknown as RbacPermissionCacheService,
+      { revokeAll: jest.fn() } as unknown as TokenService,
+      { revokeAll: jest.fn() } as unknown as RtTokenService,
+      { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
+    )
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    userUpdate.mockResolvedValue({ id: 'user-1' })
+  })
+
+  it('updates avatar by user id and returns filePath', async () => {
+    const service = createService()
+    const file = { filename: 'avatar.png' } as Express.Multer.File
+
+    const result = await service.uploadAvatar(file, 'user-1', '13800138000')
+
+    expect(userUpdate).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: { avatar: 'api/public/avatar/13800138000/avatar.png' },
+    })
+    expect(result).toEqual({
+      filePath: 'api/public/avatar/13800138000/avatar.png',
+      message: '更新头像成功',
+    })
+  })
+
+  it('rejects missing user id', async () => {
+    const service = createService()
+    const file = { filename: 'avatar.png' } as Express.Multer.File
+
+    await expect(service.uploadAvatar(file, '', '13800138000')).rejects.toThrow('身份识别异常')
+    expect(userUpdate).not.toHaveBeenCalled()
+  })
+})

@@ -29,5 +29,4 @@ Prisma `User`：username、password（哈希）、nickname、email、phone、ava
 - API：`apps/admin/src/api/user/`
 - 个人中心：`views/Personal/PersonalCenter/`
 - Store：`store/modules/user.ts`、`system.ts`（系统用户列表侧）
-
-头像上传亦可走 `staticfile/upload/avatar`。
+- 头像上传：`POST /user/upload/avatar`（登录即可，按当前用户 ID 更新）

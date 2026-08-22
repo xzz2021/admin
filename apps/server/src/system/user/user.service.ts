@@ -344,17 +344,17 @@ export class UserService {
     return { list, total, message: '获取用户列表成功' }
   }
 
-  async uploadAvatar(file: Express.Multer.File, userId: string, phone: string) {
+  async uploadAvatar(file: Express.Multer.File, userId: string, phone?: string | null) {
     if (!file) {
       throw new BadRequestException('文件不存在')
     }
-    if (!phone) {
-      throw new BadRequestException('用户手机号不存在')
+    if (!userId) {
+      throw new BadRequestException('身份识别异常')
     }
     const serveRoot = this.configService.get<string>('staticFileServeRoot') || ''
-    const phoneSegment = sanitizePathSegment(phone)
-    const url = `${serveRoot}/avatar/${phoneSegment}/${file.filename}`
-    await this.pgService.user.update({ where: { id: userId }, data: { avatar: url } })
-    return { url, message: '上传头像成功' }
+    const phoneSegment = sanitizePathSegment(phone ?? 'anonymous')
+    const filePath = `${serveRoot}/avatar/${phoneSegment}/${file.filename}`
+    await this.pgService.user.update({ where: { id: userId }, data: { avatar: filePath } })
+    return { filePath, message: '更新头像成功' }
   }
 }

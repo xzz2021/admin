@@ -50,9 +50,4 @@ export class StaticfileService {
     }
     return { message: '文件删除成功' }
   }
-
-  async updateAvatar(avatarPath: string, userPhone: string) {
-    await this.pgService.user.update({ where: { phone: userPhone }, data: { avatar: avatarPath } })
-    return { message: '更新头像成功', filePath: avatarPath }
-  }
 }

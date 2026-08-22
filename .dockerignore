@@ -2,6 +2,7 @@
 **/dist
 !apps/admin/dist-pro
 !apps/admin/dist-pro/**
+server/public/
 .git
 .vscode
 .cursor
