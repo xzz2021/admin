@@ -1,12 +1,9 @@
 import { downloadFolderApi, downloadObjectApi, getFileUrlApi } from '@/api/oss'
-import { createAudioViewer } from '@/components/AudioPlayer'
-import { createImageViewer } from '@/components/ImageViewer'
-import { createTxtViewer } from '@/components/TxtViewer'
-import { createVideoViewer } from '@/components/VideoPlayer'
+import { useI18n } from '@/hooks/web/useI18n'
+import { getPreviewFilename, isPreviewableType, openPreview } from '@/utils/preview'
 import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios'
 import { ElMessage } from 'element-plus'
 
-// 根据后端返回的headers里传递的文件名进行命名
 const getFilenameFromHeader = (headers: RawAxiosResponseHeaders | AxiosResponseHeaders) => {
   const contentDisposition = headers['content-disposition']
   let filename = 'download.zip'
@@ -34,15 +31,12 @@ export const downloadFile = async (rawName: string) => {
     const link = document.createElement('a')
     link.href = url
 
-    // 从文件名中提取实际的文件名（去掉路径前缀）
     const fileName = rawName.split('/').pop() || rawName
     link.download = isFolder ? getFilenameFromHeader(file.headers) : fileName
 
-    // 触发下载
     document.body.appendChild(link)
     link.click()
 
-    // 清理
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
 
@@ -54,35 +48,27 @@ export const downloadFile = async (rawName: string) => {
 }
 
 export const previewFile = async (rawName: string, fileType: string) => {
-  // 先检查文件类型是否支持预览
-  const supportedTypes = ['image', 'video', 'audio', 'doc']
-  if (!supportedTypes.includes(fileType)) {
-    ElMessage.error(`暂不支持预览该文件类型: ${fileType}`)
+  const { t } = useI18n()
+  if (!isPreviewableType(fileType)) {
+    ElMessage.error(t('file.previewUnsupported', { type: fileType }))
     return
   }
 
   try {
-    // 只有支持的类型才请求 URL
-    const res = await getFileUrlApi({ objectName: rawName as string })
-    const url = res?.data?.url as string
-
+    const res = await getFileUrlApi({ objectName: rawName })
+    const url = res?.data?.url
     if (!url) {
-      ElMessage.error('获取文件预览链接失败')
+      ElMessage.error(t('file.previewUrlFailed'))
       return
     }
 
-    // 使用映射表简化预览逻辑
-    const previewHandlers = {
-      image: () => createImageViewer({ urlList: [url] }),
-      video: () => createVideoViewer({ url }),
-      audio: () => createAudioViewer({ url, filename: rawName }),
-      doc: () => createTxtViewer({ url })
-    }
-
-    const handler = previewHandlers[fileType as keyof typeof previewHandlers]
-    handler()
+    await openPreview({
+      type: fileType,
+      url,
+      filename: getPreviewFilename(rawName)
+    })
   } catch (error) {
-    console.error('文件预览失败:', error)
-    ElMessage.error('文件预览失败，请稍后重试')
+    console.error(error)
+    ElMessage.error(t('file.previewFailed'))
   }
 }

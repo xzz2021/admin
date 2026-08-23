@@ -4,13 +4,12 @@
   </div>
 </template>
 <script setup lang="tsx">
-import { createAudioViewer } from '@/components/AudioPlayer'
 import { Icon } from '@/components/Icon'
-import { createVideoViewer } from '@/components/VideoPlayer'
-import { getFileType, probeFileAccessible } from '@/utils/file'
-import { ElImage, ElMessage } from 'element-plus'
-import { defineComponent, ref } from 'vue'
 import { useI18n } from '@/hooks/web/useI18n'
+import { getFileType } from '@/utils/file'
+import { openPreview, type PreviewableType } from '@/utils/preview'
+import { ElImage } from 'element-plus'
+import { defineComponent, ref } from 'vue'
 
 interface PropsItem {
   extension: string
@@ -31,28 +30,17 @@ const notifyUnavailable = () => {
   emit('unavailable')
 }
 
-const openMedia = async (kind: 'audio' | 'video') => {
+const open = async (type: PreviewableType, probe = false) => {
   if (!props.url || probing.value) return
   probing.value = true
   try {
-    const ok = await probeFileAccessible(props.url)
-    if (!ok) {
-      ElMessage.error(kind === 'audio' ? t('file.audioUnavailable') : t('file.videoUnavailable'))
-      notifyUnavailable()
-      return
-    }
-    if (kind === 'audio') {
-      createAudioViewer({
-        url: props.url,
-        filename: props.filename,
-        onUnavailable: notifyUnavailable
-      })
-    } else {
-      createVideoViewer({
-        url: props.url,
-        onUnavailable: notifyUnavailable
-      })
-    }
+    await openPreview({
+      type,
+      url: props.url,
+      filename: props.filename,
+      probe,
+      onUnavailable: notifyUnavailable
+    })
   } finally {
     probing.value = false
   }
@@ -64,6 +52,7 @@ const RenderPreview = defineComponent({
       const type = getFileType(props.extension)
       const url = props.url
       const filename = props.filename
+      const title = probing.value ? t('file.probing') : filename
 
       switch (type) {
         case 'image':
@@ -78,46 +67,38 @@ const RenderPreview = defineComponent({
             )
           }
           return (
-            <ElImage
-              src={url}
-              fit="cover"
-              class="w-[100%]"
-              lazy
-              preview-src-list={[url]}
-              preview-teleported
-              onError={() => {
-                imageFailed.value = true
-              }}
-              v-slots={{
-                error: () => <div class="text-12px color-[var(--el-color-danger)]">{t('file.imageUnavailable')}</div>
-              }}
-            />
+            <div class="w-full" onClick={() => open('image')}>
+              <ElImage
+                src={url}
+                fit="cover"
+                class="w-[100%] pointer-events-none"
+                lazy
+                onError={() => {
+                  imageFailed.value = true
+                }}
+                v-slots={{
+                  error: () => <div class="text-12px color-[var(--el-color-danger)]">{t('file.imageUnavailable')}</div>
+                }}
+              />
+            </div>
           )
         case 'audio':
           return (
-            <div
-              onClick={() => openMedia('audio')}
-              class="w-full flex items-center"
-              title={probing.value ? t('file.probing') : filename}
-            >
+            <div onClick={() => open('audio', true)} class="w-full flex items-center" title={title}>
               <Icon icon="headphones" style={{ color: '#0dc70b' }} />
               <div class="ml-2 w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
             </div>
           )
         case 'video':
           return (
-            <div
-              onClick={() => openMedia('video')}
-              class="w-full flex items-center"
-              title={probing.value ? t('file.probing') : filename}
-            >
+            <div onClick={() => open('video', true)} class="w-full flex items-center" title={title}>
               <Icon icon="film" style={{ color: '#ff6b12' }} />
               <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
             </div>
           )
         case 'doc':
           return (
-            <div class="w-full flex items-center">
+            <div onClick={() => open('doc', true)} class="w-full flex items-center" title={title}>
               <Icon icon="file-text" style={{ color: '#0070ff' }} />
               <div class="ml-2 w-[120px] overflow-hidden text-ellipsis whitespace-nowrap">{filename}</div>
             </div>

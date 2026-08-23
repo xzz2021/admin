@@ -719,7 +719,10 @@ export default {
     imageUnavailable: '图片已失效',
     audioUnavailable: '音频文件已失效',
     videoUnavailable: '视频文件已失效',
-    probing: '检测中...'
+    probing: '检测中...',
+    previewUnsupported: '暂不支持预览该文件类型：{type}',
+    previewUrlFailed: '获取文件预览链接失败',
+    previewFailed: '文件预览失败，请稍后重试'
   },
   dbBackup: {
     configTitle: '备份配置',

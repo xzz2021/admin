@@ -725,7 +725,10 @@ export default {
     imageUnavailable: 'Image unavailable',
     audioUnavailable: 'Audio file unavailable',
     videoUnavailable: 'Video file unavailable',
-    probing: 'Checking...'
+    probing: 'Checking...',
+    previewUnsupported: 'Preview is not supported for this file type: {type}',
+    previewUrlFailed: 'Failed to get the preview URL',
+    previewFailed: 'Preview failed, please try again later'
   },
   dbBackup: {
     configTitle: 'Backup configuration',
