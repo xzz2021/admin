@@ -39,6 +39,7 @@ export type UserOperationLogSumAggregateOutputType = {
 export type UserOperationLogMinAggregateOutputType = {
   id: number | null
   ip: string | null
+  location: string | null
   userAgent: string | null
   method: string | null
   requestUrl: string | null
@@ -52,6 +53,7 @@ export type UserOperationLogMinAggregateOutputType = {
 export type UserOperationLogMaxAggregateOutputType = {
   id: number | null
   ip: string | null
+  location: string | null
   userAgent: string | null
   method: string | null
   requestUrl: string | null
@@ -65,6 +67,7 @@ export type UserOperationLogMaxAggregateOutputType = {
 export type UserOperationLogCountAggregateOutputType = {
   id: number
   ip: number
+  location: number
   userAgent: number
   method: number
   requestUrl: number
@@ -91,6 +94,7 @@ export type UserOperationLogSumAggregateInputType = {
 export type UserOperationLogMinAggregateInputType = {
   id?: true
   ip?: true
+  location?: true
   userAgent?: true
   method?: true
   requestUrl?: true
@@ -104,6 +108,7 @@ export type UserOperationLogMinAggregateInputType = {
 export type UserOperationLogMaxAggregateInputType = {
   id?: true
   ip?: true
+  location?: true
   userAgent?: true
   method?: true
   requestUrl?: true
@@ -117,6 +122,7 @@ export type UserOperationLogMaxAggregateInputType = {
 export type UserOperationLogCountAggregateInputType = {
   id?: true
   ip?: true
+  location?: true
   userAgent?: true
   method?: true
   requestUrl?: true
@@ -218,6 +224,7 @@ export type UserOperationLogGroupByArgs<ExtArgs extends runtime.Types.Extensions
 export type UserOperationLogGroupByOutputType = {
   id: number
   ip: string
+  location: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -255,6 +262,7 @@ export type UserOperationLogWhereInput = {
   NOT?: Prisma.UserOperationLogWhereInput | Prisma.UserOperationLogWhereInput[]
   id?: Prisma.IntFilter<"UserOperationLog"> | number
   ip?: Prisma.StringFilter<"UserOperationLog"> | string
+  location?: Prisma.StringNullableFilter<"UserOperationLog"> | string | null
   userAgent?: Prisma.StringFilter<"UserOperationLog"> | string
   method?: Prisma.StringFilter<"UserOperationLog"> | string
   requestUrl?: Prisma.StringFilter<"UserOperationLog"> | string
@@ -270,6 +278,7 @@ export type UserOperationLogWhereInput = {
 export type UserOperationLogOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  location?: Prisma.SortOrderInput | Prisma.SortOrder
   userAgent?: Prisma.SortOrder
   method?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
@@ -288,6 +297,7 @@ export type UserOperationLogWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.UserOperationLogWhereInput[]
   NOT?: Prisma.UserOperationLogWhereInput | Prisma.UserOperationLogWhereInput[]
   ip?: Prisma.StringFilter<"UserOperationLog"> | string
+  location?: Prisma.StringNullableFilter<"UserOperationLog"> | string | null
   userAgent?: Prisma.StringFilter<"UserOperationLog"> | string
   method?: Prisma.StringFilter<"UserOperationLog"> | string
   requestUrl?: Prisma.StringFilter<"UserOperationLog"> | string
@@ -303,6 +313,7 @@ export type UserOperationLogWhereUniqueInput = Prisma.AtLeast<{
 export type UserOperationLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  location?: Prisma.SortOrderInput | Prisma.SortOrder
   userAgent?: Prisma.SortOrder
   method?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
@@ -325,6 +336,7 @@ export type UserOperationLogScalarWhereWithAggregatesInput = {
   NOT?: Prisma.UserOperationLogScalarWhereWithAggregatesInput | Prisma.UserOperationLogScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"UserOperationLog"> | number
   ip?: Prisma.StringWithAggregatesFilter<"UserOperationLog"> | string
+  location?: Prisma.StringNullableWithAggregatesFilter<"UserOperationLog"> | string | null
   userAgent?: Prisma.StringWithAggregatesFilter<"UserOperationLog"> | string
   method?: Prisma.StringWithAggregatesFilter<"UserOperationLog"> | string
   requestUrl?: Prisma.StringWithAggregatesFilter<"UserOperationLog"> | string
@@ -338,6 +350,7 @@ export type UserOperationLogScalarWhereWithAggregatesInput = {
 
 export type UserOperationLogCreateInput = {
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -352,6 +365,7 @@ export type UserOperationLogCreateInput = {
 export type UserOperationLogUncheckedCreateInput = {
   id?: number
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -365,6 +379,7 @@ export type UserOperationLogUncheckedCreateInput = {
 
 export type UserOperationLogUpdateInput = {
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -379,6 +394,7 @@ export type UserOperationLogUpdateInput = {
 export type UserOperationLogUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -393,6 +409,7 @@ export type UserOperationLogUncheckedUpdateInput = {
 export type UserOperationLogCreateManyInput = {
   id?: number
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -406,6 +423,7 @@ export type UserOperationLogCreateManyInput = {
 
 export type UserOperationLogUpdateManyMutationInput = {
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -419,6 +437,7 @@ export type UserOperationLogUpdateManyMutationInput = {
 export type UserOperationLogUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -443,6 +462,7 @@ export type UserOperationLogOrderByRelationAggregateInput = {
 export type UserOperationLogCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  location?: Prisma.SortOrder
   userAgent?: Prisma.SortOrder
   method?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
@@ -462,6 +482,7 @@ export type UserOperationLogAvgOrderByAggregateInput = {
 export type UserOperationLogMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  location?: Prisma.SortOrder
   userAgent?: Prisma.SortOrder
   method?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
@@ -475,6 +496,7 @@ export type UserOperationLogMaxOrderByAggregateInput = {
 export type UserOperationLogMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ip?: Prisma.SortOrder
+  location?: Prisma.SortOrder
   userAgent?: Prisma.SortOrder
   method?: Prisma.SortOrder
   requestUrl?: Prisma.SortOrder
@@ -534,6 +556,7 @@ export type UserOperationLogUncheckedUpdateManyWithoutUserNestedInput = {
 
 export type UserOperationLogCreateWithoutUserInput = {
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -547,6 +570,7 @@ export type UserOperationLogCreateWithoutUserInput = {
 export type UserOperationLogUncheckedCreateWithoutUserInput = {
   id?: number
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -589,6 +613,7 @@ export type UserOperationLogScalarWhereInput = {
   NOT?: Prisma.UserOperationLogScalarWhereInput | Prisma.UserOperationLogScalarWhereInput[]
   id?: Prisma.IntFilter<"UserOperationLog"> | number
   ip?: Prisma.StringFilter<"UserOperationLog"> | string
+  location?: Prisma.StringNullableFilter<"UserOperationLog"> | string | null
   userAgent?: Prisma.StringFilter<"UserOperationLog"> | string
   method?: Prisma.StringFilter<"UserOperationLog"> | string
   requestUrl?: Prisma.StringFilter<"UserOperationLog"> | string
@@ -603,6 +628,7 @@ export type UserOperationLogScalarWhereInput = {
 export type UserOperationLogCreateManyUserInput = {
   id?: number
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -615,6 +641,7 @@ export type UserOperationLogCreateManyUserInput = {
 
 export type UserOperationLogUpdateWithoutUserInput = {
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -628,6 +655,7 @@ export type UserOperationLogUpdateWithoutUserInput = {
 export type UserOperationLogUncheckedUpdateWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -641,6 +669,7 @@ export type UserOperationLogUncheckedUpdateWithoutUserInput = {
 export type UserOperationLogUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   ip?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userAgent?: Prisma.StringFieldUpdateOperationsInput | string
   method?: Prisma.StringFieldUpdateOperationsInput | string
   requestUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -656,6 +685,7 @@ export type UserOperationLogUncheckedUpdateManyWithoutUserInput = {
 export type UserOperationLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ip?: boolean
+  location?: boolean
   userAgent?: boolean
   method?: boolean
   requestUrl?: boolean
@@ -671,6 +701,7 @@ export type UserOperationLogSelect<ExtArgs extends runtime.Types.Extensions.Inte
 export type UserOperationLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ip?: boolean
+  location?: boolean
   userAgent?: boolean
   method?: boolean
   requestUrl?: boolean
@@ -686,6 +717,7 @@ export type UserOperationLogSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
 export type UserOperationLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ip?: boolean
+  location?: boolean
   userAgent?: boolean
   method?: boolean
   requestUrl?: boolean
@@ -701,6 +733,7 @@ export type UserOperationLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
 export type UserOperationLogSelectScalar = {
   id?: boolean
   ip?: boolean
+  location?: boolean
   userAgent?: boolean
   method?: boolean
   requestUrl?: boolean
@@ -712,7 +745,7 @@ export type UserOperationLogSelectScalar = {
   createdAt?: boolean
 }
 
-export type UserOperationLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ip" | "userAgent" | "method" | "requestUrl" | "isSuccess" | "responseMsg" | "detailInfo" | "duration" | "userId" | "createdAt", ExtArgs["result"]["userOperationLog"]>
+export type UserOperationLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ip" | "location" | "userAgent" | "method" | "requestUrl" | "isSuccess" | "responseMsg" | "detailInfo" | "duration" | "userId" | "createdAt", ExtArgs["result"]["userOperationLog"]>
 export type UserOperationLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserOperationLog$userArgs<ExtArgs>
 }
@@ -734,6 +767,10 @@ export type $UserOperationLogPayload<ExtArgs extends runtime.Types.Extensions.In
      * @z.string().max(45).meta({ description: '请求 IP', example: '127.0.0.1' })
      */
     ip: string
+    /**
+     * @z.string().max(100).optional().meta({ description: '请求地理位置', example: '中国 广东省 深圳市' })
+     */
+    location: string | null
     /**
      * @z.string().max(500).meta({ description: 'User-Agent', example: 'Mozilla/5.0' })
      */
@@ -1190,6 +1227,7 @@ export interface Prisma__UserOperationLogClient<T, Null = never, ExtArgs extends
 export interface UserOperationLogFieldRefs {
   readonly id: Prisma.FieldRef<"UserOperationLog", 'Int'>
   readonly ip: Prisma.FieldRef<"UserOperationLog", 'String'>
+  readonly location: Prisma.FieldRef<"UserOperationLog", 'String'>
   readonly userAgent: Prisma.FieldRef<"UserOperationLog", 'String'>
   readonly method: Prisma.FieldRef<"UserOperationLog", 'String'>
   readonly requestUrl: Prisma.FieldRef<"UserOperationLog", 'String'>

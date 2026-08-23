@@ -28,22 +28,22 @@ erDiagram
 
 ## 模型说明
 
-| Model                           | 要点                                                                                             |
-| ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| User                            | cuid；phone/email 唯一；argon2 密码哈希；可选 department；列表按 `createdAt desc`                |
-| Role                            | code 唯一；`super_admin` 为超管约定；`isSystem`；`createdById` → User（SetNull）                 |
-| UserRole                        | 复合主键 (userId, roleId)；`assignedById` → User（SetNull）                                      |
-| Menu                            | 树；`MenuType` DIRECTORY / MENU；path/name 唯一；内嵌前端 meta 字段                              |
-| Permission                      | code 唯一；挂 menuId；PermissionType                                                             |
-| RoleMenu / RolePermission       | 角色资源绑定                                                                                     |
-| Department                      | 树 + 物化 `path`；`(parentId, name)` 唯一（含 `parentId = NULL` 的根部门）                       |
-| DictionaryType / DictionaryItem | 字典；`(typeId, value)` 唯一                                                                     |
-| Message                         | 站内信/系统/告警；`(dispatchId, receiverId)` 唯一                                                |
-| UserSession                     | tokenHash 唯一；过期时间                                                                         |
-| UserOperationLog                | 访问日志（HTTP 拦截器写入，可查可删）                                                            |
-| File                            | 文件元数据（自增 id）；`path` 唯一；`size` 为 BIGINT                                             |
-| Notice                          | 公告模型；**无 Nest Controller**；产品化（草稿/上下线/拉模型）延期，不阻塞消息收件箱与管理页拆分 |
-| AuditLog                        | 领域审计（Service 成功后写入；可查不可删；不记 GET）                                             |
+| Model                           | 要点                                                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| User                            | cuid；phone/email 唯一；argon2 密码哈希；`lastLoginIp` + `lastLoginLocation`；列表按 `createdAt desc` |
+| Role                            | code 唯一；`super_admin` 为超管约定；`isSystem`；`createdById` → User（SetNull）                      |
+| UserRole                        | 复合主键 (userId, roleId)；`assignedById` → User（SetNull）                                           |
+| Menu                            | 树；`MenuType` DIRECTORY / MENU；path/name 唯一；内嵌前端 meta 字段                                   |
+| Permission                      | code 唯一；挂 menuId；PermissionType                                                                  |
+| RoleMenu / RolePermission       | 角色资源绑定                                                                                          |
+| Department                      | 树 + 物化 `path`；`(parentId, name)` 唯一（含 `parentId = NULL` 的根部门）                            |
+| DictionaryType / DictionaryItem | 字典；`(typeId, value)` 唯一                                                                          |
+| Message                         | 站内信/系统/告警；`(dispatchId, receiverId)` 唯一                                                     |
+| UserSession                     | tokenHash 唯一；过期时间；`ip` + `location`                                                           |
+| UserOperationLog                | 访问日志（HTTP 拦截器写入，可查可删）；`ip` + `location`                                              |
+| File                            | 文件元数据（自增 id）；`path` 唯一；`size` 为 BIGINT                                                  |
+| Notice                          | 公告模型；**无 Nest Controller**；产品化（草稿/上下线/拉模型）延期，不阻塞消息收件箱与管理页拆分      |
+| AuditLog                        | 领域审计（Service 成功后写入；可查不可删；不记 GET）；`ip` + `location`                               |
 
 ## 枚举
 

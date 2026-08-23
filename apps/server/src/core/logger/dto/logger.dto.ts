@@ -5,6 +5,7 @@ import { z } from 'zod'
 const LogSchema = UserOperationLogModel.pick({
   id: true,
   ip: true,
+  location: true,
   userAgent: true,
   method: true,
   requestUrl: true,
@@ -101,6 +102,7 @@ const AuditLogListResSchema = AuditLogModel.pick({
   resourceId: true,
   success: true,
   ip: true,
+  location: true,
   metadata: true,
 }).extend({
   createdAt: z.string(),

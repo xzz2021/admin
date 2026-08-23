@@ -68,10 +68,10 @@ const detailSchema = reactive<DescriptionsSchema[]>([
     }
   },
   {
-    field: 'ip',
-    label: t('auditLog.ip'),
+    field: 'location',
+    label: t('auditLog.location'),
     slots: {
-      default: () => <div>{props.currentRow?.ip || '-'}</div>
+      default: () => <div>{props.currentRow?.location || '-'}</div>
     }
   },
   {

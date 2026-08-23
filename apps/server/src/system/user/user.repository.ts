@@ -1,5 +1,6 @@
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
+import { lookupIpLocation } from '@/processor/utils'
 import { Injectable } from '@nestjs/common'
 
 const USER_LIST_SELECT = {
@@ -222,12 +223,14 @@ export class UserRepository {
     })
   }
 
-  recordLoginSuccess(id: string, ip: string) {
+  async recordLoginSuccess(id: string, ip: string) {
+    const location = await lookupIpLocation(ip)
     return this.db.user.update({
       where: { id },
       data: {
         lastLoginAt: new Date(),
         lastLoginIp: ip,
+        lastLoginLocation: location,
       },
     })
   }

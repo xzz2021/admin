@@ -69,8 +69,11 @@ const detailSchema = reactive<DescriptionsSchema[]>([
     label: t('userLog.path')
   },
   {
-    field: 'ip',
-    label: t('userLog.ip')
+    field: 'location',
+    label: t('userLog.location'),
+    slots: {
+      default: () => <div>{props.currentRow?.location || '-'}</div>
+    }
   },
   {
     field: 'userAgent',

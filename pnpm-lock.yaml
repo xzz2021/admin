@@ -570,6 +570,9 @@ importers:
       ioredis:
         specifier: ^5.11.1
         version: 5.11.1
+      ip2region-ts:
+        specifier: ^2.0.1
+        version: 2.0.1
       multer:
         specifier: ^2.2.0
         version: 2.2.0
@@ -7194,6 +7197,7 @@ packages:
         integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==,
       }
     engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: "*"
@@ -8274,6 +8278,12 @@ packages:
         integrity: sha512-ehuGcf94bQXhfagULNXrJdfnWO38v070jxSx/qE87Kjzmu2fU7ro5EFAb+OPituLqgfyuQaym5DlrNydW2sJ9A==,
       }
     engines: { node: ">=12.22.0" }
+
+  ip2region-ts@2.0.1:
+    resolution:
+      {
+        integrity: sha512-zZkNgAUVlneofpRu/cYhjrZ/fVLX5/9sYoW0Ha+OqAt4LGFsyuAiynRnmw0JY/CMfa1DamD/AmqJ5hfXRpjCTA==,
+      }
 
   ipaddr.js@1.9.1:
     resolution:
@@ -18119,6 +18129,8 @@ snapshots:
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
+
+  ip2region-ts@2.0.1: {}
 
   ipaddr.js@1.9.1: {}
 

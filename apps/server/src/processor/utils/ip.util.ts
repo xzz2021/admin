@@ -1,53 +1,81 @@
 import type { IncomingMessage } from 'node:http'
-import { Request } from 'express'
+import { createRequire } from 'node:module'
+import type { Request } from 'express'
+import { extractIP } from './string'
 
-/* 判断IP是不是内网 */
-function isLAN(ip: string) {
-  ip.toLowerCase()
-  if (ip === 'localhost') return true
-  let a_ip = 0
-  if (ip === '') return false
-  const aNum = ip.split('.')
-  if (aNum.length !== 4) return false
-  a_ip += Number.parseInt(aNum[0]) << 24
-  a_ip += Number.parseInt(aNum[1]) << 16
-  a_ip += Number.parseInt(aNum[2]) << 8
-  a_ip += Number.parseInt(aNum[3]) << 0
-  a_ip = (a_ip >> 16) & 0xffff
-  return (
-    a_ip >> 8 === 0x7f || a_ip >> 8 === 0xa || a_ip === 0xc0a8 || (a_ip >= 0xac10 && a_ip <= 0xac1f)
-  )
+const UNKNOWN_LOCATION = '未知'
+const LAN_LOCATION = '内网IP'
+const MAX_LOCATION_LENGTH = 100
+
+type IpSearcher = {
+  search(ip: string): Promise<{ region?: string | null }>
+}
+
+type Ip2regionModule = {
+  defaultDbFile: string
+  loadContentFromFile: (dbPath: string) => Buffer
+  newWithBuffer: (buffer: Buffer) => IpSearcher
+}
+
+const requireIp2region = createRequire(__filename)
+
+let searcher: IpSearcher | null = null
+
+function isLan(ip: string) {
+  const value = ip.toLowerCase()
+  if (value === 'localhost' || value === '::1' || value.startsWith('fe80:')) return true
+  const parts = value.split('.')
+  if (parts.length !== 4) return false
+  const a = Number.parseInt(parts[0] ?? '', 10)
+  const b = Number.parseInt(parts[1] ?? '', 10)
+  if (Number.isNaN(a) || Number.isNaN(b)) return false
+  return a === 127 || a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31)
+}
+
+function getSearcher(): IpSearcher {
+  if (!searcher) {
+    const mod = requireIp2region('ip2region-ts') as Ip2regionModule
+    searcher = mod.newWithBuffer(mod.loadContentFromFile(mod.defaultDbFile))
+  }
+  return searcher
+}
+
+export function formatIpRegion(region?: string | null): string {
+  if (!region) return ''
+  const [country, , province, city] = region.split('|')
+  return [country, province, city]
+    .filter(part => part && part !== '0')
+    .join(' ')
+    .slice(0, MAX_LOCATION_LENGTH)
+}
+
+export async function lookupIpLocation(ip?: string | null): Promise<string> {
+  const normalized = extractIP(ip ?? '').trim()
+  if (!normalized || normalized === '-') return UNKNOWN_LOCATION
+  if (isLan(normalized)) return LAN_LOCATION
+  try {
+    const data = await getSearcher().search(normalized)
+    return formatIpRegion(data?.region) || UNKNOWN_LOCATION
+  } catch {
+    return UNKNOWN_LOCATION
+  }
 }
 
 export function getIp(request: Request | IncomingMessage) {
-  const req = request as any
+  const req = request as Request & {
+    raw?: { connection?: { remoteAddress?: string }; socket?: { remoteAddress?: string } }
+  }
 
   let ip: string =
-    request.headers['x-forwarded-for'] ||
-    request.headers['X-Forwarded-For'] ||
-    request.headers['X-Real-IP'] ||
-    request.headers['x-real-ip'] ||
-    req?.ip ||
-    req?.raw?.connection?.remoteAddress ||
-    req?.raw?.socket?.remoteAddress ||
-    undefined
-  if (ip && ip.split(',').length > 0) ip = ip.split(',')[0]
+    (request.headers['x-forwarded-for'] as string | undefined) ||
+    (request.headers['X-Forwarded-For'] as string | undefined) ||
+    (request.headers['X-Real-IP'] as string | undefined) ||
+    (request.headers['x-real-ip'] as string | undefined) ||
+    req.ip ||
+    req.raw?.connection?.remoteAddress ||
+    req.raw?.socket?.remoteAddress ||
+    ''
+  if (ip.includes(',')) ip = ip.split(',')[0] ?? ip
 
   return ip
-}
-
-export async function getIpAddress(ip: string) {
-  if (isLAN(ip)) return '内网IP'
-  try {
-    // let { data } = await axios.get(`https://whois.pconline.com.cn/ipJson.jsp?ip=${ip}&json=true`, { responseType: 'arraybuffer' });
-    let data = await fetch(`https://whois.pconline.com.cn/ipJson.jsp?ip=${ip}&json=true`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    }).then(res => res.json())
-    data = new TextDecoder('gbk').decode(data as ArrayBuffer)
-    data = JSON.parse(data as string)
-    return data.addr.trim().split(' ').at(0)
-  } catch (error) {
-    return '第三方接口请求失败'
-  }
 }

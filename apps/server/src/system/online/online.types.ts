@@ -6,6 +6,7 @@ export interface OnlineSession {
   username: string
   phone: string
   ip: string
+  location: string
   userAgent: string
   browser: string
   os: string
@@ -38,6 +39,7 @@ export interface UpsertOnlineInput {
   username: string
   phone?: string
   ip: string
+  location?: string
   userAgent: string
   exp: number
   loginAt?: number

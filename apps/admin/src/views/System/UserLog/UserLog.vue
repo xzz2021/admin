@@ -107,9 +107,10 @@ const tableColumns = reactive<TableColumn[]>([
     minWidth: 180
   },
   {
-    field: 'ip',
-    label: t('userLog.ip'),
-    width: '130px'
+    field: 'location',
+    label: t('userLog.location'),
+    minWidth: 160,
+    formatter: (row: LogItem) => row.location || '-'
   },
   {
     field: 'createdAt',

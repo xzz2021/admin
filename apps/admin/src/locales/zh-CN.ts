@@ -237,6 +237,7 @@ export default {
     username: '用户名',
     phone: '手机号',
     ip: 'IP',
+    location: '地理位置',
     browserOs: '浏览器 / 系统',
     device: '设备',
     loginAt: '登录时间',
@@ -249,7 +250,7 @@ export default {
     awayCount: '离开',
     selfConnected: '本机已连接',
     selfDisconnected: '本机未连接',
-    searchPlaceholder: '用户名 / 手机 / IP / 浏览器',
+    searchPlaceholder: '用户名 / 手机 / 地理位置 / 浏览器',
     kickSession: '下线会话',
     kickUser: '下线全部',
     kickSessionConfirm: '确认强制下线用户「{name}」的当前会话？',
@@ -781,6 +782,7 @@ export default {
     method: '方法',
     path: '路径',
     ip: 'IP地址',
+    location: '地理位置',
     operateTime: '操作时间',
     detailInfo: '详细信息',
     selectToDelete: '请选择要删除的日志'
@@ -792,6 +794,7 @@ export default {
     resourceId: '资源 ID',
     result: '结果',
     ip: 'IP地址',
+    location: '地理位置',
     operateTime: '操作时间',
     metadata: '变更详情',
     actions: {

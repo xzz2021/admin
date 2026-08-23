@@ -15,15 +15,15 @@
 
 ## CORE_MODULE
 
-| 模块                           | 作用                                                      |
-| ------------------------------ | --------------------------------------------------------- |
-| ConfigModule                   | Zod 校验的应用配置（`ignoreEnvFile: true`，依赖进程环境） |
-| ServeStatic + StaticfileModule | 静态目录与文件上传 API                                    |
-| AppRedisModule                 | Redis 全局客户端与健康检查                                |
-| RbacModule                     | 权限 Redis 缓存                                           |
-| ThrottlerModule                | 全局限流（Redis 存储，默认 60s / 100 次）                 |
-| PrismaModule                   | `PgService`                                               |
-| WinstonLoggerModule            | 日志 + `/log` 访问日志 / 操作日志 API                     |
+| 模块                           | 作用                                                               |
+| ------------------------------ | ------------------------------------------------------------------ |
+| ConfigModule                   | Zod 校验的应用配置（`ignoreEnvFile: true`，依赖进程环境）          |
+| ServeStatic + StaticfileModule | 静态目录与文件上传 API                                             |
+| AppRedisModule                 | Redis 全局客户端与健康检查                                         |
+| RbacModule                     | 权限 Redis 缓存                                                    |
+| ThrottlerModule                | 全局限流（Redis 存储，默认 60s / 100 次）                          |
+| PrismaModule                   | `PgService`                                                        |
+| WinstonLoggerModule            | 日志 + `/log` 访问日志 / 操作日志 API；写 IP 时离线解析 `location` |
 
 ## CORE_SYSTEM_MODULE
 

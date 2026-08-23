@@ -13,6 +13,7 @@ export const UserModel = z.object({
   enabled: z.boolean().optional().meta({ description: '是否启用', example: true }),
   lastLoginAt: z.coerce.date().optional().meta({ description: '最后登录时间', example: '2026-01-01T12:00:00.000Z' }).nullish(),
   lastLoginIp: z.string().max(45).optional().meta({ description: '最后登录 IP', example: '127.0.0.1' }).nullish(),
+  lastLoginLocation: z.string().max(100).optional().meta({ description: '最后登录地理位置', example: '中国 广东省 深圳市' }).nullish(),
   remark: z.string().max(500).optional().meta({ description: '备注', example: '备注' }).nullish(),
   passwordChangedAt: z.coerce.date().optional().meta({ description: '密码修改时间', example: '2026-01-01T12:00:00.000Z' }).nullish(),
   departmentId: z.string().optional().meta({ description: '部门 ID', example: 'clxxx' }).nullish(),

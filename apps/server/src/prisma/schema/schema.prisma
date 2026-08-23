@@ -75,6 +75,8 @@ model User {
   lastLoginAt DateTime?
   /// @z.string().max(45).optional().meta({ description: '最后登录 IP', example: '127.0.0.1' })
   lastLoginIp String?
+  /// @z.string().max(100).optional().meta({ description: '最后登录地理位置', example: '中国 广东省 深圳市' })
+  lastLoginLocation String? @db.VarChar(100)
   /// @z.string().max(500).optional().meta({ description: '备注', example: '备注' })
   remark String?
   /// @z.coerce.date().optional().meta({ description: '密码修改时间', example: '2026-01-01T12:00:00.000Z' })
@@ -361,6 +363,8 @@ model UserSession {
   tokenHash String   @unique
   /// @z.string().max(45).optional().meta({ description: '登录 IP', example: '127.0.0.1' })
   ip        String?
+  /// @z.string().max(100).optional().meta({ description: '登录地理位置', example: '中国 广东省 深圳市' })
+  location  String? @db.VarChar(100)
   /// @z.string().max(500).optional().meta({ description: 'User-Agent', example: 'Mozilla/5.0' })
   userAgent String?
   /// @z.coerce.date().meta({ description: '过期时间', example: '2026-01-02T12:00:00.000Z' })
@@ -385,6 +389,8 @@ model AuditLog {
   success Boolean @default(true)
   /// @z.string().max(45).optional().meta({ description: '操作 IP', example: '127.0.0.1' })
   ip String? @db.VarChar(45)
+  /// @z.string().max(100).optional().meta({ description: '操作地理位置', example: '中国 广东省 深圳市' })
+  location String? @db.VarChar(100)
   metadata Json?
   createdAt DateTime @default(now())
 
@@ -479,6 +485,8 @@ model UserOperationLog {
   id Int @id @default(autoincrement())
   /// @z.string().max(45).meta({ description: '请求 IP', example: '127.0.0.1' })
   ip         String  @db.VarChar(50)
+  /// @z.string().max(100).optional().meta({ description: '请求地理位置', example: '中国 广东省 深圳市' })
+  location   String? @db.VarChar(100)
   /// @z.string().max(500).meta({ description: 'User-Agent', example: 'Mozilla/5.0' })
   userAgent  String  @db.VarChar(500)
   /// @z.string().max(10).meta({ description: 'HTTP 方法', example: 'GET' })

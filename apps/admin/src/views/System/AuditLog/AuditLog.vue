@@ -113,10 +113,10 @@ const tableColumns = reactive<TableColumn[]>([
     }
   },
   {
-    field: 'ip',
-    label: t('auditLog.ip'),
-    width: '130px',
-    formatter: (row: AuditLogItem) => row.ip || '-'
+    field: 'location',
+    label: t('auditLog.location'),
+    minWidth: 160,
+    formatter: (row: AuditLogItem) => row.location || '-'
   },
   {
     field: 'createdAt',

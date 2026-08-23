@@ -1,5 +1,6 @@
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
+import { lookupIpLocation } from '@/processor/utils'
 import { Inject, Injectable, LoggerService } from '@nestjs/common'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
 import { Logger } from 'winston'
@@ -45,6 +46,7 @@ export class LogService implements LoggerService {
           userId: data.userId,
           method: data.method.slice(0, 10),
           ip: data.ip.slice(0, 50),
+          location: await lookupIpLocation(data.ip),
           userAgent: data.userAgent.slice(0, 500),
           requestUrl: data.requestUrl.slice(0, 255),
           isSuccess: data.isSuccess,

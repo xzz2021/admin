@@ -7,6 +7,7 @@ export interface LogItem {
   id: number
   user?: LogUserItem | null
   ip: string
+  location?: string | null
   userAgent: string
   method: string
   requestUrl: string
@@ -41,6 +42,7 @@ export interface AuditLogItem {
   resourceId?: string | null
   success: boolean
   ip?: string | null
+  location?: string | null
   metadata?: Record<string, unknown> | null
   createdAt: string
 }

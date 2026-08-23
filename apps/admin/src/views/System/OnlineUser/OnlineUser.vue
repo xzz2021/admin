@@ -95,7 +95,12 @@ const tableColumns = reactive<TableColumn[]>([
     width: 120,
     formatter: (row: OnlineUserItem) => row.phone || '-'
   },
-  { field: 'ip', label: t('onlineUser.ip'), width: 130 },
+  {
+    field: 'location',
+    label: t('onlineUser.location'),
+    minWidth: 160,
+    formatter: (row: OnlineUserItem) => row.location || '-'
+  },
   {
     field: 'browser',
     label: t('onlineUser.browserOs'),

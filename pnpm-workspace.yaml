@@ -10,6 +10,7 @@ allowBuilds:
   core-js: true
   es5-ext: true
   esbuild: true
+  ip2region-ts: false
   msgpackr-extract: true
   prisma: true
   unrs-resolver: true

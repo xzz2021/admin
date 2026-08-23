@@ -33,7 +33,7 @@
 - 刷新专用：`JwtRefreshAuthGuard`
 - 登录验证码：`CaptchaGuard`
 
-登录锁定：`lockout.service.ts`。按手机号在 Redis 计数（15 分钟窗口、8 次失败），指数退避锁定（5 分钟起、最长 12 小时）。验证码与全局限流仍保留；不按 IP 锁账号，避免 NAT 误伤。成功登录会清计数并更新 `lastLoginAt` / `lastLoginIp`。
+登录锁定：`lockout.service.ts`。按手机号在 Redis 计数（15 分钟窗口、8 次失败），指数退避锁定（5 分钟起、最长 12 小时）。验证码与全局限流仍保留；不按 IP 锁账号，避免 NAT 误伤。成功登录会清计数并更新 `lastLoginAt` / `lastLoginIp` / `lastLoginLocation`（离线 ip2region 解析到城市）。
 
 ## 前端对接
 

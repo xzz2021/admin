@@ -38,6 +38,7 @@ describe('AuditLogService', () => {
         resource: 'User',
         resourceId: 'user-2',
         success: true,
+        location: '内网IP',
         metadata: { password: '[Redacted]', enabled: true },
       }),
     })

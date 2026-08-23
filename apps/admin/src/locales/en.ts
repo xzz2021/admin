@@ -239,6 +239,7 @@ export default {
     username: 'Username',
     phone: 'Phone',
     ip: 'IP',
+    location: 'Location',
     browserOs: 'Browser / OS',
     device: 'Device',
     loginAt: 'Login at',
@@ -251,7 +252,7 @@ export default {
     awayCount: 'Away',
     selfConnected: 'Self connected',
     selfDisconnected: 'Self disconnected',
-    searchPlaceholder: 'Username / phone / IP / browser',
+    searchPlaceholder: 'Username / phone / location / browser',
     kickSession: 'Kick session',
     kickUser: 'Kick all',
     kickSessionConfirm: 'Force logout session of "{name}"?',
@@ -787,6 +788,7 @@ export default {
     method: 'Method',
     path: 'Path',
     ip: 'IP address',
+    location: 'Location',
     operateTime: 'Operated at',
     detailInfo: 'Details',
     selectToDelete: 'Please select logs to delete'
@@ -798,6 +800,7 @@ export default {
     resourceId: 'Resource ID',
     result: 'Result',
     ip: 'IP address',
+    location: 'Location',
     operateTime: 'Operated at',
     metadata: 'Change details',
     actions: {

@@ -1803,6 +1803,7 @@ export const UserScalarFieldEnum = {
   enabled: 'enabled',
   lastLoginAt: 'lastLoginAt',
   lastLoginIp: 'lastLoginIp',
+  lastLoginLocation: 'lastLoginLocation',
   remark: 'remark',
   passwordChangedAt: 'passwordChangedAt',
   departmentId: 'departmentId',
@@ -1979,6 +1980,7 @@ export const UserSessionScalarFieldEnum = {
   userId: 'userId',
   tokenHash: 'tokenHash',
   ip: 'ip',
+  location: 'location',
   userAgent: 'userAgent',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt'
@@ -1995,6 +1997,7 @@ export const AuditLogScalarFieldEnum = {
   resourceId: 'resourceId',
   success: 'success',
   ip: 'ip',
+  location: 'location',
   metadata: 'metadata',
   createdAt: 'createdAt'
 } as const
@@ -2058,6 +2061,7 @@ export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof File
 export const UserOperationLogScalarFieldEnum = {
   id: 'id',
   ip: 'ip',
+  location: 'location',
   userAgent: 'userAgent',
   method: 'method',
   requestUrl: 'requestUrl',

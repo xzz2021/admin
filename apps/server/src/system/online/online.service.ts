@@ -1,4 +1,5 @@
 import { PgService } from '@/prisma/pg.service'
+import { lookupIpLocation } from '@/processor/utils'
 import { RtTokenService } from '@/system/auth/rt.token.service'
 import { TokenService } from '@/system/auth/token.service'
 import { RedisService } from '@liaoliaots/nestjs-redis'
@@ -44,6 +45,7 @@ export class OnlineService {
       username: input.username || existing?.username || '-',
       phone: input.phone ?? existing?.phone ?? '',
       ip: input.ip || existing?.ip || '-',
+      location: input.location || existing?.location || (await lookupIpLocation(input.ip)),
       userAgent: (input.userAgent || existing?.userAgent || '').slice(0, 500),
       browser: parsed.browser,
       os: parsed.os,
@@ -124,6 +126,7 @@ export class OnlineService {
           item.username.toLowerCase().includes(q) ||
           item.phone.includes(q) ||
           item.ip.includes(q) ||
+          (item.location ?? '').toLowerCase().includes(q) ||
           item.browser.toLowerCase().includes(q) ||
           item.os.toLowerCase().includes(q),
       )

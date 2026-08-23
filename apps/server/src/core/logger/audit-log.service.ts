@@ -1,5 +1,6 @@
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
+import { lookupIpLocation } from '@/processor/utils'
 import { Inject, Injectable } from '@nestjs/common'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
 import { Logger } from 'winston'
@@ -23,6 +24,7 @@ export class AuditLogService {
           resourceId: input.resourceId?.slice(0, 64) ?? null,
           success: input.success ?? true,
           ip: input.ip?.slice(0, 45) ?? null,
+          location: await lookupIpLocation(input.ip),
           metadata:
             input.metadata == null
               ? Prisma.DbNull

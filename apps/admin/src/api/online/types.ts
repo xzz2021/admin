@@ -6,6 +6,7 @@ export interface OnlineUserItem {
   username: string
   phone: string
   ip: string
+  location?: string
   userAgent: string
   browser: string
   os: string

@@ -1,4 +1,4 @@
-import { extractIP, getIp } from '@/processor/utils'
+import { extractIP, getIp, lookupIpLocation } from '@/processor/utils'
 import { Public } from '@/processor/decorator'
 import { TokenService } from '@/system/auth/token.service'
 import { Logger } from '@nestjs/common'
@@ -94,6 +94,7 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const ip = extractIP(getIp(req as IncomingMessage) || '') || '-'
       const userAgent = String(req?.headers['user-agent'] ?? '')
+      const location = await lookupIpLocation(ip)
 
       await this.onlineService.upsert({
         jti,
@@ -101,6 +102,7 @@ export class OnlineGateway implements OnGatewayConnection, OnGatewayDisconnect {
         username: client.username,
         phone: client.phone,
         ip,
+        location,
         userAgent,
         exp: client.exp,
         isSuperAdmin: client.isSuperAdmin,

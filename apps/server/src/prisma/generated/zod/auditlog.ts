@@ -10,6 +10,7 @@ export const AuditLogModel = z.object({
   resourceId: z.string().max(64).optional().meta({ description: '聚合根 ID', example: 'clxxx' }).nullish(),
   success: z.boolean().optional().meta({ description: '业务是否成功', example: true }),
   ip: z.string().max(45).optional().meta({ description: '操作 IP', example: '127.0.0.1' }).nullish(),
+  location: z.string().max(100).optional().meta({ description: '操作地理位置', example: '中国 广东省 深圳市' }).nullish(),
   metadata: z.json(),
   createdAt: z.date(),
 })

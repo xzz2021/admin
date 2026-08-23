@@ -5,6 +5,7 @@ import { CompleteUser, RelatedUserModel } from "./index"
 export const UserOperationLogModel = z.object({
   id: z.number().int(),
   ip: z.string().max(45).meta({ description: '请求 IP', example: '127.0.0.1' }),
+  location: z.string().max(100).optional().meta({ description: '请求地理位置', example: '中国 广东省 深圳市' }).nullish(),
   userAgent: z.string().max(500).meta({ description: 'User-Agent', example: 'Mozilla/5.0' }),
   method: z.string().max(10).meta({ description: 'HTTP 方法', example: 'GET' }),
   requestUrl: z.string().max(255).meta({ description: '请求 URL', example: '/api/users' }),
