@@ -3,12 +3,16 @@ import type { JwtUser } from '@/system/auth/dto/auth.dto'
 import { Body, Controller, Get, Post, Query } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { ReceiversQueryDto, SendMailDto, SendSystemDto } from './dto/message.dto'
+import { MessageDeliveryService } from './message-delivery.service'
 import { MessageService } from './message.service'
 
 @ApiTags('消息管理')
 @Controller('message')
 export class NotificationController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly delivery: MessageDeliveryService,
+  ) {}
 
   @Get('receivers')
   @RequiredPermission('notification:send')
@@ -21,7 +25,7 @@ export class NotificationController {
   @RequiredPermission('notification:send')
   @ApiOperation({ summary: '发送站内信' })
   sendMail(@Body() body: SendMailDto, @User() user: JwtUser) {
-    return this.messageService.enqueueMail({
+    return this.delivery.enqueueMail({
       senderId: user.id,
       receiverIds: body.receiverIds,
       title: body.title,
@@ -34,7 +38,7 @@ export class NotificationController {
   @RequiredPermission('notification:send')
   @ApiOperation({ summary: '发送系统通知（全体用户）' })
   sendSystem(@Body() body: SendSystemDto, @User() user: JwtUser) {
-    return this.messageService.enqueueSystem({
+    return this.delivery.enqueueSystem({
       senderId: user.id,
       title: body.title,
       content: body.content,

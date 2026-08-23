@@ -4,3 +4,5 @@ export const MESSAGE_JOB = 'dispatch'
 export const MESSAGE_PUSH_CHANNEL = 'message:push'
 /** 未读数缓存 */
 export const MESSAGE_UNREAD_PREFIX = 'message:unread:'
+export const MESSAGE_UNREAD_TTL_SEC = 3600
+export const MESSAGE_ALERT_DEBOUNCE_PREFIX = 'message:alert:debounce:'

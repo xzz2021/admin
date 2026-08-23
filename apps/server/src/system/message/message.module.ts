@@ -5,9 +5,11 @@ import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
 import { MessageInboxController } from './message-inbox.controller'
+import { MessageDeliveryService } from './message-delivery.service'
 import { MESSAGE_QUEUE } from './message.constants'
 import { MessageGateway } from './message.gateway'
 import { MessageProcessor } from './message.processor'
+import { MessageRepository } from './message.repository'
 import { MessageService } from './message.service'
 import { NotificationController } from './notification.controller'
 
@@ -30,7 +32,13 @@ import { NotificationController } from './notification.controller'
     BullModule.registerQueue({ name: MESSAGE_QUEUE }),
   ],
   controllers: [MessageInboxController, NotificationController],
-  providers: [MessageService, MessageProcessor, MessageGateway],
-  exports: [MessageService],
+  providers: [
+    MessageRepository,
+    MessageDeliveryService,
+    MessageService,
+    MessageProcessor,
+    MessageGateway,
+  ],
+  exports: [MessageDeliveryService],
 })
 export class MessageModule {}

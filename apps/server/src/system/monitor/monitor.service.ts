@@ -1,7 +1,7 @@
 import { RedisHealthService } from '@/core/cache/redis-health.service'
 import { NoticeLevel } from '@/prisma/lib/prisma'
 import { PgService } from '@/prisma/pg.service'
-import { MessageService } from '@/system/message/message.service'
+import { MessageDeliveryService } from '@/system/message/message-delivery.service'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
@@ -38,7 +38,7 @@ export class MonitorService implements OnModuleInit {
     private readonly redisHealthService: RedisHealthService,
     private readonly latencyTracker: MonitorLatencyTracker,
     private readonly errorBuffer: MonitorErrorBuffer,
-    @Optional() private readonly messageService?: MessageService,
+    @Optional() private readonly messageDelivery?: MessageDeliveryService,
   ) {
     this.redis = redisService.getOrThrow('default')
   }
@@ -115,7 +115,7 @@ export class MonitorService implements OnModuleInit {
 
   /** PG/Redis 宕机时防抖告警给超管（10 分钟内同 key 只发一次） */
   private async maybeAlertDown(snapshot: MonitorSnapshot): Promise<void> {
-    if (!this.messageService) return
+    if (!this.messageDelivery) return
     const downs: Array<{ key: string; title: string; content: string }> = []
     if (snapshot.postgres.status === 'down') {
       downs.push({
@@ -133,7 +133,7 @@ export class MonitorService implements OnModuleInit {
     }
     for (const item of downs) {
       try {
-        await this.messageService.enqueueAlertDebounced(
+        await this.messageDelivery.enqueueAlertDebounced(
           item.key,
           {
             title: item.title,

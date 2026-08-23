@@ -15,7 +15,7 @@ import type Redis from 'ioredis'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 
-import { MessageService } from '../message/message.service'
+import { MessageDeliveryService } from '../message/message-delivery.service'
 import { DbBackupConfigService } from './db-backup-config.service'
 import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
 import {
@@ -51,7 +51,7 @@ export class DbBackupService implements OnModuleInit {
     private readonly lifecycle: DbBackupLifecycleService,
     redisService: RedisService,
     @InjectQueue(DB_BACKUP_QUEUE) private readonly queue: Queue,
-    @Optional() private readonly messageService?: MessageService,
+    @Optional() private readonly messageDelivery?: MessageDeliveryService,
   ) {
     this.redis = redisService.getOrThrow('default')
   }
@@ -351,9 +351,9 @@ export class DbBackupService implements OnModuleInit {
   }
 
   private async sendFailureAlert(message: string) {
-    if (!this.messageService) return
+    if (!this.messageDelivery) return
     try {
-      await this.messageService.enqueueAlertDebounced(
+      await this.messageDelivery.enqueueAlertDebounced(
         DB_BACKUP_ALERT_KEY,
         {
           title: '数据库备份失败',

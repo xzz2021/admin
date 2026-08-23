@@ -18,7 +18,7 @@ import type { IncomingMessage } from 'node:http'
 import type { Server } from 'ws'
 import WebSocket from 'ws'
 import { MESSAGE_PUSH_CHANNEL } from './message.constants'
-import { MessageService } from './message.service'
+import { MessageDeliveryService } from './message-delivery.service'
 import type { MessagePushPayload } from './message.types'
 
 type MsgSocket = WebSocket & {
@@ -42,7 +42,7 @@ export class MessageGateway
   server!: Server
 
   constructor(
-    private readonly messageService: MessageService,
+    private readonly delivery: MessageDeliveryService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
@@ -119,7 +119,7 @@ export class MessageGateway
       client.userId = userId
       client.jti = jti
       this.addSocket(userId, client)
-      const unread = await this.messageService.getUnreadCount(userId)
+      const unread = await this.delivery.getUnreadCount(userId)
       client.send(JSON.stringify({ event: 'connected', data: { ok: true, unread } }))
     } catch (error) {
       this.logger.debug(
@@ -137,7 +137,7 @@ export class MessageGateway
   @SubscribeMessage('unread')
   async handleUnread(@ConnectedSocket() client: MsgSocket) {
     if (!client.userId) return { event: 'error', data: { message: 'unauthorized' } }
-    const unread = await this.messageService.getUnreadCount(client.userId)
+    const unread = await this.delivery.getUnreadCount(client.userId)
     return { event: 'unread', data: { unread } }
   }
 
