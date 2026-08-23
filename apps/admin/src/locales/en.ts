@@ -203,7 +203,8 @@ export default {
     server: 'Server Monitoring',
     databaseBackup: 'Database Backup',
     fileManagement: 'File',
-    userLog: 'User log',
+    userLog: 'Access log',
+    auditLog: 'Operate log',
     message: 'My messages',
     notification: 'Message notification',
     // 权限测试页面
@@ -789,6 +790,49 @@ export default {
     operateTime: 'Operated at',
     detailInfo: 'Details',
     selectToDelete: 'Please select logs to delete'
+  },
+  auditLog: {
+    operator: 'Operator',
+    action: 'Action',
+    resource: 'Resource',
+    resourceId: 'Resource ID',
+    result: 'Result',
+    ip: 'IP address',
+    operateTime: 'Operated at',
+    metadata: 'Change details',
+    actions: {
+      auth: {
+        login: 'Login succeeded',
+        login_failed: 'Login failed',
+        lockout: 'Account locked',
+        logout: 'Logout',
+        force_logout: 'Force logout',
+        register: 'Register'
+      },
+      user: {
+        create: 'Create user',
+        update: 'Update user',
+        delete: 'Delete user',
+        reset_password: 'Reset password',
+        update_password: 'Change password',
+        update_profile: 'Update profile'
+      },
+      role: {
+        create: 'Create role',
+        update: 'Update role',
+        delete: 'Delete role'
+      },
+      menu: {
+        create: 'Create menu',
+        update: 'Update menu',
+        delete: 'Delete menu'
+      },
+      department: {
+        create: 'Create department',
+        update: 'Update department',
+        delete: 'Delete department'
+      }
+    }
   },
   menu: {
     name: 'Name',

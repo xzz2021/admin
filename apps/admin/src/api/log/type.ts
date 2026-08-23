@@ -26,3 +26,31 @@ export interface LogListParams {
   responseMsg?: string
   dateRange?: string
 }
+
+export interface AuditLogUserItem {
+  username: string
+  phone?: string | null
+}
+
+export interface AuditLogItem {
+  id: string
+  userId?: string | null
+  user?: AuditLogUserItem | null
+  action: string
+  resource: string
+  resourceId?: string | null
+  success: boolean
+  ip?: string | null
+  metadata?: Record<string, unknown> | null
+  createdAt: string
+}
+
+export interface AuditLogListParams {
+  pageIndex?: number
+  pageSize?: number
+  action?: string
+  resource?: string
+  resourceId?: string
+  success?: boolean
+  dateRange?: string
+}

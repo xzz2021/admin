@@ -18,6 +18,7 @@ describe('MenuService tree updates', () => {
 
   const service = new MenuService(
     new MenuRepository({ $transaction: transaction } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   beforeEach(() => {
@@ -88,6 +89,7 @@ describe('MenuService delete rules', () => {
     new MenuRepository({
       menu: { findUnique, count, delete: remove },
     } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   it('refuses to delete a menu that still has children', async () => {

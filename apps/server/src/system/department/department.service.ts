@@ -1,3 +1,5 @@
+import { AuditAction } from '@/core/logger/audit-action'
+import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable } from '@nestjs/common'
@@ -6,14 +8,25 @@ import { CreateDepartmentDto, DepartmentSeedDto, UpdateDepartmentDto } from './d
 
 @Injectable()
 export class DepartmentService {
-  constructor(private readonly departments: DepartmentRepository) {}
+  constructor(
+    private readonly departments: DepartmentRepository,
+    private readonly audit: AuditLogService,
+  ) {}
 
-  async add(createDepartmentDto: CreateDepartmentDto) {
+  async add(createDepartmentDto: CreateDepartmentDto, operatorId?: string, ip?: string) {
     try {
       const res = await this.departments.transaction(async tx => {
         const tag = await this.departments.create({ ...createDepartmentDto, path: '' }, tx)
         const path = await this.buildPath(tag.id, createDepartmentDto.parentId ?? null, tx)
         return this.departments.updateById(tag.id, { path }, tx)
+      })
+      await this.audit.record({
+        actorId: operatorId,
+        action: AuditAction.DEPARTMENT_CREATE,
+        resource: 'Department',
+        resourceId: res.id,
+        ip,
+        metadata: { name: createDepartmentDto.name, parentId: createDepartmentDto.parentId },
       })
       return { id: res.id, message: '添加部门成功' }
     } catch (error) {
@@ -29,7 +42,7 @@ export class DepartmentService {
     return { list, total, message: '获取部门列表成功' }
   }
 
-  async update(updateDepartmentDto: UpdateDepartmentDto) {
+  async update(updateDepartmentDto: UpdateDepartmentDto, operatorId?: string, ip?: string) {
     const { id, parentId, ...rest } = updateDepartmentDto
     try {
       const res = await this.departments.transaction(async tx => {
@@ -59,18 +72,33 @@ export class DepartmentService {
 
         return updated
       })
+      await this.audit.record({
+        actorId: operatorId,
+        action: AuditAction.DEPARTMENT_UPDATE,
+        resource: 'Department',
+        resourceId: res.id,
+        ip,
+        metadata: { name: rest.name, parentId },
+      })
       return { id: res.id, message: '更新部门成功' }
     } catch (error) {
       this.rethrowDuplicateName(error)
     }
   }
 
-  async delete(id: string) {
+  async delete(id: string, operatorId?: string, ip?: string) {
     const me = await this.departments.findPathById(id)
     if (!me) return
     const child = await this.departments.findFirstChildId(id)
     if (child) throw new BadRequestException('当前项有子部门无法删除')
     await this.departments.deleteById(id)
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.DEPARTMENT_DELETE,
+      resource: 'Department',
+      resourceId: id,
+      ip,
+    })
     return { message: '删除部门成功' }
   }
 

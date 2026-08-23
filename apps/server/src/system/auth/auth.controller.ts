@@ -1,9 +1,9 @@
 import { Public, RequiredPermission, Serialize } from '@/processor/decorator'
 import { CaptchaGuard, JwtRefreshAuthGuard } from '@/processor/guard'
-import { extractIP } from '@/processor/utils'
+import { clientIp } from '@/processor/utils'
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
-import type { Response } from 'express'
+import type { Request, Response } from 'express'
 import { AuthService } from './auth.service'
 import type { JwtReqDto } from './dto/auth.dto'
 import { ForceLogoutDto, LoginInfoDto, RegisterDto, RegisterResDto } from './dto/auth.dto'
@@ -18,8 +18,8 @@ export class AuthController {
   @Public()
   @Serialize(RegisterResDto)
   @ApiOperation({ summary: '用户注册' })
-  create(@Body() createUserinfo: RegisterDto) {
-    return this.authService.create(createUserinfo)
+  create(@Body() createUserinfo: RegisterDto, @Req() req: Request) {
+    return this.authService.create(createUserinfo, true, clientIp(req.ip))
   }
 
   @Post('rt/login')
@@ -31,10 +31,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { body, cookie } = await this.authService.rtLogin(
-      loginInfo,
-      extractIP((req as any)['ip'] as string) ?? '',
-    )
+    const { body, cookie } = await this.authService.rtLogin(loginInfo, clientIp(req.ip) ?? '')
     applyCookieCommand(res, cookie)
     return body
   }
@@ -56,7 +53,11 @@ export class AuthController {
     @Req() req: JwtReqDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { body: result, cookie } = await this.authService.logout(body.id, req.user.jti)
+    const { body: result, cookie } = await this.authService.logout(
+      body.id,
+      req.user.jti,
+      clientIp(req.ip),
+    )
     applyCookieCommand(res, cookie)
     return result
   }
@@ -65,6 +66,6 @@ export class AuthController {
   @RequiredPermission('user:update')
   @ApiOperation({ summary: '强制用户下线' })
   forceLogout(@Body() body: ForceLogoutDto, @Req() req: JwtReqDto) {
-    return this.authService.forceLogout(body.id, req.user.id)
+    return this.authService.forceLogout(body.id, req.user.id, clientIp(req.ip))
   }
 }

@@ -98,7 +98,8 @@ Controller（HTTP / 权限装饰器）
 - 校验：`GlobalZodValidationPipe`
 - 响应：`TransformInterceptor` → `ResOp` `{ code, data, message, timestamp }`
 - 异常：`AllExceptionsFilter` 写出同一信封，HTTP status = `code`
-- 操作日志：`OperationLogInterceptor` → `UserOperationLog`
+- 操作日志：业务 Service 成功后 `AuditLogService.record()` → `AuditLog`（登录成败、用户/角色/菜单/部门写操作）
+- 访问日志：`OperationLogInterceptor` → `UserOperationLog`
 
 ## 权限设计（摘要）
 
@@ -114,7 +115,8 @@ Controller（HTTP / 权限装饰器）
 - 新增业务：在 `system/` 下新增 Module，注册到 `app.system.ts`
 - 新增权限：菜单管理维护 Permission，角色分配后生效（含 Redis 缓存 TTL）
 - 新增前端页：`views/` 落地组件，由服务端菜单 `component` 字段映射
-- Schema 有 `Notice` / `AuditLog` 等表，**当前无对应业务 Controller**；扩展时可复用模型
+- Schema 有 `Notice` 表，**当前无对应业务 Controller**；扩展时可复用模型
+- `AuditLog` 由 `AuditLogService` 写入，列表接口 `GET /log/getAuditLogList`（权限 `auditLog:view`，无删除）
 
 ## 部署形态
 

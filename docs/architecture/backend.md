@@ -23,7 +23,7 @@
 | RbacModule                     | 权限 Redis 缓存                                           |
 | ThrottlerModule                | 全局限流（Redis 存储，默认 60s / 100 次）                 |
 | PrismaModule                   | `PgService`                                               |
-| WinstonLoggerModule            | 日志 + `/log` 操作日志 API                                |
+| WinstonLoggerModule            | 日志 + `/log` 访问日志 / 操作日志 API                     |
 
 ## CORE_SYSTEM_MODULE
 
@@ -56,7 +56,7 @@
 | Pipe        | GlobalZodValidationPipe   | 请求体校验                                                  |
 | Filter      | AllExceptionsFilter       | 统一异常                                                    |
 | Interceptor | TransformInterceptor      | 成功响应包装为 `ResOp` `{ code, data, message, timestamp }` |
-| Interceptor | OperationLogInterceptor   | 写 `UserOperationLog`（部分路径跳过）                       |
+| Interceptor | OperationLogInterceptor   | 写 `UserOperationLog` 访问日志（部分路径跳过，含审计查询）  |
 | Interceptor | MonitorLatencyInterceptor | 监控延迟采样                                                |
 
 未全局启用但代码库存在的示例：部分 Middleware、Timeout/Idempotence Interceptor、PoliciesGuard（CASL 设想）等。

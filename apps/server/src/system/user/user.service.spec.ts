@@ -39,6 +39,7 @@ describe('UserService session revocation', () => {
       { revokeAll } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue: jest.fn() } as unknown as FileCleanupService,
+      { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
     )
 
   beforeEach(() => {
@@ -147,6 +148,7 @@ describe('UserService uploadAvatar', () => {
       { revokeAll: jest.fn() } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue } as unknown as FileCleanupService,
+      { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
     )
 
   beforeEach(() => {
@@ -232,6 +234,7 @@ describe('UserService role assignment', () => {
       { revokeAll: jest.fn() } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue: jest.fn() } as unknown as FileCleanupService,
+      { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
     )
 
   beforeEach(() => {
@@ -285,6 +288,7 @@ describe('UserService list queries', () => {
       { revokeAll: jest.fn() } as unknown as SessionRevocationService,
       { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
       { enqueue: jest.fn() } as unknown as FileCleanupService,
+      { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
     )
 
   beforeEach(() => {

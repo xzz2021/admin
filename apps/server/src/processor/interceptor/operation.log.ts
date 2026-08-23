@@ -9,6 +9,7 @@ import { catchError, tap } from 'rxjs/operators'
 const LOG_SKIP_PATHS = [
   '/log/getUserOperationLogList',
   '/log/deleteUserOperationLog',
+  '/log/getAuditLogList',
   '/sse',
   '/auth/refresh',
   '/monitor',

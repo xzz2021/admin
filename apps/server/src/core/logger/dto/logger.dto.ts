@@ -1,4 +1,4 @@
-import { UserOperationLogModel } from '@prisma/generated/zod'
+import { AuditLogModel, UserOperationLogModel } from '@prisma/generated/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 
@@ -49,6 +49,67 @@ export class DeleteLogDto extends createZodDto(DeleteLogSchema) {}
 
 const LogListResSchema = LogSchema.extend({
   createdAt: z.string(),
-  // createdAt: z.coerce.date().transform((val: Date) => formatDateToYMDHMS(val)),
 })
 export class LogListResDto extends createZodDto(LogListResSchema) {}
+
+const QueryAuditLogParamsSchema = z.object({
+  pageIndex: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .default(1)
+    .meta({ description: '页码', example: 1 }),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .default(10)
+    .meta({ description: '每页条数', example: 10 }),
+  action: z
+    .string()
+    .min(1)
+    .max(80)
+    .optional()
+    .meta({ description: '领域动作', example: 'user.update' }),
+  resource: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .meta({ description: '聚合根类型', example: 'User' }),
+  resourceId: z.string().min(1).max(64).optional().meta({ description: '聚合根 ID' }),
+  success: z
+    .preprocess((val: unknown) => {
+      if (val === undefined || val === '') return undefined
+      if (val === true || val === 'true') return true
+      if (val === false || val === 'false') return false
+      return val
+    }, z.boolean().optional())
+    .meta({ description: '业务是否成功', example: true }),
+  dateRange: z.string().optional().meta({ description: '日期范围' }),
+})
+export class QueryAuditLogParams extends createZodDto(QueryAuditLogParamsSchema) {}
+
+const AuditLogListResSchema = AuditLogModel.pick({
+  id: true,
+  userId: true,
+  action: true,
+  resource: true,
+  resourceId: true,
+  success: true,
+  ip: true,
+  metadata: true,
+}).extend({
+  createdAt: z.string(),
+  user: z
+    .object({
+      username: z.string(),
+      phone: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
+})
+export class AuditLogListResDto extends createZodDto(AuditLogListResSchema) {}

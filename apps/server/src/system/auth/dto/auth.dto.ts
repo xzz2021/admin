@@ -1,6 +1,7 @@
 import { UserModel } from '@prisma/generated/zod'
 import { z } from 'zod'
 import { createZodDto } from 'nestjs-zod/dto'
+import type { Request } from 'express'
 
 const RegisterSchema = UserModel.pick({
   username: true,
@@ -45,4 +46,4 @@ const JwtUserSchema = z.object({
 })
 export type JwtUser = z.infer<typeof JwtUserSchema>
 /** 仅作类型用，不要 createZodDto */
-export type JwtReqDto = Request & { user: z.infer<typeof JwtUserSchema> }
+export type JwtReqDto = Request & { user: JwtUser }

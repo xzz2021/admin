@@ -1,3 +1,5 @@
+import { AuditAction } from '@/core/logger/audit-action'
+import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { uniqueBy } from '@/processor/utils/array'
 import { listToTree } from '@/processor/utils/list2tree.util'
@@ -8,9 +10,12 @@ import { MenuRepository } from './menu.repository'
 
 @Injectable()
 export class MenuService {
-  constructor(private readonly menus: MenuRepository) {}
+  constructor(
+    private readonly menus: MenuRepository,
+    private readonly audit: AuditLogService,
+  ) {}
 
-  async create(createMenuDto: CreateMenuDto) {
+  async create(createMenuDto: CreateMenuDto, operatorId?: string, ip?: string) {
     const { parentId, ...rest } = createMenuDto
     const res = await this.menus.create({
       ...rest,
@@ -18,11 +23,19 @@ export class MenuService {
         connect: parentId ? { id: parentId } : undefined,
       },
     })
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.MENU_CREATE,
+      resource: 'Menu',
+      resourceId: res.id,
+      ip,
+      metadata: { name: rest.name, path: rest.path, type: rest.type, parentId },
+    })
 
     return { id: res.id, message: '创建菜单成功' }
   }
 
-  async update(updateMenuDto: UpdateMenuDto) {
+  async update(updateMenuDto: UpdateMenuDto, operatorId?: string, ip?: string) {
     const { id, parentId, ...rest } = updateMenuDto
     const res = await this.menus.transaction(async tx => {
       const links = await this.menus.findTreeLinks(tx)
@@ -43,6 +56,14 @@ export class MenuService {
       return this.menus.updateById(id, data, tx)
     })
 
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.MENU_UPDATE,
+      resource: 'Menu',
+      resourceId: res?.id,
+      ip,
+      metadata: { name: rest.name, path: rest.path, parentId },
+    })
     return { id: res?.id, message: '更新菜单成功' }
   }
 
@@ -50,7 +71,7 @@ export class MenuService {
    * 删除菜单（仅允许删除无子菜单的节点）。
    * Permission / RoleMenu / RolePermission 由数据库外键级联删除。
    */
-  async remove(id: string) {
+  async remove(id: string, operatorId?: string, ip?: string) {
     const menu = await this.menus.findById(id)
     if (!menu) {
       throw new NotFoundException('菜单不存在')
@@ -62,6 +83,14 @@ export class MenuService {
     }
 
     await this.menus.deleteById(id)
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.MENU_DELETE,
+      resource: 'Menu',
+      resourceId: id,
+      ip,
+      metadata: { name: menu.name, path: menu.path },
+    })
     return { id, message: '删除菜单成功' }
   }
 

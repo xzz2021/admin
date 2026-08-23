@@ -23,7 +23,7 @@ export class MenuRepository {
   findById(id: string) {
     return this.db.menu.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, name: true, path: true },
     })
   }
 

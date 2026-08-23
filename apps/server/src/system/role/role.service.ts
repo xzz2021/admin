@@ -1,3 +1,5 @@
+import { AuditAction } from '@/core/logger/audit-action'
+import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { RbacPermissionCacheService } from '@/processor/rbac'
 import { uniqueBy } from '@/processor/utils/array'
@@ -12,6 +14,7 @@ export class RoleService {
   constructor(
     private readonly roles: RoleRepository,
     private readonly rbacPermissionCache: RbacPermissionCacheService,
+    private readonly audit: AuditLogService,
   ) {}
 
   private buildMenuPermissionData(menus: CreateRoleDto['menus']) {
@@ -61,7 +64,7 @@ export class RoleService {
     }
   }
 
-  async createRoleInfo(dto: CreateRoleDto, createdById?: string) {
+  async createRoleInfo(dto: CreateRoleDto, createdById?: string, ip?: string) {
     const { menuMap, menuIds, permissionIds } = this.buildMenuPermissionData(dto.menus)
     const res = await this.roles.transaction(async tx => {
       const existRole = await this.roles.findByCode(dto.code, tx)
@@ -80,6 +83,14 @@ export class RoleService {
       await this.roles.createMenus(role.id, menuIds, tx)
       await this.roles.createPermissions(role.id, permissionIds, tx)
       return role
+    })
+    await this.audit.record({
+      actorId: createdById,
+      action: AuditAction.ROLE_CREATE,
+      resource: 'Role',
+      resourceId: res.id,
+      ip,
+      metadata: { name: dto.name, code: dto.code, enabled: dto.enabled ?? true },
     })
     return { message: '创建角色成功', id: res.id }
   }
@@ -208,7 +219,7 @@ export class RoleService {
     return shaped
   }
 
-  async update(dto: UpdateRoleDto) {
+  async update(dto: UpdateRoleDto, operatorId?: string, ip?: string) {
     const { id, menus, ...rest } = dto
     const { menuMap, menuIds, permissionIds } = this.buildMenuPermissionData(menus)
     const res = await this.roles.transaction(async tx => {
@@ -226,10 +237,18 @@ export class RoleService {
     })
     const users = await this.roles.findUserIdsByRoleId(id)
     await this.rbacPermissionCache.invalidateUsers(users.map(item => item.userId))
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.ROLE_UPDATE,
+      resource: 'Role',
+      resourceId: res.id,
+      ip,
+      metadata: { name: rest.name, code: rest.code, enabled: rest.enabled },
+    })
     return { id: res.id, message: '更新角色成功' }
   }
 
-  async remove(id: string) {
+  async remove(id: string, operatorId?: string, ip?: string) {
     const res = await this.roles.transaction(async tx => {
       const users = await this.roles.findUserIdsByRoleId(id, tx)
       const role = await this.roles.deleteById(id, tx)
@@ -238,6 +257,13 @@ export class RoleService {
       return { role, userIds: users.map(item => item.userId) }
     })
     await this.rbacPermissionCache.invalidateUsers(res.userIds)
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.ROLE_DELETE,
+      resource: 'Role',
+      resourceId: res.role.id,
+      ip,
+    })
     return { id: res.role.id, message: '删除角色成功' }
   }
 

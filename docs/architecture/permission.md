@@ -56,7 +56,8 @@ Seed 中权限编码规则：`code = \`${resource}:${action}\``，`resource`对�
 | `onlineUser:view` / `kick`                                             | OnlineController                            |
 | `server:view`                                                          | MonitorController                           |
 | `message:view` / `send`                                                | MessageController                           |
-| `userLog:view` / `delete`                                              | LoggerController                            |
+| `userLog:view` / `delete`                                              | LoggerController（访问日志）                |
+| `auditLog:view`                                                        | LoggerController（操作日志，无删除）        |
 
 ## 与会话的关系
 

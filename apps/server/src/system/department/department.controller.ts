@@ -1,5 +1,7 @@
 import { RequiredPermission, Serialize } from '@/processor/decorator'
-import { Body, Controller, Delete, Get, Post } from '@nestjs/common'
+import { clientIp } from '@/processor/utils'
+import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
+import { Body, Controller, Delete, Get, Post, Req } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { DepartmentService } from './department.service'
 import {
@@ -18,8 +20,8 @@ export class DepartmentController {
   @Post('add')
   @RequiredPermission('department:add')
   @ApiOperation({ summary: '添加部门' })
-  add(@Body() createDepartmentDto: CreateDepartmentDto) {
-    return this.departmentService.add(createDepartmentDto)
+  add(@Body() createDepartmentDto: CreateDepartmentDto, @Req() req: JwtReqDto) {
+    return this.departmentService.add(createDepartmentDto, req.user.id, clientIp(req.ip))
   }
 
   @Get('list')
@@ -34,15 +36,15 @@ export class DepartmentController {
   @Post('update')
   @RequiredPermission('department:update')
   @ApiOperation({ summary: '更新部门' })
-  update(@Body() updateDepartmentDto: UpdateDepartmentDto) {
-    return this.departmentService.update(updateDepartmentDto)
+  update(@Body() updateDepartmentDto: UpdateDepartmentDto, @Req() req: JwtReqDto) {
+    return this.departmentService.update(updateDepartmentDto, req.user.id, clientIp(req.ip))
   }
 
   @Delete('delete')
   @RequiredPermission('department:delete')
   @ApiOperation({ summary: '删除部门', description: '删除部门详细说明' })
-  delete(@Body() body: DeleteDepartmentDto) {
-    return this.departmentService.delete(body.id)
+  delete(@Body() body: DeleteDepartmentDto, @Req() req: JwtReqDto) {
+    return this.departmentService.delete(body.id, req.user.id, clientIp(req.ip))
   }
 
   @Post('generateDepartmentSeed')

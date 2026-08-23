@@ -1,4 +1,5 @@
 import { RequiredPermission } from '@/processor/decorator'
+import { clientIp } from '@/processor/utils'
 import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
 import { multerConfigForAvatar } from '@/system/staticfile/multer.config'
 import {
@@ -59,7 +60,7 @@ export class UserController {
     if (req.user.id !== updateUserinfo.id) {
       throw new ForbiddenException('无权限更新他人信息')
     }
-    return this.userService.updateInfo(updateUserinfo)
+    return this.userService.updateInfo(updateUserinfo, clientIp(req.ip))
   }
 
   @Post('updatePassword')
@@ -69,7 +70,7 @@ export class UserController {
     if (req.user.id !== updatePasswordDto.id) {
       throw new ForbiddenException('无权限更新他人密码')
     }
-    return this.userService.updatePassword(updatePasswordDto)
+    return this.userService.updatePassword(updatePasswordDto, clientIp(req.ip))
   }
 
   // 管理员重置用户密码
@@ -81,28 +82,28 @@ export class UserController {
     if (!operateId) throw new BadRequestException('身份识别异常,没有权限')
     const { id, password } = updatePasswordDto
     if (!id || !password) throw new BadRequestException('参数异常')
-    return this.userService.resetPassword({ id, password, operateId })
+    return this.userService.resetPassword({ id, password, operateId, ip: clientIp(req.ip) })
   }
 
   @Post('add')
   @RequiredPermission('user:add')
   @ApiOperation({ summary: '创建用户' })
   addUser(@Body() addUserinfoDto: CreateUserDto, @Req() req: JwtReqDto) {
-    return this.userService.addUser(addUserinfoDto, req.user.id)
+    return this.userService.addUser(addUserinfoDto, req.user.id, clientIp(req.ip))
   }
 
   @Post('update')
   @RequiredPermission('user:update')
   @ApiOperation({ summary: '更新用户' })
   update(@Body() updateData: UpdateUserDto, @Req() req: JwtReqDto) {
-    return this.userService.update(updateData, req.user.id)
+    return this.userService.update(updateData, req.user.id, clientIp(req.ip))
   }
 
   @Delete('delete')
   @RequiredPermission('user:delete')
   @ApiOperation({ summary: '批量删除用户' })
-  delete(@Body() deleteUserData: BatchDeleteUserDto) {
-    return this.userService.batchDeleteUser(deleteUserData.ids)
+  delete(@Body() deleteUserData: BatchDeleteUserDto, @Req() req: JwtReqDto) {
+    return this.userService.batchDeleteUser(deleteUserData.ids, req.user.id, clientIp(req.ip))
   }
 
   @Get('list')

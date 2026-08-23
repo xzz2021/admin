@@ -1,4 +1,5 @@
 import { RequiredPermission } from '@/processor/decorator'
+import { clientIp } from '@/processor/utils'
 import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
 import { Body, Controller, Delete, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -29,14 +30,14 @@ export class RoleController {
   @RequiredPermission('role:add')
   @ApiOperation({ summary: '创建角色及菜单和权限' })
   create(@Body() createRoleDto: CreateRoleDto, @Req() req: JwtReqDto) {
-    return this.roleService.createRoleInfo(createRoleDto, req.user.id)
+    return this.roleService.createRoleInfo(createRoleDto, req.user.id, clientIp(req.ip))
   }
 
   @Post('update')
   @RequiredPermission('role:update')
   @ApiOperation({ summary: '更新角色信息及菜单和权限' })
-  update(@Body() updateRoleDto: UpdateRoleDto) {
-    return this.roleService.update(updateRoleDto)
+  update(@Body() updateRoleDto: UpdateRoleDto, @Req() req: JwtReqDto) {
+    return this.roleService.update(updateRoleDto, req.user.id, clientIp(req.ip))
   }
 
   @Get('getRoleMenuAndPer/:id')
@@ -67,8 +68,8 @@ export class RoleController {
   @Delete(':id')
   @RequiredPermission('role:delete')
   @ApiOperation({ summary: '删除角色' })
-  remove(@Param('id') id: string) {
-    return this.roleService.remove(id)
+  remove(@Param('id') id: string, @Req() req: JwtReqDto) {
+    return this.roleService.remove(id, req.user.id, clientIp(req.ip))
   }
 
   @Post('generateRoleSeed')

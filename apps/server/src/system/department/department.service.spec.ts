@@ -18,6 +18,7 @@ describe('DepartmentService tree updates', () => {
 
   const service = new DepartmentService(
     new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   beforeEach(() => {
@@ -98,6 +99,7 @@ describe('DepartmentService list queries', () => {
     new DepartmentRepository({
       department: { findMany, count },
     } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   it('loads list and count in parallel', async () => {
@@ -137,6 +139,7 @@ describe('DepartmentService delete rules', () => {
     new DepartmentRepository({
       department: { findUnique, findFirst, delete: remove },
     } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   beforeEach(() => {
@@ -160,6 +163,7 @@ describe('DepartmentService unique names', () => {
   )
   const service = new DepartmentService(
     new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   it('maps unique constraint failures to a sibling name conflict', async () => {

@@ -37,6 +37,7 @@ describe('AuthService rtLogin lockout', () => {
   const onSuccess = jest.fn()
   const signToken = jest.fn()
 
+  const record = jest.fn()
   const createService = () =>
     new AuthService(
       { findEnabledByPhoneForLogin, recordLoginSuccess } as unknown as UserRepository,
@@ -47,6 +48,7 @@ describe('AuthService rtLogin lockout', () => {
       { signToken } as unknown as RtTokenService,
       {} as SessionRevocationService,
       { ensureNotLocked, onFail, onSuccess } as unknown as LockoutService,
+      { record } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
     )
 
   beforeEach(() => {
@@ -59,6 +61,7 @@ describe('AuthService rtLogin lockout', () => {
       accessToken: 'access',
       cookie: { action: 'set', name: 'rt', value: 'refresh', options: {} },
     })
+    record.mockResolvedValue(undefined)
     ;(verifyPayPassword as jest.Mock).mockResolvedValue(true)
   })
 
@@ -68,6 +71,9 @@ describe('AuthService rtLogin lockout', () => {
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toBeInstanceOf(ForbiddenException)
     expect(findEnabledByPhoneForLogin).not.toHaveBeenCalled()
     expect(onFail).not.toHaveBeenCalled()
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'auth.lockout', success: false }),
+    )
   })
 
   it('records a failure for an unknown phone with the same credential error', async () => {
@@ -77,6 +83,9 @@ describe('AuthService rtLogin lockout', () => {
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toThrow('账号或密码错误')
     expect(onFail).toHaveBeenCalledWith(phone)
     expect(onSuccess).not.toHaveBeenCalled()
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'auth.login_failed', success: false }),
+    )
   })
 
   it('records a failure for a wrong password with the same credential error', async () => {
@@ -86,6 +95,9 @@ describe('AuthService rtLogin lockout', () => {
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toThrow('账号或密码错误')
     expect(onFail).toHaveBeenCalledWith(phone)
     expect(signToken).not.toHaveBeenCalled()
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'auth.login_failed', actorId: user.id }),
+    )
   })
 
   it('propagates lockout thrown by the current failure', async () => {
@@ -94,6 +106,12 @@ describe('AuthService rtLogin lockout', () => {
 
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toBeInstanceOf(ForbiddenException)
     expect(onFail).toHaveBeenCalledWith(phone)
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'auth.lockout',
+        metadata: expect.objectContaining({ reason: 'threshold' }),
+      }),
+    )
   })
 
   it('clears lockout and records last login after a successful password check', async () => {
@@ -103,6 +121,9 @@ describe('AuthService rtLogin lockout', () => {
 
     expect(onSuccess).toHaveBeenCalledWith(phone)
     expect(recordLoginSuccess).toHaveBeenCalledWith(user.id, ip)
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'auth.login', actorId: user.id, resourceId: user.id }),
+    )
     expect(result.body.access_token).toBe('access')
     expect(result.body.userinfo).not.toHaveProperty('password')
   })

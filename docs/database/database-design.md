@@ -21,6 +21,7 @@ erDiagram
   DictionaryType ||--o{ DictionaryItem : has
   User ||--o{ UserSession : has
   User ||--o{ UserOperationLog : has
+  User ||--o{ AuditLog : acts
   User ||--o{ Message : sent
   User ||--o{ Message : received
 ```
@@ -39,10 +40,10 @@ erDiagram
 | DictionaryType / DictionaryItem | 字典；`(typeId, value)` 唯一                                                                     |
 | Message                         | 站内信/系统/告警；`(dispatchId, receiverId)` 唯一                                                |
 | UserSession                     | tokenHash 唯一；过期时间                                                                         |
-| UserOperationLog                | 操作日志（HTTP 暴露）                                                                            |
+| UserOperationLog                | 访问日志（HTTP 拦截器写入，可查可删）                                                            |
 | File                            | 文件元数据（自增 id）；`path` 唯一；`size` 为 BIGINT                                             |
 | Notice                          | 公告模型；**无 Nest Controller**；产品化（草稿/上下线/拉模型）延期，不阻塞消息收件箱与管理页拆分 |
-| AuditLog                        | 审计模型；**无对等 HTTP 模块**                                                                   |
+| AuditLog                        | 领域审计（Service 成功后写入；可查不可删；不记 GET）                                             |
 
 ## 枚举
 

@@ -48,4 +48,4 @@
 
 - 管理端部分 dashboard/table API 为本地 mock
 - 前端存在短信/微信登录相关 API 声明，登录表单当前拦截未走通真实后端流程
-- Schema 中 Notice、AuditLog **无**对应 Controller
+- Schema 中 Notice **无**对应 Controller；AuditLog 列表见 `GET /log/getAuditLogList`

@@ -67,8 +67,8 @@ flowchart LR
 - 静态文件由独立中间件按 `STATIC_FILE_ROOT_PATH` 前缀提供（磁盘目录示例：`public`，对外 URL 示例：`api/public`）
 - `File` 元数据由 Staticfile 管理（软删）；磁盘 unlink 由 FileCleanup 队列执行，完成后发 `disk.unlinked`，由各上下文删除自己的记录
 
-## 操作日志
+## 访问日志与操作日志
 
-- `OperationLogInterceptor` 记录请求到 `UserOperationLog`
-- 查询/删除：`/log/getUserOperationLogList`、`/log/deleteUserOperationLog`
-- Schema 另有 `AuditLog`，当前无对等 HTTP 模块暴露
+- 访问日志：`OperationLogInterceptor` 记录 HTTP 请求到 `UserOperationLog`（可查可删）
+- 操作日志：业务 Service 成功后调用 `AuditLogService.record()` 写入 `AuditLog`（可查不可删）
+- 查询：`/log/getUserOperationLogList`、`/log/getAuditLogList`；删除仅访问日志 `/log/deleteUserOperationLog`

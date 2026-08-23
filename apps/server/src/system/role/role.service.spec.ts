@@ -46,6 +46,7 @@ describe('RoleService seed and queries', () => {
       rolePermission: { findMany: rolePermissionFindMany },
     } as unknown as PgService),
     {} as unknown as RbacPermissionCacheService,
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
   )
 
   beforeEach(() => {

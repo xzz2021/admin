@@ -202,7 +202,8 @@ export default {
     server: '服务监控',
     databaseBackup: '数据库备份',
     fileManagement: '文件管理',
-    userLog: '用户日志',
+    userLog: '访问日志',
+    auditLog: '操作日志',
     message: '我的消息',
     notification: '消息通知',
 
@@ -783,6 +784,49 @@ export default {
     operateTime: '操作时间',
     detailInfo: '详细信息',
     selectToDelete: '请选择要删除的日志'
+  },
+  auditLog: {
+    operator: '操作人',
+    action: '操作',
+    resource: '资源',
+    resourceId: '资源 ID',
+    result: '结果',
+    ip: 'IP地址',
+    operateTime: '操作时间',
+    metadata: '变更详情',
+    actions: {
+      auth: {
+        login: '登录成功',
+        login_failed: '登录失败',
+        lockout: '账号锁定',
+        logout: '退出登录',
+        force_logout: '强制下线',
+        register: '用户注册'
+      },
+      user: {
+        create: '新增用户',
+        update: '更新用户',
+        delete: '删除用户',
+        reset_password: '重置密码',
+        update_password: '修改密码',
+        update_profile: '更新个人信息'
+      },
+      role: {
+        create: '新增角色',
+        update: '更新角色',
+        delete: '删除角色'
+      },
+      menu: {
+        create: '新增菜单',
+        update: '更新菜单',
+        delete: '删除菜单'
+      },
+      department: {
+        create: '新增部门',
+        update: '更新部门',
+        delete: '删除部门'
+      }
+    }
   },
   menu: {
     name: '名称',

@@ -1,3 +1,5 @@
+import { AuditAction } from '@/core/logger/audit-action'
+import { AuditLogService } from '@/core/logger/audit-log.service'
 import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { UserRepository } from '@/system/user/user.repository'
@@ -31,6 +33,7 @@ export class AuthService {
     private readonly rtTokenService: RtTokenService,
     private readonly sessions: SessionRevocationService,
     private readonly lockout: LockoutService,
+    private readonly audit: AuditLogService,
   ) {
     const wechat = this.configService.get<{ appId: string; appSecret: string }>('wechat')
     this.wxAppSecret = wechat?.appSecret || ''
@@ -41,6 +44,7 @@ export class AuthService {
   async create(
     createUserDto: RegisterDto,
     checkCode: boolean = true,
+    ip?: string,
   ): Promise<{ message: string; res?: { id: string } }> {
     const { phone, password, username } = createUserDto
     const user = await this.isUserExist(phone)
@@ -62,6 +66,14 @@ export class AuthService {
       password: hashedPassword,
     })
     await this.redis.del('register_' + phone) // 删除缓存的 验证码
+    await this.audit.record({
+      actorId: res.id,
+      action: AuditAction.AUTH_REGISTER,
+      resource: 'User',
+      resourceId: res.id,
+      ip,
+      metadata: { phone, username },
+    })
     return { message: phone + '注册成功', res }
   }
 
@@ -71,22 +83,41 @@ export class AuthService {
   }
 
   async rtLogin(loginInfo: LoginInfoDto, ip: string) {
-    await this.lockout.ensureNotLocked(loginInfo.phone)
+    try {
+      await this.lockout.ensureNotLocked(loginInfo.phone)
+    } catch (error) {
+      await this.audit.record({
+        action: AuditAction.AUTH_LOCKOUT,
+        resource: 'Auth',
+        success: false,
+        ip,
+        metadata: { phone: loginInfo.phone, reason: 'already_locked' },
+      })
+      throw error
+    }
 
     const user = await this.getUserForLogin(loginInfo.phone)
     if (!user) {
-      await this.lockout.onFail(loginInfo.phone)
+      await this.recordLoginFailure(loginInfo.phone, ip, null, 'unknown_user')
       throw new BadRequestException('账号或密码错误')
     }
 
     const ok = await verifyPayPassword(user.password, loginInfo.password)
     if (!ok) {
-      await this.lockout.onFail(loginInfo.phone)
+      await this.recordLoginFailure(loginInfo.phone, ip, user.id, 'bad_password')
       throw new BadRequestException('账号或密码错误')
     }
 
     await this.lockout.onSuccess(loginInfo.phone)
     await this.users.recordLoginSuccess(user.id, ip)
+    await this.audit.record({
+      actorId: user.id,
+      action: AuditAction.AUTH_LOGIN,
+      resource: 'User',
+      resourceId: user.id,
+      ip,
+      metadata: { phone: user.phone },
+    })
 
     const { password, ...result } = user
     const { username, phone, id, roles } = result
@@ -141,21 +172,66 @@ export class AuthService {
     // return this.smsService.generateSmsCode(phone, cachekey);
   }
 
-  async forceLogout(id: string, operatorId: string) {
+  async forceLogout(id: string, operatorId: string, ip?: string) {
     if (!operatorId) {
       throw new BadRequestException('缺少操作者信息')
     }
     await this.sessions.requestForceLogout(operatorId, id)
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.AUTH_FORCE_LOGOUT,
+      resource: 'User',
+      resourceId: id,
+      ip,
+    })
     return { message: '强制用户下线成功', id }
   }
 
-  async logout(id: string, jti: string) {
+  async logout(id: string, jti: string, ip?: string) {
     await Promise.all([this.tokenService.logout(id, jti), this.rtTokenService.logout(id, jti)])
     await this.sessions.endSession(jti)
+    await this.audit.record({
+      actorId: id,
+      action: AuditAction.AUTH_LOGOUT,
+      resource: 'User',
+      resourceId: id,
+      ip,
+    })
     return {
       cookie: this.rtTokenService.describeClearCookie(),
       body: { message: '退出登录成功', id },
     }
+  }
+
+  private async recordLoginFailure(
+    phone: string,
+    ip: string,
+    actorId: string | null,
+    reason: string,
+  ) {
+    try {
+      await this.lockout.onFail(phone)
+    } catch (error) {
+      await this.audit.record({
+        actorId,
+        action: AuditAction.AUTH_LOCKOUT,
+        resource: 'Auth',
+        resourceId: actorId,
+        success: false,
+        ip,
+        metadata: { phone, reason: 'threshold' },
+      })
+      throw error
+    }
+    await this.audit.record({
+      actorId,
+      action: AuditAction.AUTH_LOGIN_FAILED,
+      resource: 'Auth',
+      resourceId: actorId,
+      success: false,
+      ip,
+      metadata: { phone, reason },
+    })
   }
 
   async rtRefresh(userId: string, oldJti: string) {

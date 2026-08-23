@@ -1,5 +1,7 @@
 import { RequiredPermission } from '@/processor/decorator'
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common'
+import { clientIp } from '@/processor/utils'
+import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { CreateMenuDto, MenuListRes, MenuSortArrayDto, UpdateMenuDto } from './dto/menu.dto'
 import { MenuService } from './menu.service'
@@ -12,15 +14,15 @@ export class MenuController {
   @Post('add')
   @RequiredPermission('menu:add')
   @ApiOperation({ summary: '创建菜单' })
-  create(@Body() createMenuDto: CreateMenuDto) {
-    return this.menuService.create(createMenuDto)
+  create(@Body() createMenuDto: CreateMenuDto, @Req() req: JwtReqDto) {
+    return this.menuService.create(createMenuDto, req.user.id, clientIp(req.ip))
   }
 
   @Post('update')
   @RequiredPermission('menu:update')
   @ApiOperation({ summary: '更新菜单' })
-  update(@Body() createMenuDto: UpdateMenuDto) {
-    return this.menuService.update(createMenuDto)
+  update(@Body() createMenuDto: UpdateMenuDto, @Req() req: JwtReqDto) {
+    return this.menuService.update(createMenuDto, req.user.id, clientIp(req.ip))
   }
 
   @Get('getMenuList')
@@ -34,8 +36,8 @@ export class MenuController {
   @Delete(':id')
   @RequiredPermission('menu:delete')
   @ApiOperation({ summary: '删除菜单' })
-  remove(@Param('id') id: string) {
-    return this.menuService.remove(id)
+  remove(@Param('id') id: string, @Req() req: JwtReqDto) {
+    return this.menuService.remove(id, req.user.id, clientIp(req.ip))
   }
 
   @Post('sort')

@@ -1,3 +1,5 @@
+import { AuditAction } from '@/core/logger/audit-action'
+import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { RbacPermissionCacheService } from '@/processor/rbac'
 import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils'
@@ -28,6 +30,7 @@ export class UserService {
     private readonly sessions: SessionRevocationService,
     private readonly configService: ConfigService,
     private readonly fileCleanupService: FileCleanupService,
+    private readonly audit: AuditLogService,
   ) {}
 
   findOne(phone: string) {
@@ -62,7 +65,7 @@ export class UserService {
     return { list, total, message: '部门用户列表查询成功' }
   }
 
-  async addUser(addUserinfoDto: CreateUserDto, operatorId?: string) {
+  async addUser(addUserinfoDto: CreateUserDto, operatorId?: string, ip?: string) {
     const { department, roles, phone, username, password: rawPassword } = addUserinfoDto
     const isExit = await this.users.findByPhone(phone)
     if (isExit?.id && phone) {
@@ -77,10 +80,18 @@ export class UserService {
       roleIds: roles,
       assignedById: operatorId ?? null,
     })
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.USER_CREATE,
+      resource: 'User',
+      resourceId: userSave.id,
+      ip,
+      metadata: { username, phone, departmentId: department, roles },
+    })
     return { message: '新增用户成功', id: userSave.id }
   }
 
-  async update(updateUserinfoDto: UpdateUserDto, operatorId?: string) {
+  async update(updateUserinfoDto: UpdateUserDto, operatorId?: string, ip?: string) {
     const { id, department, roles, ...rest } = updateUserinfoDto
     const res = await this.users.updateWithDepartmentAndRoles(id, {
       ...rest,
@@ -92,13 +103,34 @@ export class UserService {
     if (rest.enabled === false) {
       await this.sessions.revokeAll(id)
     }
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.USER_UPDATE,
+      resource: 'User',
+      resourceId: id,
+      ip,
+      metadata: {
+        username: rest.username,
+        phone: rest.phone,
+        enabled: rest.enabled,
+        departmentId: department,
+        roles,
+      },
+    })
     return { message: '更新用户信息成功', id: res.id }
   }
 
-  async batchDeleteUser(ids: string[]) {
+  async batchDeleteUser(ids: string[], operatorId?: string, ip?: string) {
     await this.users.deleteManyWithRelations(ids)
     await this.rbacPermissionCache.invalidateUsers(ids)
     await Promise.all(ids.map(id => this.sessions.revokeAll(id)))
+    await this.audit.record({
+      actorId: operatorId,
+      action: AuditAction.USER_DELETE,
+      resource: 'User',
+      ip,
+      metadata: { ids },
+    })
     return { message: '删除用户成功', count: ids.length }
   }
 
@@ -107,13 +139,28 @@ export class UserService {
     return { userinfo, message: '获取个人信息成功' }
   }
 
-  async updateInfo(updateUserinfoDto: UpdatePersonalInfo) {
+  async updateInfo(updateUserinfoDto: UpdatePersonalInfo, ip?: string) {
     const { id, ...updateData } = updateUserinfoDto
     const res = await this.users.updateProfile(id, updateData)
+    await this.audit.record({
+      actorId: id,
+      action: AuditAction.USER_UPDATE_PROFILE,
+      resource: 'User',
+      resourceId: id,
+      ip,
+      metadata: {
+        username: updateData.username,
+        phone: updateData.phone,
+        nickname: updateData.nickname,
+        email: updateData.email,
+        avatar: updateData.avatar,
+        enabled: updateData.enabled,
+      },
+    })
     return { message: '更新个人信息成功', id: res.id }
   }
 
-  async updatePassword(updatePasswordDto: UpdatePwdDto) {
+  async updatePassword(updatePasswordDto: UpdatePwdDto, ip?: string) {
     const { id, password, newPassword } = updatePasswordDto
     const user = await this.users.findByIdWithPassword(id)
     if (!user) {
@@ -129,16 +176,35 @@ export class UserService {
       passwordChangedAt: new Date(),
     })
     await this.sessions.revokeAll(id)
+    await this.audit.record({
+      actorId: id,
+      action: AuditAction.USER_UPDATE_PASSWORD,
+      resource: 'User',
+      resourceId: id,
+      ip,
+    })
     return { message: '更新个人密码成功', id: res.id }
   }
 
-  async resetPassword({ id, password }: AdminUpdatePwdDto & { operateId: string }) {
+  async resetPassword({
+    id,
+    password,
+    operateId,
+    ip,
+  }: AdminUpdatePwdDto & { operateId: string; ip?: string }) {
     const hashPassword = await hashPayPassword(password)
     const res = await this.users.updateById(id, {
       password: hashPassword,
       passwordChangedAt: new Date(),
     })
     await this.sessions.revokeAll(id)
+    await this.audit.record({
+      actorId: operateId,
+      action: AuditAction.USER_RESET_PASSWORD,
+      resource: 'User',
+      resourceId: id,
+      ip,
+    })
     return { message: '重置用户密码成功', id: res.id }
   }
 
