@@ -139,6 +139,19 @@ export class RoleRepository {
     })
   }
 
+  findUserIdsByPermissionIds(permissionIds: string[]): Promise<Array<{ userId: string }>> {
+    const uniqueIds = [...new Set(permissionIds.filter(Boolean))]
+    if (!uniqueIds.length) return Promise.resolve([])
+    return this.db.userRole.findMany({
+      where: {
+        role: {
+          permissions: { some: { permissionId: { in: uniqueIds } } },
+        },
+      },
+      select: { userId: true },
+    })
+  }
+
   findCodes(codes: string[], tx: Db = this.db) {
     return tx.role.findMany({
       where: { code: { in: codes } },
@@ -231,10 +244,5 @@ export class RoleRepository {
 
   executeRaw(sql: Prisma.Sql, tx: Db = this.db) {
     return tx.$executeRaw(sql)
-  }
-
-  /** 供 RBAC 缓存按角色失效时查询关联用户；后续应改为仓储方法 */
-  get prisma(): PgService {
-    return this.db
   }
 }

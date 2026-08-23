@@ -1,5 +1,6 @@
 import { PgService } from '@/prisma/pg.service'
 import { RbacPermissionCacheService } from '@/processor/rbac'
+import { RoleRepository } from '@/system/role/role.repository'
 import { Injectable } from '@nestjs/common'
 import { CreatePermissionDto, UpdatePermissionDto } from './dto/permission.dto'
 
@@ -7,6 +8,7 @@ import { CreatePermissionDto, UpdatePermissionDto } from './dto/permission.dto'
 export class PermissionService {
   constructor(
     private readonly pgService: PgService,
+    private readonly roles: RoleRepository,
     private readonly rbacPermissionCache: RbacPermissionCacheService,
   ) {}
 
@@ -25,12 +27,14 @@ export class PermissionService {
       data: rest,
       select: { id: true },
     })
-    await this.rbacPermissionCache.invalidateByPermissionIds([id], this.pgService)
+    const users = await this.roles.findUserIdsByPermissionIds([id])
+    await this.rbacPermissionCache.invalidateUsers(users.map(item => item.userId))
     return { id: res.id, message: '更新权限成功' }
   }
 
   async remove(id: string) {
-    await this.rbacPermissionCache.invalidateByPermissionIds([id], this.pgService)
+    const users = await this.roles.findUserIdsByPermissionIds([id])
+    await this.rbacPermissionCache.invalidateUsers(users.map(item => item.userId))
     const res = await this.pgService.permission.delete({
       where: { id },
       select: { id: true },

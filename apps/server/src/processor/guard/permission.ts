@@ -93,13 +93,9 @@ export class PermissionGuard implements CanActivate {
 
     let permissions: string[]
     try {
-      const cached = await this.rbacPermissionCache.get(userId)
-      if (cached === null) {
-        permissions = await this.getPermissions(userId)
-        await this.rbacPermissionCache.set(userId, permissions)
-      } else {
-        permissions = cached
-      }
+      permissions = await this.rbacPermissionCache.getOrLoad(userId, () =>
+        this.getPermissions(userId),
+      )
     } catch (error) {
       if (isTransientDbError(error)) {
         throw new ServiceUnavailableException('数据库暂不可用，请稍后重试')

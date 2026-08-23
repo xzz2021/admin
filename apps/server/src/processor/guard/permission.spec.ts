@@ -14,8 +14,10 @@ describe('PermissionGuard', () => {
   const findUnique = jest.fn()
   const redis = {
     get: jest.fn(),
+    mget: jest.fn(),
     set: jest.fn(),
     del: jest.fn(),
+    pipeline: jest.fn(),
   }
 
   const createGuard = () => {
@@ -45,6 +47,7 @@ describe('PermissionGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    redis.mget.mockResolvedValue([null, null])
     redis.get.mockResolvedValue(null)
     redis.set.mockResolvedValue('OK')
     redis.del.mockResolvedValue(1)
@@ -61,7 +64,7 @@ describe('PermissionGuard', () => {
   })
 
   it('uses cached permissions without querying the database', async () => {
-    redis.get.mockResolvedValue(JSON.stringify(['user:update']))
+    redis.mget.mockResolvedValue([JSON.stringify({ v: 0, p: ['user:update'] }), '0'])
 
     await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
       true,
@@ -87,9 +90,9 @@ describe('PermissionGuard', () => {
     )
     expect(redis.set).toHaveBeenCalledWith(
       'rbac:permissions:user-1',
-      JSON.stringify(['user:update']),
+      JSON.stringify({ v: 0, p: ['user:update'] }),
       'EX',
-      300,
+      expect.any(Number),
     )
   })
 

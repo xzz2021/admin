@@ -229,7 +229,8 @@ export class RoleService {
 
       return this.roles.updateWithMenus(id, rest, menuIds, permissionIds, tx)
     })
-    await this.rbacPermissionCache.invalidateByRoleIds([id], this.roles.prisma)
+    const users = await this.roles.findUserIdsByRoleId(id)
+    await this.rbacPermissionCache.invalidateUsers(users.map(item => item.userId))
     return { id: res.id, message: '更新角色成功' }
   }
 
