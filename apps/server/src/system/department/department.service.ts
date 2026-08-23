@@ -1,74 +1,34 @@
 import { Prisma } from '@/prisma/generated/prisma/client'
-import { PgService } from '@/prisma/pg.service'
-import { sqlReplaceDescendantPaths } from '@/processor/utils/sql-batch'
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable } from '@nestjs/common'
+import { DepartmentRepository } from './department.repository'
 import { CreateDepartmentDto, DepartmentSeedDto, UpdateDepartmentDto } from './dto/department.dto'
 
 @Injectable()
 export class DepartmentService {
-  constructor(private pgService: PgService) {}
+  constructor(private readonly departments: DepartmentRepository) {}
+
   async add(createDepartmentDto: CreateDepartmentDto) {
-    /*
-    const res = await this.pgService.department.create({ data: createDepartmentDto as any });
-    return { data: { id: res.id }, message: '添加部门成功' };
-    */
-    //  'name', 'status', 'remark', 'parentId
-    const res = await this.pgService.$transaction(async tx => {
-      // 1) 先建记录拿自增 id（暂存 path）
-      const tag = await tx.department.create({
-        data: { ...createDepartmentDto, path: '' },
-      })
-
-      // 2) 生成 path
-      let path = `/${tag.id}`
-      if (createDepartmentDto.parentId) {
-        const parent = await tx.department.findUnique({
-          where: { id: createDepartmentDto.parentId },
-          select: { path: true },
-        })
-        if (!parent) throw new BadRequestException('父级不存在') // 父级不存在
-        path = `${parent.path}/${tag.id}`
-      }
-
-      // 3) 回填 path
-      return tx.department.update({ where: { id: tag.id }, data: { path }, select: { id: true } })
+    const res = await this.departments.transaction(async tx => {
+      const tag = await this.departments.create({ ...createDepartmentDto, path: '' }, tx)
+      const path = await this.buildPath(tag.id, createDepartmentDto.parentId ?? null, tx)
+      return this.departments.updateById(tag.id, { path }, tx)
     })
     return { id: res.id, message: '添加部门成功' }
   }
 
   async findAll() {
     const [list, total] = await Promise.all([
-      this.pgService.department.findMany({
-        where: {
-          parentId: null,
-        },
-        include: {
-          children: {
-            include: {
-              children: {
-                include: {
-                  children: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: {
-          id: 'asc',
-        },
-      }),
-      this.pgService.department.count(),
+      this.departments.findRootTrees(),
+      this.departments.count(),
     ])
     return { list, total, message: '获取部门列表成功' }
   }
 
   async update(updateDepartmentDto: UpdateDepartmentDto) {
     const { id, parentId, ...rest } = updateDepartmentDto
-    const res = await this.pgService.$transaction(async tx => {
-      const departments = await tx.department.findMany({
-        select: { id: true, parentId: true, path: true },
-      })
+    const res = await this.departments.transaction(async tx => {
+      const departments = await this.departments.findTreeLinks(tx)
       const current = departments.find(item => item.id === id)
       if (!current) throw new BadRequestException('部门不存在')
 
@@ -78,18 +38,18 @@ export class DepartmentService {
       const parent = nextParentId ? departments.find(item => item.id === nextParentId) : null
       const nextPath = parent ? `${parent.path}/${id}` : `/${id}`
 
-      const updated = await tx.department.update({
-        where: { id },
-        data: {
+      const updated = await this.departments.updateById(
+        id,
+        {
           ...rest,
           ...(parentId === undefined ? {} : { parentId }),
           path: nextPath,
         },
-        select: { id: true },
-      })
+        tx,
+      )
 
       if (nextPath !== current.path) {
-        await tx.$executeRaw(sqlReplaceDescendantPaths(current.path, nextPath))
+        await this.departments.replaceDescendantPaths(current.path, nextPath, tx)
       }
 
       return updated
@@ -98,26 +58,16 @@ export class DepartmentService {
   }
 
   async delete(id: string) {
-    /*
-    // 捕获id为{}的错误
-    const res = await this.pgService.department.delete({ where: { id } });
-    return { data: { id: res.id }, message: '删除部门成功' };
-    */
-    const me = await this.pgService.department.findUnique({ where: { id }, select: { path: true } })
+    const me = await this.departments.findPathById(id)
     if (!me) return
-    const child = await this.pgService.department.findFirst({
-      where: { parentId: id },
-      select: { id: true },
-    })
-    if (child) throw new BadRequestException('当前项有子部门无法删除') // 当前项有子部门无法删除
-    // await this.pgService.userDepartment.deleteMany({ where: { departmentId: id } });
-    await this.pgService.department.delete({ where: { id } })
+    const child = await this.departments.findFirstChildId(id)
+    if (child) throw new BadRequestException('当前项有子部门无法删除')
+    await this.departments.deleteById(id)
     return { message: '删除部门成功' }
   }
 
   async generateDepartmentSeed(data: DepartmentSeedDto[]) {
-    //  区别在于需要创建 children  以及path拼接
-    await this.pgService.$transaction(async (tx: Prisma.TransactionClient) => {
+    await this.departments.transaction(async tx => {
       for (const dept of data) {
         await this.upsertNode(tx, dept, null)
       }
@@ -125,38 +75,27 @@ export class DepartmentService {
     return { message: '批量插入部门成功' }
   }
 
-  /**
-   * 递归插入/更新单个节点
-   */
-  async upsertNode(tx: Prisma.TransactionClient, node: DepartmentSeedDto, parentId: string | null) {
-    // let path = `/${node.id}`;
+  private async upsertNode(
+    tx: Prisma.TransactionClient,
+    node: DepartmentSeedDto,
+    parentId: string | null,
+  ) {
     const { name, enabled, description, children } = node
-
-    // 1) 先建记录拿自增 id（暂存 path）
-    const tag = await tx.department.create({
-      data: { name, enabled, description, path: '' },
-    })
-
-    // 2) 生成 path
-    let path = `/${tag.id}`
-    if (parentId) {
-      const parent = await tx.department.findUnique({
-        where: { id: parentId },
-        select: { path: true },
-      })
-      if (!parent) throw new BadRequestException('父级不存在') // 父级不存在
-      path = `${parent.path}/${tag.id}`
-    }
-    await tx.department.update({
-      where: { id: tag.id },
-      data: { path, parentId },
-      select: { id: true },
-    })
+    const tag = await this.departments.create({ name, enabled, description, path: '' }, tx)
+    const path = await this.buildPath(tag.id, parentId, tx)
+    await this.departments.updateById(tag.id, { path, parentId }, tx)
 
     if (children && children.length > 0) {
       for (const child of children) {
         await this.upsertNode(tx, child, tag.id)
       }
     }
+  }
+
+  private async buildPath(id: string, parentId: string | null, tx: Prisma.TransactionClient) {
+    if (!parentId) return `/${id}`
+    const parent = await this.departments.findPathById(parentId, tx)
+    if (!parent) throw new BadRequestException('父级不存在')
+    return `${parent.path}/${id}`
   }
 }

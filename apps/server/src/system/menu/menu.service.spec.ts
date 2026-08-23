@@ -1,4 +1,5 @@
 import type { PgService } from '@/prisma/pg.service'
+import { MenuRepository } from './menu.repository'
 import { MenuService } from './menu.service'
 
 describe('MenuService tree updates', () => {
@@ -14,7 +15,9 @@ describe('MenuService tree updates', () => {
     ) => callback({ menu: { findMany, update }, $executeRaw: executeRaw }),
   )
 
-  const service = new MenuService({ $transaction: transaction } as unknown as PgService)
+  const service = new MenuService(
+    new MenuRepository({ $transaction: transaction } as unknown as PgService),
+  )
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -73,5 +76,24 @@ describe('MenuService tree updates', () => {
     const sql = executeRaw.mock.calls[0][0] as { sql: string; values: unknown[] }
     expect(sql.sql).toMatch(/UPDATE\s+"Menu"/i)
     expect(sql.values).toEqual(expect.arrayContaining(['menu-1', 2, 'child', 1]))
+  })
+})
+
+describe('MenuService delete rules', () => {
+  const findUnique = jest.fn()
+  const count = jest.fn()
+  const remove = jest.fn()
+  const service = new MenuService(
+    new MenuRepository({
+      menu: { findUnique, count, delete: remove },
+    } as unknown as PgService),
+  )
+
+  it('refuses to delete a menu that still has children', async () => {
+    findUnique.mockResolvedValue({ id: 'menu-1' })
+    count.mockResolvedValue(1)
+
+    await expect(service.remove('menu-1')).rejects.toThrow('该菜单存在子菜单，请先删除子菜单')
+    expect(remove).not.toHaveBeenCalled()
   })
 })

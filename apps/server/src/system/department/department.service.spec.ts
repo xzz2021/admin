@@ -1,4 +1,5 @@
 import type { PgService } from '@/prisma/pg.service'
+import { DepartmentRepository } from './department.repository'
 import { DepartmentService } from './department.service'
 
 describe('DepartmentService tree updates', () => {
@@ -14,7 +15,9 @@ describe('DepartmentService tree updates', () => {
     ) => callback({ department: { findMany, update }, $executeRaw: executeRaw }),
   )
 
-  const service = new DepartmentService({ $transaction: transaction } as unknown as PgService)
+  const service = new DepartmentService(
+    new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
+  )
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -90,9 +93,11 @@ describe('DepartmentService tree updates', () => {
 describe('DepartmentService list queries', () => {
   const findMany = jest.fn()
   const count = jest.fn()
-  const service = new DepartmentService({
-    department: { findMany, count },
-  } as unknown as PgService)
+  const service = new DepartmentService(
+    new DepartmentRepository({
+      department: { findMany, count },
+    } as unknown as PgService),
+  )
 
   it('loads list and count in parallel', async () => {
     let resolveList!: (value: unknown[]) => void
@@ -120,5 +125,28 @@ describe('DepartmentService list queries', () => {
       total: 0,
       message: '获取部门列表成功',
     })
+  })
+})
+
+describe('DepartmentService delete rules', () => {
+  const findUnique = jest.fn()
+  const findFirst = jest.fn()
+  const remove = jest.fn()
+  const service = new DepartmentService(
+    new DepartmentRepository({
+      department: { findUnique, findFirst, delete: remove },
+    } as unknown as PgService),
+  )
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('refuses to delete a department that still has children', async () => {
+    findUnique.mockResolvedValue({ path: '/node' })
+    findFirst.mockResolvedValue({ id: 'child' })
+
+    await expect(service.delete('node')).rejects.toThrow('当前项有子部门无法删除')
+    expect(remove).not.toHaveBeenCalled()
   })
 })
