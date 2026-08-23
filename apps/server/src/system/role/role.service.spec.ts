@@ -5,11 +5,13 @@ import { RoleService } from './role.service'
 
 describe('RoleService seed and queries', () => {
   const roleFindMany = jest.fn()
+  const roleFindUnique = jest.fn()
   const roleCreateMany = jest.fn()
   const roleUpsert = jest.fn()
   const menuFindMany = jest.fn()
   const roleMenuFindMany = jest.fn()
   const rolePermissionFindMany = jest.fn()
+  const userFindUnique = jest.fn()
   const executeRaw = jest.fn()
   const transaction = jest.fn(
     async (
@@ -32,7 +34,13 @@ describe('RoleService seed and queries', () => {
     new RoleRepository({
       $transaction: transaction,
       $executeRaw: executeRaw,
-      role: { findMany: roleFindMany, createMany: roleCreateMany, upsert: roleUpsert },
+      role: {
+        findMany: roleFindMany,
+        findUnique: roleFindUnique,
+        createMany: roleCreateMany,
+        upsert: roleUpsert,
+      },
+      user: { findUnique: userFindUnique },
       menu: { findMany: menuFindMany },
       roleMenu: { findMany: roleMenuFindMany },
       rolePermission: { findMany: rolePermissionFindMany },
@@ -122,5 +130,22 @@ describe('RoleService seed and queries', () => {
     resolveRoleMenus([])
     resolveRolePermissions([])
     await expect(pending).resolves.toEqual([])
+  })
+
+  it('reads creator name from the included user relation', async () => {
+    roleFindUnique.mockResolvedValue({
+      id: 'role-1',
+      name: '管理员',
+      code: 'admin',
+      createdById: 'user-1',
+      createdBy: { id: 'user-1', username: 'admin' },
+      _count: { users: 1, menus: 2, permissions: 3 },
+    })
+
+    const result = await service.getRoleDetail('role-1')
+
+    expect(result.creatorName).toBe('admin')
+    expect(result).not.toHaveProperty('createdBy')
+    expect(userFindUnique).not.toHaveBeenCalled()
   })
 })

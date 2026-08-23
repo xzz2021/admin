@@ -61,7 +61,7 @@ export class RoleService {
     }
   }
 
-  async createRoleInfo(dto: CreateRoleDto) {
+  async createRoleInfo(dto: CreateRoleDto, createdById?: string) {
     const { menuMap, menuIds, permissionIds } = this.buildMenuPermissionData(dto.menus)
     const res = await this.roles.transaction(async tx => {
       const existRole = await this.roles.findByCode(dto.code, tx)
@@ -73,6 +73,7 @@ export class RoleService {
           code: dto.code,
           enabled: dto.enabled ?? true,
           description: dto.description,
+          createdById: createdById ?? null,
         },
         tx,
       )
@@ -87,16 +88,10 @@ export class RoleService {
     const role = await this.roles.findByIdWithCounts(id)
     if (!role) throw new BadRequestException('角色不存在')
 
-    let creatorName = '-'
-    if (role.createdBy) {
-      const creator = await this.roles.findUsernameById(role.createdBy)
-      creatorName = creator?.username || role.createdBy
-    }
-
-    const { _count, ...roleInfo } = role
+    const { _count, createdBy, ...roleInfo } = role
     return {
       ...roleInfo,
-      creatorName,
+      creatorName: createdBy?.username || '-',
       menuCount: _count.menus,
       permissionCount: _count.permissions,
       userCount: _count.users,

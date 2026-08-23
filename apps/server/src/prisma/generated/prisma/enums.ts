@@ -19,6 +19,14 @@ export const NoticeLevel = {
 export type NoticeLevel = (typeof NoticeLevel)[keyof typeof NoticeLevel]
 
 
+export const MenuType = {
+  DIRECTORY: 'DIRECTORY',
+  MENU: 'MENU'
+} as const
+
+export type MenuType = (typeof MenuType)[keyof typeof MenuType]
+
+
 export const PermissionType = {
   BUTTON: 'BUTTON',
   DATA: 'DATA',

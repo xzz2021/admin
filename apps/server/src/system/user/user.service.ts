@@ -62,7 +62,7 @@ export class UserService {
     return { list, total, message: '部门用户列表查询成功' }
   }
 
-  async addUser(addUserinfoDto: CreateUserDto) {
+  async addUser(addUserinfoDto: CreateUserDto, operatorId?: string) {
     const { department, roles, phone, username, password: rawPassword } = addUserinfoDto
     const isExit = await this.users.findByPhone(phone)
     if (isExit?.id && phone) {
@@ -75,16 +75,18 @@ export class UserService {
       phone,
       departmentId: department,
       roleIds: roles,
+      assignedById: operatorId ?? null,
     })
     return { message: '新增用户成功', id: userSave.id }
   }
 
-  async update(updateUserinfoDto: UpdateUserDto) {
+  async update(updateUserinfoDto: UpdateUserDto, operatorId?: string) {
     const { id, department, roles, ...rest } = updateUserinfoDto
     const res = await this.users.updateWithDepartmentAndRoles(id, {
       ...rest,
       departmentId: department,
       roleIds: roles,
+      assignedById: operatorId ?? null,
     })
     await this.rbacPermissionCache.invalidateUsers([id])
     if (rest.enabled === false) {

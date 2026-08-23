@@ -18,6 +18,8 @@
 ## 行为要点
 
 - 角色绑定菜单（RoleMenu）与权限（RolePermission）
+- 创建角色时写入 `createdById`（当前登录用户）；删除用户时创建人外键 SetNull
+- `getRoleDetail` 通过 `createdBy` 关系读取用户名，对外字段仍为 `creatorName`，不返回 User 对象
 - `getRoleMenu` 供前端登录后生成动态路由
 - `generateRoleSeed` 用于导出种子数据，不等于 `prisma db seed`
 - 系统角色（`isSystem`）不可删除；超管约定 code：`super_admin`

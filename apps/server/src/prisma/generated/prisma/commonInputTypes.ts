@@ -175,6 +175,23 @@ export type IntWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntFilter<$PrismaModel>
 }
 
+export type EnumMenuTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.MenuType | Prisma.EnumMenuTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMenuTypeFilter<$PrismaModel> | $Enums.MenuType
+}
+
+export type EnumMenuTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MenuType | Prisma.EnumMenuTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMenuTypeWithAggregatesFilter<$PrismaModel> | $Enums.MenuType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMenuTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMenuTypeFilter<$PrismaModel>
+}
+
 export type EnumPermissionTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.PermissionType | Prisma.EnumPermissionTypeFieldRefInput<$PrismaModel>
   in?: $Enums.PermissionType[] | Prisma.ListEnumPermissionTypeFieldRefInput<$PrismaModel>
@@ -554,6 +571,23 @@ export type NestedFloatFilter<$PrismaModel = never> = {
   gt?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   gte?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
+}
+
+export type NestedEnumMenuTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.MenuType | Prisma.EnumMenuTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMenuTypeFilter<$PrismaModel> | $Enums.MenuType
+}
+
+export type NestedEnumMenuTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MenuType | Prisma.EnumMenuTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.MenuType[] | Prisma.ListEnumMenuTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumMenuTypeWithAggregatesFilter<$PrismaModel> | $Enums.MenuType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMenuTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMenuTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumPermissionTypeFilter<$PrismaModel = never> = {

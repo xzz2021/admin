@@ -28,8 +28,8 @@ export class RoleController {
   @Post('add')
   @RequiredPermission('role:add')
   @ApiOperation({ summary: '创建角色及菜单和权限' })
-  create(@Body() createRoleDto: CreateRoleDto) {
-    return this.roleService.createRoleInfo(createRoleDto)
+  create(@Body() createRoleDto: CreateRoleDto, @Req() req: JwtReqDto) {
+    return this.roleService.createRoleInfo(createRoleDto, req.user.id)
   }
 
   @Post('update')

@@ -7,7 +7,7 @@ export class CreatorPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
     const user = this.request.user
 
-    value.createdBy = user.id
+    value.createdById = user.id
 
     return value
   }

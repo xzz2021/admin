@@ -23,6 +23,12 @@ export class RoleRepository {
     return this.db.role.findUnique({
       where: { id },
       include: {
+        createdBy: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -125,13 +131,6 @@ export class RoleRepository {
     })
   }
 
-  findUsernameById(id: string) {
-    return this.db.user.findUnique({
-      where: { id },
-      select: { username: true },
-    })
-  }
-
   findUserIdsByRoleId(roleId: string, tx: Db = this.db) {
     return tx.userRole.findMany({
       where: { roleId },
@@ -160,7 +159,13 @@ export class RoleRepository {
   }
 
   create(
-    data: { name: string; code: string; enabled: boolean; description?: string | null },
+    data: {
+      name: string
+      code: string
+      enabled: boolean
+      description?: string | null
+      createdById?: string | null
+    },
     tx: Db = this.db,
   ) {
     return tx.role.create({

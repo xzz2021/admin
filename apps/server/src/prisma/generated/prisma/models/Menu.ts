@@ -27,19 +27,17 @@ export type AggregateMenu = {
 }
 
 export type MenuAvgAggregateOutputType = {
-  type: number | null
   sort: number | null
 }
 
 export type MenuSumAggregateOutputType = {
-  type: number | null
   sort: number | null
 }
 
 export type MenuMinAggregateOutputType = {
   id: string | null
   parentId: string | null
-  type: number | null
+  type: $Enums.MenuType | null
   name: string | null
   path: string | null
   component: string | null
@@ -66,7 +64,7 @@ export type MenuMinAggregateOutputType = {
 export type MenuMaxAggregateOutputType = {
   id: string | null
   parentId: string | null
-  type: number | null
+  type: $Enums.MenuType | null
   name: string | null
   path: string | null
   component: string | null
@@ -120,12 +118,10 @@ export type MenuCountAggregateOutputType = {
 
 
 export type MenuAvgAggregateInputType = {
-  type?: true
   sort?: true
 }
 
 export type MenuSumAggregateInputType = {
-  type?: true
   sort?: true
 }
 
@@ -300,7 +296,7 @@ export type MenuGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type MenuGroupByOutputType = {
   id: string
   parentId: string | null
-  type: number
+  type: $Enums.MenuType
   name: string
   path: string
   component: string | null
@@ -350,7 +346,7 @@ export type MenuWhereInput = {
   NOT?: Prisma.MenuWhereInput | Prisma.MenuWhereInput[]
   id?: Prisma.StringFilter<"Menu"> | string
   parentId?: Prisma.StringNullableFilter<"Menu"> | string | null
-  type?: Prisma.IntFilter<"Menu"> | number
+  type?: Prisma.EnumMenuTypeFilter<"Menu"> | $Enums.MenuType
   name?: Prisma.StringFilter<"Menu"> | string
   path?: Prisma.StringFilter<"Menu"> | string
   component?: Prisma.StringNullableFilter<"Menu"> | string | null
@@ -417,7 +413,7 @@ export type MenuWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.MenuWhereInput[]
   NOT?: Prisma.MenuWhereInput | Prisma.MenuWhereInput[]
   parentId?: Prisma.StringNullableFilter<"Menu"> | string | null
-  type?: Prisma.IntFilter<"Menu"> | number
+  type?: Prisma.EnumMenuTypeFilter<"Menu"> | $Enums.MenuType
   component?: Prisma.StringNullableFilter<"Menu"> | string | null
   redirect?: Prisma.StringNullableFilter<"Menu"> | string | null
   title?: Prisma.StringFilter<"Menu"> | string
@@ -481,7 +477,7 @@ export type MenuScalarWhereWithAggregatesInput = {
   NOT?: Prisma.MenuScalarWhereWithAggregatesInput | Prisma.MenuScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Menu"> | string
   parentId?: Prisma.StringNullableWithAggregatesFilter<"Menu"> | string | null
-  type?: Prisma.IntWithAggregatesFilter<"Menu"> | number
+  type?: Prisma.EnumMenuTypeWithAggregatesFilter<"Menu"> | $Enums.MenuType
   name?: Prisma.StringWithAggregatesFilter<"Menu"> | string
   path?: Prisma.StringWithAggregatesFilter<"Menu"> | string
   component?: Prisma.StringNullableWithAggregatesFilter<"Menu"> | string | null
@@ -507,7 +503,7 @@ export type MenuScalarWhereWithAggregatesInput = {
 
 export type MenuCreateInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -538,7 +534,7 @@ export type MenuCreateInput = {
 export type MenuUncheckedCreateInput = {
   id?: string
   parentId?: string | null
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -567,7 +563,7 @@ export type MenuUncheckedCreateInput = {
 
 export type MenuUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -598,7 +594,7 @@ export type MenuUpdateInput = {
 export type MenuUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -628,7 +624,7 @@ export type MenuUncheckedUpdateInput = {
 export type MenuCreateManyInput = {
   id?: string
   parentId?: string | null
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -654,7 +650,7 @@ export type MenuCreateManyInput = {
 
 export type MenuUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -681,7 +677,7 @@ export type MenuUpdateManyMutationInput = {
 export type MenuUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -748,7 +744,6 @@ export type MenuCountOrderByAggregateInput = {
 }
 
 export type MenuAvgOrderByAggregateInput = {
-  type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
 }
 
@@ -807,7 +802,6 @@ export type MenuMinOrderByAggregateInput = {
 }
 
 export type MenuSumOrderByAggregateInput = {
-  type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
 }
 
@@ -834,6 +828,10 @@ export type MenuUncheckedCreateNestedManyWithoutParentInput = {
   connectOrCreate?: Prisma.MenuCreateOrConnectWithoutParentInput | Prisma.MenuCreateOrConnectWithoutParentInput[]
   createMany?: Prisma.MenuCreateManyParentInputEnvelope
   connect?: Prisma.MenuWhereUniqueInput | Prisma.MenuWhereUniqueInput[]
+}
+
+export type EnumMenuTypeFieldUpdateOperationsInput = {
+  set?: $Enums.MenuType
 }
 
 export type MenuUpdateOneWithoutChildrenNestedInput = {
@@ -904,7 +902,7 @@ export type MenuUpdateOneRequiredWithoutRolesNestedInput = {
 
 export type MenuCreateWithoutChildrenInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -934,7 +932,7 @@ export type MenuCreateWithoutChildrenInput = {
 export type MenuUncheckedCreateWithoutChildrenInput = {
   id?: string
   parentId?: string | null
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -967,7 +965,7 @@ export type MenuCreateOrConnectWithoutChildrenInput = {
 
 export type MenuCreateWithoutParentInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -996,7 +994,7 @@ export type MenuCreateWithoutParentInput = {
 
 export type MenuUncheckedCreateWithoutParentInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -1046,7 +1044,7 @@ export type MenuUpdateToOneWithWhereWithoutChildrenInput = {
 
 export type MenuUpdateWithoutChildrenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1076,7 +1074,7 @@ export type MenuUpdateWithoutChildrenInput = {
 export type MenuUncheckedUpdateWithoutChildrenInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1124,7 +1122,7 @@ export type MenuScalarWhereInput = {
   NOT?: Prisma.MenuScalarWhereInput | Prisma.MenuScalarWhereInput[]
   id?: Prisma.StringFilter<"Menu"> | string
   parentId?: Prisma.StringNullableFilter<"Menu"> | string | null
-  type?: Prisma.IntFilter<"Menu"> | number
+  type?: Prisma.EnumMenuTypeFilter<"Menu"> | $Enums.MenuType
   name?: Prisma.StringFilter<"Menu"> | string
   path?: Prisma.StringFilter<"Menu"> | string
   component?: Prisma.StringNullableFilter<"Menu"> | string | null
@@ -1150,7 +1148,7 @@ export type MenuScalarWhereInput = {
 
 export type MenuCreateWithoutPermissionsInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -1180,7 +1178,7 @@ export type MenuCreateWithoutPermissionsInput = {
 export type MenuUncheckedCreateWithoutPermissionsInput = {
   id?: string
   parentId?: string | null
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -1224,7 +1222,7 @@ export type MenuUpdateToOneWithWhereWithoutPermissionsInput = {
 
 export type MenuUpdateWithoutPermissionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1254,7 +1252,7 @@ export type MenuUpdateWithoutPermissionsInput = {
 export type MenuUncheckedUpdateWithoutPermissionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1282,7 +1280,7 @@ export type MenuUncheckedUpdateWithoutPermissionsInput = {
 
 export type MenuCreateWithoutRolesInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -1312,7 +1310,7 @@ export type MenuCreateWithoutRolesInput = {
 export type MenuUncheckedCreateWithoutRolesInput = {
   id?: string
   parentId?: string | null
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -1356,7 +1354,7 @@ export type MenuUpdateToOneWithWhereWithoutRolesInput = {
 
 export type MenuUpdateWithoutRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1386,7 +1384,7 @@ export type MenuUpdateWithoutRolesInput = {
 export type MenuUncheckedUpdateWithoutRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1414,7 +1412,7 @@ export type MenuUncheckedUpdateWithoutRolesInput = {
 
 export type MenuCreateManyParentInput = {
   id?: string
-  type?: number
+  type?: $Enums.MenuType
   name: string
   path: string
   component?: string | null
@@ -1440,7 +1438,7 @@ export type MenuCreateManyParentInput = {
 
 export type MenuUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1469,7 +1467,7 @@ export type MenuUpdateWithoutParentInput = {
 
 export type MenuUncheckedUpdateWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1498,7 +1496,7 @@ export type MenuUncheckedUpdateWithoutParentInput = {
 
 export type MenuUncheckedUpdateManyWithoutParentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.IntFieldUpdateOperationsInput | number
+  type?: Prisma.EnumMenuTypeFieldUpdateOperationsInput | $Enums.MenuType
   name?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   component?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1713,9 +1711,9 @@ export type $MenuPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     id: string
     parentId: string | null
     /**
-     * @z.number().meta({ description: '0 目录 / 1 页面', example: 0 })
+     * @z.nativeEnum(MenuType).meta({ description: 'DIRECTORY 目录 / MENU 页面', example: 'DIRECTORY' })
      */
-    type: number
+    type: $Enums.MenuType
     /**
      * @z.string().min(1).max(50).meta({ description: '路由名称，全局唯一，用于前端 keep-alive', example: 'User' })
      */
@@ -2223,7 +2221,7 @@ export interface Prisma__MenuClient<T, Null = never, ExtArgs extends runtime.Typ
 export interface MenuFieldRefs {
   readonly id: Prisma.FieldRef<"Menu", 'String'>
   readonly parentId: Prisma.FieldRef<"Menu", 'String'>
-  readonly type: Prisma.FieldRef<"Menu", 'Int'>
+  readonly type: Prisma.FieldRef<"Menu", 'MenuType'>
   readonly name: Prisma.FieldRef<"Menu", 'String'>
   readonly path: Prisma.FieldRef<"Menu", 'String'>
   readonly component: Prisma.FieldRef<"Menu", 'String'>

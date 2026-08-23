@@ -1,4 +1,4 @@
-import type { MenuItem, MenuPermission, PermissionType } from '@/api/menu/types'
+import { normalizeMenuType, type MenuItem, type MenuPermission, type PermissionType } from '@/api/menu/types'
 import { cloneDeep, pick } from 'lodash-es'
 
 export const MENU_FORM_FIELDS = [
@@ -50,6 +50,9 @@ export const normalizeMenuRow = (row: MenuItem | null): Partial<MenuItem> | null
   }
 
   normalized.permissions = normalizePermissions(normalized.permissions)
+  if (normalized.type !== undefined) {
+    normalized.type = normalizeMenuType(normalized.type)
+  }
 
   return normalized
 }

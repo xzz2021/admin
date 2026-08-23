@@ -116,7 +116,7 @@ export const RoleScalarFieldEnum = {
   sort: 'sort',
   enabled: 'enabled',
   isSystem: 'isSystem',
-  createdBy: 'createdBy',
+  createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -127,7 +127,7 @@ export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof Role
 export const UserRoleScalarFieldEnum = {
   userId: 'userId',
   roleId: 'roleId',
-  assignedBy: 'assignedBy',
+  assignedById: 'assignedById',
   assignedAt: 'assignedAt',
   createdAt: 'createdAt'
 } as const

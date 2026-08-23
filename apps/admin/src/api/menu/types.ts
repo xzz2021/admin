@@ -1,5 +1,19 @@
 export type PermissionType = 'BUTTON' | 'DATA' | 'API' | 'OTHER'
 
+export const MenuType = {
+  DIRECTORY: 'DIRECTORY',
+  MENU: 'MENU'
+} as const
+
+export type MenuType = (typeof MenuType)[keyof typeof MenuType]
+
+/** 兼容迁移前剪贴板里的 0/1 */
+export const isPageMenu = (type: unknown) => type === MenuType.MENU || type === 1 || type === '1'
+
+export const isDirectoryMenu = (type: unknown) => type === MenuType.DIRECTORY || type === 0 || type === '0'
+
+export const normalizeMenuType = (type: unknown): MenuType => (isPageMenu(type) ? MenuType.MENU : MenuType.DIRECTORY)
+
 export interface MenuPermission {
   id?: string
   name: string
@@ -13,7 +27,7 @@ export interface MenuPermission {
 export interface MenuItem {
   id?: string
   parentId?: string | null
-  type: number
+  type: MenuType
   name: string
   path: string
   component?: string | null

@@ -5,6 +5,11 @@ export enum NoticeLevel {
   ERROR = "ERROR"
 }
 
+export enum MenuType {
+  DIRECTORY = "DIRECTORY",
+  MENU = "MENU"
+}
+
 export enum PermissionType {
   BUTTON = "BUTTON",
   DATA = "DATA",

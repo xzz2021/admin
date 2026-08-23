@@ -21,7 +21,7 @@
 
 ## 数据
 
-Prisma `User`：username、password（哈希）、nickname、email、phone、avatar、enabled、department、roles、sessions、日志与消息关联。
+Prisma `User`：username、password（哈希）、nickname、email、phone、avatar、enabled、department、roles、sessions、日志与消息关联。创建/更新用户角色时写入 `UserRole.assignedById`（当前操作人），删除用户时分配人外键 SetNull。
 
 ## 前端
 

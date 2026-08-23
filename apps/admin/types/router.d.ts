@@ -71,7 +71,7 @@ declare global {
     sort: number
     enabled: boolean
     permissions?: string[] | Recordable[]
-    type: number
+    type: 'DIRECTORY' | 'MENU'
     keepAlive?: boolean
   }
 }

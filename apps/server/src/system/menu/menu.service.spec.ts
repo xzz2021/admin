@@ -1,3 +1,4 @@
+import { MenuType } from '@prisma/generated/zod/enums'
 import type { PgService } from '@/prisma/pg.service'
 import { MenuRepository } from './menu.repository'
 import { MenuService } from './menu.service'
@@ -35,7 +36,7 @@ describe('MenuService tree updates', () => {
       id: 'menu-1',
       name: 'Menu',
       path: 'menu',
-      type: 1,
+      type: MenuType.MENU,
       sort: 0,
       enabled: true,
       title: 'Menu',
@@ -56,7 +57,7 @@ describe('MenuService tree updates', () => {
         parentId: 'child',
         name: 'Menu',
         path: 'menu',
-        type: 1,
+        type: MenuType.MENU,
         sort: 0,
         enabled: true,
         title: 'Menu',

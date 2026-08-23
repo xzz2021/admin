@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { addPermissionApi, delPermissionApi, getMenuListApi, updatePermissionApi } from '@/api/menu'
-import type { MenuItem, MenuPermission } from '@/api/menu/types'
+import { isDirectoryMenu, isPageMenu, MenuType, type MenuItem, type MenuPermission } from '@/api/menu/types'
 import { BaseButton } from '@/components/Button'
 import { Form, FormSchema } from '@/components/Form'
 import { Icon } from '@/components/Icon'
@@ -61,8 +61,8 @@ const getMenuId = async () => {
   return formData.id ?? props.currentRow?.id
 }
 
-const applyMenuTypeSchema = async (type: number, componentValue?: string) => {
-  if (type === 1) {
+const applyMenuTypeSchema = async (type: unknown, componentValue?: string) => {
+  if (isPageMenu(type)) {
     setSchema([{ field: 'component', path: 'componentProps.disabled', value: false }])
     if (componentValue !== undefined) {
       setValues({ component: componentValue })
@@ -105,10 +105,10 @@ const handleImportMenuForm = async () => {
       existingIds: collectMenuIds(list)
     })
 
-    const type = values.type ?? 0
-    await applyMenuTypeSchema(type, type === 1 ? (values.component ?? '') : undefined)
+    const type = values.type ?? MenuType.DIRECTORY
+    await applyMenuTypeSchema(type, isPageMenu(type) ? (values.component ?? '') : undefined)
 
-    if (type === 0) {
+    if (isDirectoryMenu(type)) {
       values.component = values.parentId ? '##' : '#'
     }
 
@@ -270,13 +270,13 @@ const formSchema = reactive<FormSchema[]>([
     colProps: COL_FULL,
     componentProps: {
       options: [
-        { label: t('menu.directoryType'), value: 0 },
-        { label: t('menu.menuItemType'), value: 1 }
+        { label: t('menu.directoryType'), value: MenuType.DIRECTORY },
+        { label: t('menu.menuItemType'), value: MenuType.MENU }
       ],
       on: {
-        change: async (val: number) => {
+        change: async (val: string) => {
           const formData = await getFormData()
-          if (val === 1) {
+          if (isPageMenu(val)) {
             setSchema([{ field: 'component', path: 'componentProps.disabled', value: false }])
             setValues({ component: unref(cacheComponent) })
           } else {
@@ -305,7 +305,7 @@ const formSchema = reactive<FormSchema[]>([
       props: {
         label: (data: MenuItem) => t(data.title || ''),
         children: 'children',
-        disabled: (data: MenuItem) => data.type === 1
+        disabled: (data: MenuItem) => isPageMenu(data.type)
       },
       highlightCurrent: true,
       expandOnClickNode: false,
@@ -317,9 +317,9 @@ const formSchema = reactive<FormSchema[]>([
       on: {
         change: async (val: string | null) => {
           const formData = await getFormData()
-          if (formData.type === 0) {
+          if (isDirectoryMenu(formData.type)) {
             setValues({ component: val ? '##' : '#' })
-          } else if (formData.type === 1) {
+          } else if (isPageMenu(formData.type)) {
             setValues({ component: unref(cacheComponent) ?? '' })
           }
         }
@@ -533,7 +533,7 @@ watch(
     if (!currentRow) {
       cacheComponent.value = ''
       setValues({
-        type: 0,
+        type: MenuType.DIRECTORY,
         parentId: null,
         enabled: true,
         sort: 0,
@@ -545,8 +545,8 @@ watch(
       return
     }
 
-    cacheComponent.value = currentRow.type === 1 ? (currentRow.component ?? '') : ''
-    const isDirectory = currentRow.type !== 1
+    cacheComponent.value = isPageMenu(currentRow.type) ? (currentRow.component ?? '') : ''
+    const isDirectory = !isPageMenu(currentRow.type)
     setSchema([
       {
         field: 'component',

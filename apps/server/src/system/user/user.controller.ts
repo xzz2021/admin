@@ -87,15 +87,15 @@ export class UserController {
   @Post('add')
   @RequiredPermission('user:add')
   @ApiOperation({ summary: '创建用户' })
-  addUser(@Body() addUserinfoDto: CreateUserDto) {
-    return this.userService.addUser(addUserinfoDto)
+  addUser(@Body() addUserinfoDto: CreateUserDto, @Req() req: JwtReqDto) {
+    return this.userService.addUser(addUserinfoDto, req.user.id)
   }
 
   @Post('update')
   @RequiredPermission('user:update')
   @ApiOperation({ summary: '更新用户' })
-  update(@Body() updateData: UpdateUserDto) {
-    return this.userService.update(updateData)
+  update(@Body() updateData: UpdateUserDto, @Req() req: JwtReqDto) {
+    return this.userService.update(updateData, req.user.id)
   }
 
   @Delete('delete')

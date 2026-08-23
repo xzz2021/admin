@@ -100,6 +100,37 @@ describe('UserService session revocation', () => {
 
     expect(revokeAll).not.toHaveBeenCalled()
   })
+
+  it('records the operator as role assigner when updating roles', async () => {
+    const service = createService()
+
+    await service.update(
+      {
+        id: 'user-1',
+        username: 'alice',
+        phone: '13800138000',
+        department: 'dept-1',
+        roles: ['role-1'],
+        enabled: true,
+      },
+      'admin-1',
+    )
+
+    expect(userUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          roles: expect.objectContaining({
+            create: [
+              expect.objectContaining({
+                assignedById: 'admin-1',
+                assignedAt: expect.any(Date),
+              }),
+            ],
+          }),
+        }),
+      }),
+    )
+  })
 })
 
 describe('UserService uploadAvatar', () => {
@@ -180,6 +211,63 @@ describe('UserService uploadAvatar', () => {
 
     await expect(service.uploadAvatar(file, '', '13800138000')).rejects.toThrow('身份识别异常')
     expect(userUpdate).not.toHaveBeenCalled()
+  })
+})
+
+describe('UserService role assignment', () => {
+  const userCreate = jest.fn()
+  const userFindUnique = jest.fn()
+  const transaction = jest.fn(
+    async (callback: (tx: { user: { create: typeof userCreate } }) => Promise<unknown>) =>
+      callback({ user: { create: userCreate } }),
+  )
+
+  const createService = () =>
+    new UserService(
+      new UserRepository({
+        user: { update: jest.fn(), findUnique: userFindUnique },
+        $transaction: transaction,
+      } as unknown as PgService),
+      { invalidateUsers: jest.fn() } as unknown as RbacPermissionCacheService,
+      { revokeAll: jest.fn() } as unknown as SessionRevocationService,
+      { get: () => 'api/public' } as unknown as import('@nestjs/config').ConfigService,
+      { enqueue: jest.fn() } as unknown as FileCleanupService,
+    )
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    userFindUnique.mockResolvedValue(null)
+    userCreate.mockResolvedValue({ id: 'user-2' })
+  })
+
+  it('records the operator as role assigner when creating a user', async () => {
+    const service = createService()
+
+    await service.addUser(
+      {
+        username: 'bob',
+        password: 'ChangeMe_Now!',
+        phone: '13900139000',
+        department: 'dept-1',
+        roles: ['role-1'],
+      },
+      'admin-1',
+    )
+
+    expect(userCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          roles: {
+            create: [
+              expect.objectContaining({
+                assignedById: 'admin-1',
+                assignedAt: expect.any(Date),
+              }),
+            ],
+          },
+        }),
+      }),
+    )
   })
 })
 

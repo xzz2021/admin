@@ -7,6 +7,8 @@
 ```mermaid
 erDiagram
   User ||--o{ UserRole : has
+  User ||--o{ Role : creates
+  User ||--o{ UserRole : assigns
   Role ||--o{ UserRole : has
   Role ||--o{ RoleMenu : has
   Menu ||--o{ RoleMenu : has
@@ -28,9 +30,9 @@ erDiagram
 | Model                           | 要点                                                                                             |
 | ------------------------------- | ------------------------------------------------------------------------------------------------ |
 | User                            | cuid；phone/email 唯一；argon2 密码哈希；可选 department                                         |
-| Role                            | code 唯一；`super_admin` 为超管约定；`isSystem`                                                  |
-| UserRole                        | 复合主键 (userId, roleId)                                                                        |
-| Menu                            | 树；type 0 目录 / 1 页面；path/name 唯一；内嵌前端 meta 字段                                     |
+| Role                            | code 唯一；`super_admin` 为超管约定；`isSystem`；`createdById` → User（SetNull）                 |
+| UserRole                        | 复合主键 (userId, roleId)；`assignedById` → User（SetNull）                                      |
+| Menu                            | 树；`MenuType` DIRECTORY / MENU；path/name 唯一；内嵌前端 meta 字段                              |
 | Permission                      | code 唯一；挂 menuId；PermissionType                                                             |
 | RoleMenu / RolePermission       | 角色资源绑定                                                                                     |
 | Department                      | 树 + 物化 `path`；`(parentId, name)` 唯一                                                        |
@@ -45,6 +47,7 @@ erDiagram
 ## 枚举
 
 - `NoticeLevel`：INFO / SUCCESS / WARNING / ERROR
+- `MenuType`：DIRECTORY / MENU
 - `PermissionType`：BUTTON / DATA / API / OTHER
 - `MessageType`：MAIL / SYSTEM / ALERT
 

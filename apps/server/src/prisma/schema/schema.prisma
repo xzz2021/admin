@@ -18,17 +18,16 @@ datasource db {
   provider = "postgresql"
 }
 
-// 区分是目录还是菜单
-// enum MenuType {
-//   DIRECTORY
-//   MENU
-// }
-
 enum NoticeLevel {
   INFO
   SUCCESS
   WARNING
   ERROR
+}
+
+enum MenuType {
+  DIRECTORY
+  MENU
 }
 
 enum PermissionType {
@@ -90,6 +89,8 @@ model User {
   sentMessages     Message[] @relation("MessageSender")
   receivedMessages Message[] @relation("MessageReceiver")
   backupJobs       DbBackupJob[]
+  createdRoles     Role[]    @relation("RoleCreator")
+  assignedUserRoles UserRole[] @relation("UserRoleAssigner")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -114,9 +115,12 @@ model Role {
   menus       RoleMenu[]
   permissions RolePermission[]
   /// @z.string().optional().meta({ description: '创建人用户 ID', example: 'clxxx' })
-  createdBy String?
+  createdById String?
+  createdBy   User?   @relation("RoleCreator", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([createdById])
 }
 
 model UserRole {
@@ -124,8 +128,9 @@ model UserRole {
   roleId String
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  /// @z.string().optional().meta({ description: '分配人', example: 'admin' })
-  assignedBy String?
+  /// @z.string().optional().meta({ description: '分配人用户 ID', example: 'clxxx' })
+  assignedById String?
+  assignedBy   User?   @relation("UserRoleAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
   /// @z.coerce.date().optional().meta({ description: '分配时间', example: '2026-01-01T12:00:00.000Z' })
   assignedAt DateTime?
   createdAt  DateTime @default(now())
@@ -133,6 +138,7 @@ model UserRole {
   @@id([userId, roleId])
   @@index([userId])
   @@index([roleId])
+  @@index([assignedById])
 }
 
 model Menu {
@@ -140,8 +146,8 @@ model Menu {
   parentId String?
   parent   Menu?    @relation("MenuTree", fields: [parentId], references: [id], onDelete: SetNull)
   children Menu[]   @relation("MenuTree")
-  /// @z.number().meta({ description: '0 目录 / 1 页面', example: 0 })
-  type Int @default(0)
+  /// @z.nativeEnum(MenuType).meta({ description: 'DIRECTORY 目录 / MENU 页面', example: 'DIRECTORY' })
+  type MenuType @default(DIRECTORY)
   /// @z.string().min(1).max(50).meta({ description: '路由名称，全局唯一，用于前端 keep-alive', example: 'User' })
   name String @unique
   /// @z.string().min(1).max(100).meta({ description: '路由路径，全局唯一', example: 'authorization/user' })

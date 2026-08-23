@@ -205,6 +205,7 @@ export class UserRepository {
     phone: string
     departmentId: string
     roleIds?: string[]
+    assignedById?: string | null
   }) {
     return this.db.$transaction(async tx => {
       return tx.user.create({
@@ -214,7 +215,7 @@ export class UserRepository {
           phone: data.phone,
           department: { connect: { id: data.departmentId } },
           roles: {
-            create: data.roleIds?.map(id => ({ role: { connect: { id } } })),
+            create: this.roleAssignments(data.roleIds, data.assignedById),
           },
         },
       })
@@ -245,9 +246,13 @@ export class UserRepository {
 
   updateWithDepartmentAndRoles(
     id: string,
-    data: Prisma.UserUpdateInput & { departmentId: string; roleIds?: string[] },
+    data: Prisma.UserUpdateInput & {
+      departmentId: string
+      roleIds?: string[]
+      assignedById?: string | null
+    },
   ) {
-    const { departmentId, roleIds, ...rest } = data
+    const { departmentId, roleIds, assignedById, ...rest } = data
     return this.db.user.update({
       where: { id },
       data: {
@@ -255,10 +260,18 @@ export class UserRepository {
         department: { connect: { id: departmentId } },
         roles: {
           deleteMany: {},
-          create: roleIds?.map(roleId => ({ role: { connect: { id: roleId } } })),
+          create: this.roleAssignments(roleIds, assignedById),
         },
       },
     })
+  }
+
+  private roleAssignments(roleIds?: string[], assignedById?: string | null) {
+    return roleIds?.map(roleId => ({
+      role: { connect: { id: roleId } },
+      assignedById: assignedById ?? null,
+      assignedAt: assignedById ? new Date() : null,
+    }))
   }
 
   deleteManyWithRelations(ids: string[]) {

@@ -1821,7 +1821,7 @@ export const RoleScalarFieldEnum = {
   sort: 'sort',
   enabled: 'enabled',
   isSystem: 'isSystem',
-  createdBy: 'createdBy',
+  createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1832,7 +1832,7 @@ export type RoleScalarFieldEnum = (typeof RoleScalarFieldEnum)[keyof typeof Role
 export const UserRoleScalarFieldEnum = {
   userId: 'userId',
   roleId: 'roleId',
-  assignedBy: 'assignedBy',
+  assignedById: 'assignedById',
   assignedAt: 'assignedAt',
   createdAt: 'createdAt'
 } as const
@@ -2165,6 +2165,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'MenuType'
+ */
+export type EnumMenuTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MenuType'>
+    
+
+
+/**
+ * Reference to a field of type 'MenuType[]'
+ */
+export type ListEnumMenuTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MenuType[]'>
     
 
 

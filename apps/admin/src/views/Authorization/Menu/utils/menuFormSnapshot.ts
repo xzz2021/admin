@@ -1,4 +1,4 @@
-import type { MenuItem } from '@/api/menu/types'
+import { isDirectoryMenu, isPageMenu, normalizeMenuType, type MenuItem } from '@/api/menu/types'
 import { eachTree } from '@/utils/tree'
 import { MENU_FORM_FIELDS, type MenuFormField } from './menuForm'
 
@@ -51,7 +51,8 @@ export const parseMenuFormSnapshot = (raw: string): MenuFormSnapshot | null => {
 
     if (typeof menu.title !== 'string' || !menu.title.trim()) return null
     if (typeof menu.path !== 'string' || !menu.path.trim()) return null
-    if (menu.type !== 0 && menu.type !== 1) return null
+    if (!isDirectoryMenu(menu.type) && !isPageMenu(menu.type)) return null
+    menu.type = normalizeMenuType(menu.type)
 
     return {
       type: MENU_FORM_SNAPSHOT_TYPE,

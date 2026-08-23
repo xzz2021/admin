@@ -1,11 +1,12 @@
 import * as z from "zod"
 import { createZodDto } from "nestjs-zod/dto"
+import { MenuType } from "./enums"
 import { CompleteRoleMenu, RelatedRoleMenuModel, CompletePermission, RelatedPermissionModel } from "./index"
 
 export const MenuModel = z.object({
   id: z.string(),
   parentId: z.string().nullish(),
-  type: z.number().meta({ description: '0 目录 / 1 页面', example: 0 }),
+  type: z.nativeEnum(MenuType).meta({ description: 'DIRECTORY 目录 / MENU 页面', example: 'DIRECTORY' }),
   name: z.string().min(1).max(50).meta({ description: '路由名称，全局唯一，用于前端 keep-alive', example: 'User' }),
   path: z.string().min(1).max(100).meta({ description: '路由路径，全局唯一', example: 'authorization/user' }),
   component: z.string().max(100).optional().meta({ description: '前端组件路径', example: 'views/Authorization/User/User' }).nullish(),
