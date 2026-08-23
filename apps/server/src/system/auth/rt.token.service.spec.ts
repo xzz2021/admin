@@ -1,7 +1,7 @@
 import type { RedisService } from '@liaoliaots/nestjs-redis'
 import type { ConfigService } from '@nestjs/config'
 import type { JwtService } from '@nestjs/jwt'
-import type { Response } from 'express'
+import { RT_COOKIE_NAME } from './http-cookie'
 import { RtTokenService } from './rt.token.service'
 
 describe('RtTokenService', () => {
@@ -37,13 +37,6 @@ describe('RtTokenService', () => {
       configService as unknown as ConfigService,
     )
 
-  const cookie = jest.fn()
-  const clearCookie = jest.fn()
-  const res = {
-    cookie,
-    clearCookie,
-  } as unknown as Response
-
   beforeEach(() => {
     jest.clearAllMocks()
     redis.get.mockResolvedValue(null)
@@ -54,11 +47,11 @@ describe('RtTokenService', () => {
     )
   })
 
-  it('stores refresh expiry for jti and sets cookie maxAge from refresh TTL', async () => {
+  it('stores refresh expiry for jti and describes cookie maxAge from refresh TTL', async () => {
     const service = createService()
     const before = Math.floor(Date.now() / 1000)
 
-    await service.issue('user-1', { username: 'admin' }, res)
+    const issued = await service.issue('user-1', { username: 'admin' })
 
     const jtiSetCall = redis.set.mock.calls.find(
       (call: unknown[]) =>
@@ -71,15 +64,17 @@ describe('RtTokenService', () => {
     expect(storedExp).toBeGreaterThanOrEqual(before + 3600)
     expect(storedExp).toBeLessThanOrEqual(before + 3600 + 2)
 
-    expect(cookie).toHaveBeenCalledWith(
-      'rt',
-      expect.any(String),
-      expect.objectContaining({
+    expect(issued.cookie).toEqual({
+      action: 'set',
+      name: RT_COOKIE_NAME,
+      value: issued.refreshToken,
+      options: expect.objectContaining({
         httpOnly: true,
         maxAge: 3600 * 1000,
       }),
-    )
+    })
   })
+
   it('rotates to a new jti and blacklists the old refresh token', async () => {
     const service = createService()
     redis.get.mockImplementation((key: string) => {
@@ -89,7 +84,7 @@ describe('RtTokenService', () => {
       return Promise.resolve(null)
     })
 
-    const result = await service.issue('user-1', {}, res, 'old-jti')
+    const result = await service.issue('user-1', {}, 'old-jti')
 
     expect(result.jti).not.toBe('old-jti')
     expect(redis.set).toHaveBeenCalledWith(
@@ -110,5 +105,14 @@ describe('RtTokenService', () => {
     const service = createService()
     await service.blacklistByJti('dead-jti', 0)
     expect(redis.set).toHaveBeenCalledWith('rt:jwt:blacklist:dead-jti', '1', 'EX', 3600)
+  })
+
+  it('describes a clear-cookie command without writing a response', () => {
+    const command = createService().describeClearCookie()
+    expect(command).toEqual({
+      action: 'clear',
+      name: RT_COOKIE_NAME,
+      options: expect.objectContaining({ httpOnly: true, path: '/', sameSite: 'lax' }),
+    })
   })
 })

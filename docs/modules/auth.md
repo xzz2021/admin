@@ -15,14 +15,14 @@
 
 ## 关键实现
 
-| 文件                                     | 职责                               |
-| ---------------------------------------- | ---------------------------------- |
-| `auth.controller.ts` / `auth.service.ts` | HTTP 与编排                        |
-| `jwt.strategy.ts`                        | Bearer access，`token.secret`      |
-| `jwt.refresh.strategy.ts`                | cookie `rt`，`token.refreshSecret` |
-| `token.service.ts`                       | 单 token 会话（Redis）             |
-| `rt.token.service.ts`                    | 双 token；RT 写 httpOnly cookie    |
-| `session-registry.ts`                    | SSO 会话列表 / 黑名单              |
+| 文件                                     | 职责                                     |
+| ---------------------------------------- | ---------------------------------------- |
+| `auth.controller.ts` / `auth.service.ts` | HTTP 写 cookie；Service 返回 cookie 描述 |
+| `jwt.strategy.ts`                        | Bearer access，`token.secret`            |
+| `jwt.refresh.strategy.ts`                | cookie `rt`，`token.refreshSecret`       |
+| `token.service.ts`                       | 单 token 会话（Redis）                   |
+| `rt.token.service.ts`                    | 双 token；返回 RT cookie 描述            |
+| `session-registry.ts`                    | SSO 会话列表 / 黑名单                    |
 
 密码：argon2。登录标识：手机号。
 

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { randomUUID } from 'crypto'
-import type { CookieOptions, Response } from 'express'
+import { RT_COOKIE_NAME, type CookieCommand, type CookieFlags } from './http-cookie'
 import { REFRESH_SESSION_KEYS, TokenSessionService, type TokenAppConfig } from './token.session'
 
 @Injectable()
@@ -29,12 +29,7 @@ export class RtTokenService extends TokenSessionService {
     this.tokenConfig = tokenConfig
   }
 
-  async issue(
-    userId: string,
-    extraPayload: Record<string, unknown> = {},
-    res: Response,
-    oldJti?: string,
-  ) {
+  async issue(userId: string, extraPayload: Record<string, unknown> = {}, oldJti?: string) {
     const jti = randomUUID()
     const refreshExp = Math.floor(Date.now() / 1000) + this.tokenConfig.refreshExpiresTime
     const [accessToken, refreshToken] = await Promise.all([
@@ -53,32 +48,41 @@ export class RtTokenService extends TokenSessionService {
     ])
 
     await this.sessions.register(userId, jti, refreshExp, oldJti)
-    this.setRtCookie(res, refreshToken)
-    return { jti, exp: refreshExp, accessToken, refreshToken }
+    return {
+      jti,
+      exp: refreshExp,
+      accessToken,
+      refreshToken,
+      cookie: this.describeSetCookie(refreshToken),
+    }
   }
 
-  setRtCookie(res: Response, refreshToken: string) {
-    res.cookie('rt', refreshToken, {
-      ...this.rtCookieBase(),
-      maxAge: this.tokenConfig.refreshExpiresTime * 1000,
-    })
+  describeSetCookie(refreshToken: string): CookieCommand {
+    return {
+      action: 'set',
+      name: RT_COOKIE_NAME,
+      value: refreshToken,
+      options: {
+        ...this.rtCookieBase(),
+        maxAge: this.tokenConfig.refreshExpiresTime * 1000,
+      },
+    }
   }
 
-  clearRtCookie(res: Response) {
-    res.clearCookie('rt', this.rtCookieBase())
+  describeClearCookie(): CookieCommand {
+    return {
+      action: 'clear',
+      name: RT_COOKIE_NAME,
+      options: this.rtCookieBase(),
+    }
   }
 
-  async signToken(
-    userId: string,
-    extraPayload: Record<string, unknown> = {},
-    res: Response,
-    oldJti?: string,
-  ) {
-    const { accessToken, refreshToken } = await this.issue(userId, extraPayload, res, oldJti)
-    return { accessToken, refreshToken }
+  async signToken(userId: string, extraPayload: Record<string, unknown> = {}, oldJti?: string) {
+    const { accessToken, cookie } = await this.issue(userId, extraPayload, oldJti)
+    return { accessToken, cookie }
   }
 
-  private rtCookieBase(): CookieOptions {
+  private rtCookieBase(): CookieFlags {
     return {
       httpOnly: true,
       secure: this.configService.get<boolean>('isProduction') ?? false,

@@ -7,6 +7,7 @@ import type { Response } from 'express'
 import { AuthService } from './auth.service'
 import type { JwtReqDto } from './dto/auth.dto'
 import { ForceLogoutDto, LoginInfoDto, RegisterDto, RegisterResDto } from './dto/auth.dto'
+import { applyCookieCommand } from './http-cookie'
 
 @ApiTags('帐号权限')
 @Controller('auth')
@@ -25,32 +26,39 @@ export class AuthController {
   @Public()
   @ApiOperation({ summary: '用户登录(refreshToken版本)' })
   @UseGuards(CaptchaGuard)
-  rtLogin(
+  async rtLogin(
     @Body() loginInfo: LoginInfoDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.rtLogin(loginInfo, extractIP((req as any)['ip'] as string) ?? '', res)
+    const { body, cookie } = await this.authService.rtLogin(
+      loginInfo,
+      extractIP((req as any)['ip'] as string) ?? '',
+    )
+    applyCookieCommand(res, cookie)
+    return body
   }
 
   @Post('refresh')
   @Public()
   @UseGuards(JwtRefreshAuthGuard)
-  refresh(@Req() req: JwtReqDto, @Res({ passthrough: true }) res: Response) {
-    // console.log('xzz2021: AuthController -> refresh -> userId:', req.user);
+  async refresh(@Req() req: JwtReqDto, @Res({ passthrough: true }) res: Response) {
     const { id: userId, jti: oldJti } = req.user
-    return this.authService.rtRefresh(userId, res, oldJti)
+    const { body, cookie } = await this.authService.rtRefresh(userId, oldJti)
+    applyCookieCommand(res, cookie)
+    return body
   }
 
   @Post('logout')
   @ApiOperation({ summary: '用户主动退出登录' })
-  logout(
+  async logout(
     @Body() body: ForceLogoutDto,
     @Req() req: JwtReqDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const jti: string = req.user.jti
-    return this.authService.logout(body.id, jti, res)
+    const { body: result, cookie } = await this.authService.logout(body.id, req.user.jti)
+    applyCookieCommand(res, cookie)
+    return result
   }
 
   @Post('forceLogout')

@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
-import { Response } from 'express'
 import Redis from 'ioredis'
 import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
 import { RtTokenService } from './rt.token.service'
@@ -69,7 +68,7 @@ export class AuthService {
     return user
   }
 
-  async rtLogin(loginInfo: LoginInfoDto, ip: string, res: Response) {
+  async rtLogin(loginInfo: LoginInfoDto, _ip: string) {
     const user = await this.getUserForLogin(loginInfo.phone)
 
     if (!user) {
@@ -83,12 +82,12 @@ export class AuthService {
 
     const { password, ...result } = user
     const { username, phone, id, roles } = result
-    const { accessToken } = await this.rtTokenService.signToken(
+    const { accessToken, cookie } = await this.rtTokenService.signToken(id, {
+      username,
+      phone,
       id,
-      { username, phone, id, roles: roles.map(item => item.role) },
-      res,
-    )
-
+      roles: roles.map(item => item.role),
+    })
     /*
       注意使用res设置cookie后   直接返回数据是无效的
       1. 使用return res.status(200).json({ accessToken });
@@ -96,9 +95,12 @@ export class AuthService {
 
       */
     return {
-      message: `${username}登录成功`,
-      userinfo: result,
-      access_token: accessToken,
+      cookie,
+      body: {
+        message: `${username}登录成功`,
+        userinfo: result,
+        access_token: accessToken,
+      },
     }
   }
 
@@ -139,16 +141,16 @@ export class AuthService {
     return { message: '强制用户下线成功', id }
   }
 
-  async logout(id: string, jti: string, res?: Response) {
+  async logout(id: string, jti: string) {
     await Promise.all([this.tokenService.logout(id, jti), this.rtTokenService.logout(id, jti)])
     await this.sessions.endSession(jti)
-    if (res) {
-      this.rtTokenService.clearRtCookie(res)
+    return {
+      cookie: this.rtTokenService.describeClearCookie(),
+      body: { message: '退出登录成功', id },
     }
-    return { message: '退出登录成功', id }
   }
 
-  async rtRefresh(userId: string, res: Response, oldJti: string) {
+  async rtRefresh(userId: string, oldJti: string) {
     // 会话有效性已由 JwtRefreshAuthGuard（Redis）校验；
     // DB 仅用于刷新用户资料。库瞬时不可用时仍换发短 token，避免全站被误判为 401。
     let extraPayload: Record<string, unknown> = { id: userId }
@@ -164,9 +166,16 @@ export class AuthService {
       if (!isTransientDbError(error)) throw error
     }
 
-    const { accessToken } = await this.rtTokenService.signToken(userId, extraPayload, res, oldJti)
+    const { accessToken, cookie } = await this.rtTokenService.signToken(
+      userId,
+      extraPayload,
+      oldJti,
+    )
     // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
     await this.sessions.endSession(oldJti)
-    return { access_token: accessToken, message: '获取新的token成功' }
+    return {
+      cookie,
+      body: { access_token: accessToken, message: '获取新的token成功' },
+    }
   }
 }
