@@ -98,6 +98,37 @@ export class UserRepository {
     })
   }
 
+  findEnabledRolePermissionTree(userId: string) {
+    return this.db.user.findUnique({
+      where: {
+        id: userId,
+        enabled: true,
+      },
+      select: {
+        roles: {
+          select: {
+            role: {
+              select: {
+                code: true,
+                enabled: true,
+                permissions: {
+                  select: {
+                    permission: {
+                      select: {
+                        code: true,
+                        enabled: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+  }
+
   findAvatar(userId: string) {
     return this.db.user.findUnique({
       where: { id: userId },

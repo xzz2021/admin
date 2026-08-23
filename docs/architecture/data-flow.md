@@ -27,7 +27,7 @@ sequenceDiagram
 
 1. Axios 附加 `Authorization: Bearer <access_token>`
 2. Nginx（生产）去掉 `/api` 前缀
-3. Nest：限流 → JWT → PermissionGuard（可选 Redis 权限缓存）
+3. Nest：限流 → JWT → PermissionGuard（Redis 权限缓存，未命中走 User 仓储）
 4. Service 访问 Prisma / Redis
 5. TransformInterceptor 将载荷包装为 `ResOp`；失败走 AllExceptionsFilter，禁止业务层 `return { code }`
 

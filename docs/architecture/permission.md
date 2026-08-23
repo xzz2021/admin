@@ -21,13 +21,14 @@ Seed 中权限编码规则：`code = \`${resource}:${action}\``，`resource`对�
 
 - 装饰器：`apps/server/src/processor/decorator/permission.ts` → `@RequiredPermission(code)`
 - Guard：`apps/server/src/processor/guard/permission.ts`（全局 APP_GUARD）
-- 缓存：`apps/server/src/processor/rbac/rbac-permission-cache.service.ts`（TTL 约 5 分钟 + 抖动；未命中 singleflight；失效靠 per-user 版本号，不把 Prisma 传入缓存服务）
+- 缓存：`RbacPermissionCacheService`（TTL 约 5 分钟 + 抖动；未命中 singleflight；失效靠 per-user 版本号）
+- 未命中：`UserRepository.findEnabledRolePermissionTree`，再 `resolvePermissionCodes`
 
 流程：
 
 1. 无 `@RequiredPermission` → 放行（仍需通过 JWT，除非 `@Public`）
 2. 有则取 `request.user.id`
-3. 先读 Redis 权限缓存；未命中则合并并发加载后查 DB（启用角色 → 启用权限 code）；空权限列表会负缓存
+3. `PermissionGuard` 先读 Redis 权限缓存；未命中再走 User 仓储；空权限列表会负缓存
 4. 含 `*` 或精确匹配所需 code → 通过
 5. 角色/权限变更由仓储查出 userId，缓存只 INCR 版本并删 Redis；DEL 失败时旧条目因版本不匹配也会失效
 

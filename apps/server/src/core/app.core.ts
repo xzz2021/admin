@@ -14,6 +14,7 @@ import { ThrottlerModule } from '@nestjs/throttler'
 
 import { AppRedisModule } from '@/core/cache/redis.module'
 import { RbacModule } from '@/processor/rbac'
+import { UserPersistenceModule } from '@/system/user/user-persistence.module'
 
 export const CORE_MODULE = [
   CONFIG_MODULE,
@@ -23,6 +24,7 @@ export const CORE_MODULE = [
   // CACHE_MODULE,
   AppRedisModule,
   RbacModule,
+  UserPersistenceModule,
   /*  @SkipThrottle()  跳过速率限制
     @Throttle({ default: { limit: 3, ttl: 60000 } }) 装饰器，可用于覆盖全局模块中设置的 limit 和 ttl
     @Throttle('medium') // 使用 medium 策略

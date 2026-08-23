@@ -1,8 +1,8 @@
-import { PgService } from '@/prisma/pg.service'
 import { RequiredPermission } from '@/processor/decorator'
 import { JwtRefreshAuthGuard, PermissionGuard } from '@/processor/guard'
 import { RbacPermissionCacheService } from '@/processor/rbac'
 import { RtTokenService } from '@/system/auth/rt.token.service'
+import { UserRepository } from '@/system/user/user.repository'
 import { StaticfileController } from '@/system/staticfile/staticfile.controller'
 import { StaticfileService } from '@/system/staticfile/staticfile.service'
 import { Controller, Get, INestApplication, Post, UseGuards } from '@nestjs/common'
@@ -70,14 +70,13 @@ describe('Security boundaries (e2e)', () => {
           useValue: { getFileList, uploadFile, deleteFile },
         },
         {
-          provide: PgService,
-          useValue: { user: { findUnique: jest.fn() } },
+          provide: UserRepository,
+          useValue: { findEnabledRolePermissionTree: jest.fn() },
         },
         {
           provide: RbacPermissionCacheService,
           useValue: {
-            get: jest.fn(() => Promise.resolve(permissions)),
-            set: jest.fn(),
+            getOrLoad: jest.fn(() => Promise.resolve(permissions)),
           },
         },
       ],

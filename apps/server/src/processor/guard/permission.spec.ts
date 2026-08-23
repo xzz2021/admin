@@ -1,35 +1,21 @@
-import type { PgService } from '@/prisma/pg.service'
 import { PERMISSION_KEY } from '@/processor/decorator/permission'
-import { RbacPermissionCacheService } from '@/processor/rbac'
-import type { RedisService } from '@liaoliaots/nestjs-redis'
+import { ALL_PERMISSIONS } from '@/processor/rbac/rbac-permission'
+import type { RbacPermissionCacheService } from '@/processor/rbac/rbac-permission-cache.service'
+import type { UserRepository } from '@/system/user/user.repository'
 import type { ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { PermissionGuard } from './permission'
 
-jest.mock('@/prisma/pg.service', () => ({
-  PgService: class PgService {},
-}))
-
 describe('PermissionGuard', () => {
-  const findUnique = jest.fn()
-  const redis = {
-    get: jest.fn(),
-    mget: jest.fn(),
-    set: jest.fn(),
-    del: jest.fn(),
-    pipeline: jest.fn(),
-  }
+  const findEnabledRolePermissionTree = jest.fn()
+  const getOrLoad = jest.fn()
 
-  const createGuard = () => {
-    const cache = new RbacPermissionCacheService({
-      getOrThrow: () => redis,
-    } as unknown as RedisService)
-    return new PermissionGuard(
-      { user: { findUnique } } as unknown as PgService,
-      cache,
+  const createGuard = () =>
+    new PermissionGuard(
+      { findEnabledRolePermissionTree } as unknown as UserRepository,
+      { getOrLoad } as unknown as RbacPermissionCacheService,
       new Reflector(),
     )
-  }
 
   const createContext = (permission?: string, userId?: string): ExecutionContext => {
     const handler = () => undefined
@@ -47,33 +33,33 @@ describe('PermissionGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    redis.mget.mockResolvedValue([null, null])
-    redis.get.mockResolvedValue(null)
-    redis.set.mockResolvedValue('OK')
-    redis.del.mockResolvedValue(1)
+    getOrLoad.mockImplementation(async (_userId: string, loader: () => Promise<string[]>) =>
+      loader(),
+    )
   })
 
   it('allows routes without permission metadata', async () => {
     await expect(createGuard().canActivate(createContext())).resolves.toBe(true)
-    expect(findUnique).not.toHaveBeenCalled()
+    expect(getOrLoad).not.toHaveBeenCalled()
   })
 
   it('rejects protected routes without an authenticated user', async () => {
     await expect(createGuard().canActivate(createContext('user:update'))).resolves.toBe(false)
-    expect(findUnique).not.toHaveBeenCalled()
+    expect(getOrLoad).not.toHaveBeenCalled()
   })
 
-  it('uses cached permissions without querying the database', async () => {
-    redis.mget.mockResolvedValue([JSON.stringify({ v: 0, p: ['user:update'] }), '0'])
+  it('uses cached permissions without querying the repository', async () => {
+    getOrLoad.mockResolvedValue(['user:update'])
 
     await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
       true,
     )
-    expect(findUnique).not.toHaveBeenCalled()
+    expect(getOrLoad).toHaveBeenCalledWith('user-1', expect.any(Function))
+    expect(findEnabledRolePermissionTree).not.toHaveBeenCalled()
   })
 
-  it('loads enabled role permissions from the database and caches them', async () => {
-    findUnique.mockResolvedValue({
+  it('loads enabled role permissions from the user repository on cache miss', async () => {
+    findEnabledRolePermissionTree.mockResolvedValue({
       roles: [
         {
           role: {
@@ -88,29 +74,22 @@ describe('PermissionGuard', () => {
     await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
       true,
     )
-    expect(redis.set).toHaveBeenCalledWith(
-      'rbac:permissions:user-1',
-      JSON.stringify({ v: 0, p: ['user:update'] }),
-      'EX',
-      expect.any(Number),
-    )
+    expect(findEnabledRolePermissionTree).toHaveBeenCalledWith('user-1')
   })
 
   it('grants all permissions to an enabled super admin role', async () => {
-    findUnique.mockResolvedValue({
-      roles: [
-        {
-          role: {
-            code: 'super_admin',
-            enabled: true,
-            permissions: [],
-          },
-        },
-      ],
-    })
+    getOrLoad.mockResolvedValue([ALL_PERMISSIONS])
 
     await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
       true,
+    )
+  })
+
+  it('rejects a request when the required permission is missing', async () => {
+    getOrLoad.mockResolvedValue(['user:view'])
+
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
+      false,
     )
   })
 })
