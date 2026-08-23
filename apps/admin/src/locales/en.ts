@@ -721,6 +721,7 @@ export default {
     downloadFailed: 'File download failed',
     selectToDelete: 'Please select files to delete',
     uploadSuccess: 'Uploaded successfully',
+    uploadFailed: 'Upload failed',
     imageUnavailable: 'Image unavailable',
     audioUnavailable: 'Audio file unavailable',
     videoUnavailable: 'Video file unavailable',

@@ -4,6 +4,9 @@ VITE_NODE_ENV=production
 # 接口前缀
 VITE_API_BASE_PATH=/api/
 
+# OSS 默认公开桶（S3 分片上传）
+VITE_OSS_PUBLIC_BUCKET=public
+
 # 打包路径
 VITE_BASE_PATH=/
 

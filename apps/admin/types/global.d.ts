@@ -70,6 +70,7 @@ declare global {
     readonly VITE_NODE_ENV: string
     readonly VITE_APP_TITLE: string
     readonly VITE_API_BASE_PATH: string
+    readonly VITE_OSS_PUBLIC_BUCKET?: string
     readonly VITE_BASE_PATH: string
     readonly VITE_DROP_DEBUGGER: string
     readonly VITE_DROP_CONSOLE: string

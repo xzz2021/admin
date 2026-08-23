@@ -715,6 +715,7 @@ export default {
     downloadFailed: '文件下载失败',
     selectToDelete: '请选择要删除的文件',
     uploadSuccess: '上传成功',
+    uploadFailed: '上传失败',
     imageUnavailable: '图片已失效',
     audioUnavailable: '音频文件已失效',
     videoUnavailable: '视频文件已失效',

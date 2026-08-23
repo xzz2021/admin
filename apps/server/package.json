@@ -111,7 +111,11 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/generated/**"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/generated/"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
