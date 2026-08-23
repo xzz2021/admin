@@ -24,13 +24,20 @@ export class StaticfileService implements OnModuleInit {
 
   async getFileList() {
     const [fileList, total] = await this.files.findActive()
-    return { message: '文件列表获取成功', list: fileList, total }
+    return {
+      message: '文件列表获取成功',
+      list: fileList.map(file => this.toFileDto(file)),
+      total,
+    }
   }
 
   async uploadFile(file: UploadFileDto) {
     try {
-      const fileData = await this.files.create(file)
-      return { message: '文件上传成功', fileData }
+      const fileData = await this.files.create({
+        ...file,
+        size: BigInt(file.size),
+      })
+      return { message: '文件上传成功', fileData: this.toFileDto(fileData) }
     } catch (error) {
       await this.fileCleanupService.enqueue([{ kind: 'orphan-path', path: file.path }])
       throw error
@@ -66,5 +73,9 @@ export class StaticfileService implements OnModuleInit {
         path: file.path,
       })),
     )
+  }
+
+  private toFileDto<T extends { size: bigint | number }>(file: T) {
+    return { ...file, size: Number(file.size) }
   }
 }

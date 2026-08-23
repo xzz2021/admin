@@ -9,12 +9,16 @@ export class DepartmentService {
   constructor(private readonly departments: DepartmentRepository) {}
 
   async add(createDepartmentDto: CreateDepartmentDto) {
-    const res = await this.departments.transaction(async tx => {
-      const tag = await this.departments.create({ ...createDepartmentDto, path: '' }, tx)
-      const path = await this.buildPath(tag.id, createDepartmentDto.parentId ?? null, tx)
-      return this.departments.updateById(tag.id, { path }, tx)
-    })
-    return { id: res.id, message: '添加部门成功' }
+    try {
+      const res = await this.departments.transaction(async tx => {
+        const tag = await this.departments.create({ ...createDepartmentDto, path: '' }, tx)
+        const path = await this.buildPath(tag.id, createDepartmentDto.parentId ?? null, tx)
+        return this.departments.updateById(tag.id, { path }, tx)
+      })
+      return { id: res.id, message: '添加部门成功' }
+    } catch (error) {
+      this.rethrowDuplicateName(error)
+    }
   }
 
   async findAll() {
@@ -27,34 +31,38 @@ export class DepartmentService {
 
   async update(updateDepartmentDto: UpdateDepartmentDto) {
     const { id, parentId, ...rest } = updateDepartmentDto
-    const res = await this.departments.transaction(async tx => {
-      const departments = await this.departments.findTreeLinks(tx)
-      const current = departments.find(item => item.id === id)
-      if (!current) throw new BadRequestException('部门不存在')
+    try {
+      const res = await this.departments.transaction(async tx => {
+        const departments = await this.departments.findTreeLinks(tx)
+        const current = departments.find(item => item.id === id)
+        if (!current) throw new BadRequestException('部门不存在')
 
-      const nextParentId = parentId === undefined ? current.parentId : parentId
-      assertAcyclicParent(departments, id, nextParentId, '部门')
+        const nextParentId = parentId === undefined ? current.parentId : parentId
+        assertAcyclicParent(departments, id, nextParentId, '部门')
 
-      const parent = nextParentId ? departments.find(item => item.id === nextParentId) : null
-      const nextPath = parent ? `${parent.path}/${id}` : `/${id}`
+        const parent = nextParentId ? departments.find(item => item.id === nextParentId) : null
+        const nextPath = parent ? `${parent.path}/${id}` : `/${id}`
 
-      const updated = await this.departments.updateById(
-        id,
-        {
-          ...rest,
-          ...(parentId === undefined ? {} : { parentId }),
-          path: nextPath,
-        },
-        tx,
-      )
+        const updated = await this.departments.updateById(
+          id,
+          {
+            ...rest,
+            ...(parentId === undefined ? {} : { parentId }),
+            path: nextPath,
+          },
+          tx,
+        )
 
-      if (nextPath !== current.path) {
-        await this.departments.replaceDescendantPaths(current.path, nextPath, tx)
-      }
+        if (nextPath !== current.path) {
+          await this.departments.replaceDescendantPaths(current.path, nextPath, tx)
+        }
 
-      return updated
-    })
-    return { id: res.id, message: '更新部门成功' }
+        return updated
+      })
+      return { id: res.id, message: '更新部门成功' }
+    } catch (error) {
+      this.rethrowDuplicateName(error)
+    }
   }
 
   async delete(id: string) {
@@ -67,12 +75,16 @@ export class DepartmentService {
   }
 
   async generateDepartmentSeed(data: DepartmentSeedDto[]) {
-    await this.departments.transaction(async tx => {
-      for (const dept of data) {
-        await this.upsertNode(tx, dept, null)
-      }
-    })
-    return { message: '批量插入部门成功' }
+    try {
+      await this.departments.transaction(async tx => {
+        for (const dept of data) {
+          await this.upsertNode(tx, dept, null)
+        }
+      })
+      return { message: '批量插入部门成功' }
+    } catch (error) {
+      this.rethrowDuplicateName(error)
+    }
   }
 
   private async upsertNode(
@@ -97,5 +109,12 @@ export class DepartmentService {
     const parent = await this.departments.findPathById(parentId, tx)
     if (!parent) throw new BadRequestException('父级不存在')
     return `${parent.path}/${id}`
+  }
+
+  private rethrowDuplicateName(error: unknown): never {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      throw new BadRequestException('同级已存在同名部门')
+    }
+    throw error
   }
 }

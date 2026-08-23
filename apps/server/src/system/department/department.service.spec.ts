@@ -1,3 +1,4 @@
+import { Prisma } from '@/prisma/generated/prisma/client'
 import type { PgService } from '@/prisma/pg.service'
 import { DepartmentRepository } from './department.repository'
 import { DepartmentService } from './department.service'
@@ -148,5 +149,29 @@ describe('DepartmentService delete rules', () => {
 
     await expect(service.delete('node')).rejects.toThrow('当前项有子部门无法删除')
     expect(remove).not.toHaveBeenCalled()
+  })
+})
+
+describe('DepartmentService unique names', () => {
+  const create = jest.fn()
+  const transaction = jest.fn(
+    async (callback: (tx: { department: { create: typeof create } }) => Promise<unknown>) =>
+      callback({ department: { create } }),
+  )
+  const service = new DepartmentService(
+    new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
+  )
+
+  it('maps unique constraint failures to a sibling name conflict', async () => {
+    create.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: 'test',
+      }),
+    )
+
+    await expect(service.add({ name: '研发部', enabled: true })).rejects.toThrow(
+      '同级已存在同名部门',
+    )
   })
 })

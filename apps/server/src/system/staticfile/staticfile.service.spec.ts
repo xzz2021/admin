@@ -52,6 +52,17 @@ describe('StaticfileService', () => {
     })
   })
 
+  it('serializes bigint file size as a JSON-safe number', async () => {
+    findMany.mockResolvedValue([{ id: 1, path: '/static-root/a.bin', size: 3_000_000_000n }])
+    count.mockResolvedValue(1)
+
+    await expect(service.getFileList()).resolves.toEqual({
+      message: '文件列表获取成功',
+      list: [{ id: 1, path: '/static-root/a.bin', size: 3_000_000_000 }],
+      total: 1,
+    })
+  })
+
   it('marks files deleted and enqueues cleanup instead of unlinking in the request', async () => {
     findMany.mockResolvedValue([{ id: 1, path: '/static-root/a.png' }])
 

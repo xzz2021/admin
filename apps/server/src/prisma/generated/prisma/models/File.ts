@@ -33,7 +33,7 @@ export type FileAvgAggregateOutputType = {
 
 export type FileSumAggregateOutputType = {
   id: number | null
-  size: number | null
+  size: bigint | null
 }
 
 export type FileMinAggregateOutputType = {
@@ -42,7 +42,7 @@ export type FileMinAggregateOutputType = {
   mimeType: string | null
   path: string | null
   extension: string | null
-  size: number | null
+  size: bigint | null
   url: string | null
   createdAt: Date | null
   deletedAt: Date | null
@@ -54,7 +54,7 @@ export type FileMaxAggregateOutputType = {
   mimeType: string | null
   path: string | null
   extension: string | null
-  size: number | null
+  size: bigint | null
   url: string | null
   createdAt: Date | null
   deletedAt: Date | null
@@ -213,7 +213,7 @@ export type FileGroupByOutputType = {
   mimeType: string
   path: string
   extension: string | null
-  size: number
+  size: bigint
   url: string
   createdAt: Date
   deletedAt: Date | null
@@ -248,7 +248,7 @@ export type FileWhereInput = {
   mimeType?: Prisma.StringFilter<"File"> | string
   path?: Prisma.StringFilter<"File"> | string
   extension?: Prisma.StringNullableFilter<"File"> | string | null
-  size?: Prisma.IntFilter<"File"> | number
+  size?: Prisma.BigIntFilter<"File"> | bigint | number
   url?: Prisma.StringFilter<"File"> | string
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
@@ -268,18 +268,18 @@ export type FileOrderByWithRelationInput = {
 
 export type FileWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  path?: string
   AND?: Prisma.FileWhereInput | Prisma.FileWhereInput[]
   OR?: Prisma.FileWhereInput[]
   NOT?: Prisma.FileWhereInput | Prisma.FileWhereInput[]
   name?: Prisma.StringFilter<"File"> | string
   mimeType?: Prisma.StringFilter<"File"> | string
-  path?: Prisma.StringFilter<"File"> | string
   extension?: Prisma.StringNullableFilter<"File"> | string | null
-  size?: Prisma.IntFilter<"File"> | number
+  size?: Prisma.BigIntFilter<"File"> | bigint | number
   url?: Prisma.StringFilter<"File"> | string
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
-}, "id">
+}, "id" | "path">
 
 export type FileOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -307,7 +307,7 @@ export type FileScalarWhereWithAggregatesInput = {
   mimeType?: Prisma.StringWithAggregatesFilter<"File"> | string
   path?: Prisma.StringWithAggregatesFilter<"File"> | string
   extension?: Prisma.StringNullableWithAggregatesFilter<"File"> | string | null
-  size?: Prisma.IntWithAggregatesFilter<"File"> | number
+  size?: Prisma.BigIntWithAggregatesFilter<"File"> | bigint | number
   url?: Prisma.StringWithAggregatesFilter<"File"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"File"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"File"> | Date | string | null
@@ -318,7 +318,7 @@ export type FileCreateInput = {
   mimeType: string
   path: string
   extension?: string | null
-  size: number
+  size: bigint | number
   url: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
@@ -330,7 +330,7 @@ export type FileUncheckedCreateInput = {
   mimeType: string
   path: string
   extension?: string | null
-  size: number
+  size: bigint | number
   url: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
@@ -341,7 +341,7 @@ export type FileUpdateInput = {
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  size?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -353,7 +353,7 @@ export type FileUncheckedUpdateInput = {
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  size?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -365,7 +365,7 @@ export type FileCreateManyInput = {
   mimeType: string
   path: string
   extension?: string | null
-  size: number
+  size: bigint | number
   url: string
   createdAt?: Date | string
   deletedAt?: Date | string | null
@@ -376,7 +376,7 @@ export type FileUpdateManyMutationInput = {
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  size?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -388,7 +388,7 @@ export type FileUncheckedUpdateManyInput = {
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   path?: Prisma.StringFieldUpdateOperationsInput | string
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  size?: Prisma.IntFieldUpdateOperationsInput | number
+  size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -438,6 +438,14 @@ export type FileMinOrderByAggregateInput = {
 export type FileSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   size?: Prisma.SortOrder
+}
+
+export type BigIntFieldUpdateOperationsInput = {
+  set?: bigint | number
+  increment?: bigint | number
+  decrement?: bigint | number
+  multiply?: bigint | number
+  divide?: bigint | number
 }
 
 
@@ -514,9 +522,9 @@ export type $FilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      */
     extension: string | null
     /**
-     * @z.number().int().min(0).meta({ description: '文件大小（字节）', example: 1024 })
+     * @z.coerce.bigint().meta({ description: '文件大小（字节）', example: '1024' })
      */
-    size: number
+    size: bigint
     /**
      * @z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' })
      */
@@ -954,7 +962,7 @@ export interface FileFieldRefs {
   readonly mimeType: Prisma.FieldRef<"File", 'String'>
   readonly path: Prisma.FieldRef<"File", 'String'>
   readonly extension: Prisma.FieldRef<"File", 'String'>
-  readonly size: Prisma.FieldRef<"File", 'Int'>
+  readonly size: Prisma.FieldRef<"File", 'BigInt'>
   readonly url: Prisma.FieldRef<"File", 'String'>
   readonly createdAt: Prisma.FieldRef<"File", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"File", 'DateTime'>

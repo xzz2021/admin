@@ -309,6 +309,11 @@ describe('UserService list queries', () => {
 
     expect(findMany).toHaveBeenCalled()
     expect(count).toHaveBeenCalled()
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: { createdAt: 'desc' },
+      }),
+    )
 
     resolveList([])
     resolveCount(0)

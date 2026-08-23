@@ -95,6 +95,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@index([departmentId])
+  @@index([createdAt(sort: Desc)])
 }
 
 model Role {
@@ -263,6 +264,7 @@ model Department {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// 迁移用 UNIQUE NULLS NOT DISTINCT 重建同名索引，使 parentId = NULL 的根部门 name 也唯一
   @@unique([parentId, name])
   @@index([parentId])
   @@index([path])
@@ -455,11 +457,11 @@ model File {
   /// @z.string().min(1).max(50).meta({ description: 'MIME 类型', example: 'image/png' })
   mimeType  String  @db.VarChar(50)
   /// @z.string().min(1).max(255).meta({ description: '存储路径', example: '/uploads/2026/avatar.png' })
-  path      String  @db.VarChar(255)
+  path      String  @unique @db.VarChar(255)
   /// @z.string().max(20).optional().meta({ description: '文件扩展名', example: 'png' })
   extension String? @db.VarChar(20)
-  /// @z.number().int().min(0).meta({ description: '文件大小（字节）', example: 1024 })
-  size Int
+  /// @z.coerce.bigint().meta({ description: '文件大小（字节）', example: '1024' })
+  size BigInt
   /// @z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' })
   url  String @db.VarChar(255)
   createdAt DateTime @default(now())

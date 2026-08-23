@@ -158,7 +158,7 @@ export class UserRepository {
         where,
         skip,
         take,
-        orderBy: { id: 'desc' },
+        orderBy: { createdAt: 'desc' },
         omit: { password: true },
       }),
       this.db.user.count({ where }),
@@ -172,7 +172,7 @@ export class UserRepository {
         select: USER_LIST_SELECT,
         skip,
         take,
-        distinct: ['id'],
+        orderBy: { createdAt: 'desc' },
       }),
       this.db.user.count({ where }),
     ])
