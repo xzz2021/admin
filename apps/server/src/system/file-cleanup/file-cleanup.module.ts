@@ -2,6 +2,7 @@ import { buildRedisOptions, type AppRedisConfig } from '@/core/cache/redis-optio
 import { BullModule } from '@nestjs/bullmq'
 import { Module } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { DiskCleanupEventBus } from './disk-cleanup.events'
 import { FILE_CLEANUP_QUEUE } from './file-cleanup.constants'
 import { FileCleanupProcessor } from './file-cleanup.processor'
 import { FileCleanupService } from './file-cleanup.service'
@@ -21,7 +22,7 @@ import { FileCleanupService } from './file-cleanup.service'
     }),
     BullModule.registerQueue({ name: FILE_CLEANUP_QUEUE }),
   ],
-  providers: [FileCleanupService, FileCleanupProcessor],
-  exports: [FileCleanupService],
+  providers: [DiskCleanupEventBus, FileCleanupService, FileCleanupProcessor],
+  exports: [FileCleanupService, DiskCleanupEventBus],
 })
 export class FileCleanupModule {}

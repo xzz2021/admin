@@ -64,7 +64,7 @@ flowchart LR
 
 - `POST /staticfile/upload` 写入文件管理目录；头像走 `POST /user/upload/avatar`
 - 静态文件由独立中间件按 `STATIC_FILE_ROOT_PATH` 前缀提供（磁盘目录示例：`public`，对外 URL 示例：`api/public`）
-- 元数据可写入 `File` 模型
+- `File` 元数据由 Staticfile 管理（软删）；磁盘 unlink 由 FileCleanup 队列执行，完成后发 `disk.unlinked`，由各上下文删除自己的记录
 
 ## 操作日志
 

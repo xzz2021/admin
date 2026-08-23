@@ -31,11 +31,15 @@ export class DbBackupLifecycleService {
       }
     }
 
-    if (!expiredIds.length) return 0
+    if (!expiredIds.length) {
+      await this.enqueueExpiredJobs()
+      return 0
+    }
     await this.pgService.dbBackupJob.updateMany({
       where: { id: { in: expiredIds } },
       data: { status: BackupStatus.EXPIRED },
     })
+    await this.enqueueExpiredJobs()
     return expiredIds.length
   }
 
@@ -78,6 +82,26 @@ export class DbBackupLifecycleService {
     await this.fileCleanupService.enqueue([
       { kind: 'backup-job', backupJobId: job.id, path: job.filePath },
     ])
+  }
+
+  async purgeExpired(backupJobId: string): Promise<void> {
+    await this.pgService.dbBackupJob.deleteMany({
+      where: { id: backupJobId, status: BackupStatus.EXPIRED },
+    })
+  }
+
+  private async enqueueExpiredJobs(): Promise<void> {
+    const expired = await this.pgService.dbBackupJob.findMany({
+      where: { status: BackupStatus.EXPIRED },
+      select: { id: true, filePath: true },
+    })
+    await this.fileCleanupService.enqueue(
+      expired.map(item => ({
+        kind: 'backup-job' as const,
+        backupJobId: item.id,
+        path: item.filePath,
+      })),
+    )
   }
 
   async assertFileExists(path: string): Promise<void> {

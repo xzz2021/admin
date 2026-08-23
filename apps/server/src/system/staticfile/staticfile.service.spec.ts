@@ -1,5 +1,6 @@
 import type { PgService } from '@/prisma/pg.service'
 import type { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
+import { FileRepository } from './file.repository'
 import { StaticfileService } from './staticfile.service'
 
 describe('StaticfileService', () => {
@@ -7,10 +8,13 @@ describe('StaticfileService', () => {
   const count = jest.fn()
   const create = jest.fn()
   const updateMany = jest.fn()
+  const deleteMany = jest.fn()
   const enqueue = jest.fn()
 
   const service = new StaticfileService(
-    { file: { findMany, count, create, updateMany } } as unknown as PgService,
+    new FileRepository({
+      file: { findMany, count, create, updateMany, deleteMany },
+    } as unknown as PgService),
     { enqueue } as unknown as FileCleanupService,
   )
 
@@ -76,5 +80,27 @@ describe('StaticfileService', () => {
       }),
     ).rejects.toThrow('db down')
     expect(enqueue).toHaveBeenCalledWith([{ kind: 'orphan-path', path: '/static-root/a.png' }])
+  })
+
+  it('re-enqueues soft-deleted files during startup reconcile', async () => {
+    findMany.mockResolvedValue([{ id: 2, path: 'b.png' }])
+
+    await service.reconcilePendingCleanup()
+
+    expect(findMany).toHaveBeenCalledWith({
+      where: { deletedAt: { not: null } },
+      select: { id: true, path: true },
+    })
+    expect(enqueue).toHaveBeenCalledWith([{ kind: 'managed-file', fileId: 2, path: 'b.png' }])
+  })
+
+  it('hard-deletes only already soft-deleted metadata after unlink', async () => {
+    deleteMany.mockResolvedValue({ count: 1 })
+
+    await service.purgeAfterUnlink(9)
+
+    expect(deleteMany).toHaveBeenCalledWith({
+      where: { id: 9, deletedAt: { not: null } },
+    })
   })
 })

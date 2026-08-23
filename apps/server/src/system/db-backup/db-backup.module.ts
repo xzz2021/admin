@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common'
 
 import { DbBackupConfigService } from './db-backup-config.service'
 import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
+import { BackupDiskListener } from './backup-disk.listener'
 import { DB_BACKUP_QUEUE } from './db-backup.constants'
 import { DbBackupController } from './db-backup.controller'
 import { DbBackupProcessor } from './db-backup.processor'
@@ -20,6 +21,7 @@ import { PgDumpRunner } from './pg-dump.runner'
     PgDumpRunner,
     DbBackupConfigService,
     DbBackupLifecycleService,
+    BackupDiskListener,
   ],
   exports: [DbBackupService],
 })

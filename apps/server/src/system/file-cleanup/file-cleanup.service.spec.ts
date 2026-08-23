@@ -1,8 +1,7 @@
-import { BackupStatus } from '@/prisma/generated/prisma/client'
-import type { PgService } from '@/prisma/pg.service'
 import type { ConfigService } from '@nestjs/config'
 import type { Queue } from 'bullmq'
 import { promises as fs } from 'node:fs'
+import { DiskCleanupEventBus } from './disk-cleanup.events'
 import { FILE_CLEANUP_UNLINK } from './file-cleanup.constants'
 import { FileCleanupService } from './file-cleanup.service'
 
@@ -28,30 +27,28 @@ jest.mock('@/system/staticfile/multer.config', () => ({
 
 describe('FileCleanupService', () => {
   const unlink = fs.unlink as jest.MockedFunction<typeof fs.unlink>
-  const fileDeleteMany = jest.fn()
-  const backupDeleteMany = jest.fn()
   const queueAdd = jest.fn()
 
-  const service = new FileCleanupService(
-    {
-      file: { deleteMany: fileDeleteMany, findMany: jest.fn() },
-      dbBackupJob: { deleteMany: backupDeleteMany, findMany: jest.fn() },
-    } as unknown as PgService,
-    {
-      get: (key: string) => (key === 'dbBackup.dir' ? '/backups' : undefined),
-    } as unknown as ConfigService,
-    { add: queueAdd } as unknown as Queue,
-  )
+  const createService = () => {
+    const events = new DiskCleanupEventBus()
+    const service = new FileCleanupService(
+      {
+        get: (key: string) => (key === 'dbBackup.dir' ? '/backups' : undefined),
+      } as unknown as ConfigService,
+      { add: queueAdd } as unknown as Queue,
+      events,
+    )
+    return { service, events }
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
     unlink.mockResolvedValue(undefined)
-    fileDeleteMany.mockResolvedValue({ count: 1 })
-    backupDeleteMany.mockResolvedValue({ count: 1 })
     queueAdd.mockResolvedValue({})
   })
 
   it('enqueues unlink jobs without touching the filesystem', async () => {
+    const { service } = createService()
     await service.enqueue([
       { kind: 'managed-file', fileId: 1, path: 'a.png' },
       { kind: 'orphan-path', path: '/static-root/old.png' },
@@ -66,24 +63,32 @@ describe('FileCleanupService', () => {
     expect(unlink).not.toHaveBeenCalled()
   })
 
-  it('unlinks then hard-deletes a managed file record', async () => {
+  it('unlinks then emits disk.unlinked without touching file metadata', async () => {
+    const { service, events } = createService()
+    const onUnlinked = jest.fn()
+    events.onUnlinked(onUnlinked)
+
     await service.process({ kind: 'managed-file', fileId: 9, path: 'a.png' })
 
     expect(unlink).toHaveBeenCalledWith('/static-root/a.png')
-    expect(fileDeleteMany).toHaveBeenCalledWith({
-      where: { id: 9, deletedAt: { not: null } },
-    })
+    expect(onUnlinked).toHaveBeenCalledWith({ kind: 'managed-file', fileId: 9, path: 'a.png' })
   })
 
   it('retries when unlink fails for a reason other than missing file', async () => {
+    const { service, events } = createService()
     unlink.mockRejectedValue(Object.assign(new Error('busy'), { code: 'EBUSY' }))
+    const onUnlinked = jest.fn()
+    events.onUnlinked(onUnlinked)
 
     await expect(service.process({ kind: 'orphan-path', path: 'a.png' })).rejects.toThrow('busy')
-    expect(fileDeleteMany).not.toHaveBeenCalled()
+    expect(onUnlinked).not.toHaveBeenCalled()
   })
 
-  it('treats missing files as success and still deletes the backup record', async () => {
+  it('treats missing files as success and still emits unlinked for backup jobs', async () => {
+    const { service, events } = createService()
     unlink.mockRejectedValue(Object.assign(new Error('gone'), { code: 'ENOENT' }))
+    const onUnlinked = jest.fn()
+    events.onUnlinked(onUnlinked)
 
     await service.process({
       kind: 'backup-job',
@@ -92,8 +97,10 @@ describe('FileCleanupService', () => {
     })
 
     expect(unlink).toHaveBeenCalledWith('/backups/a.sql.gz')
-    expect(backupDeleteMany).toHaveBeenCalledWith({
-      where: { id: 'job-1', status: BackupStatus.EXPIRED },
+    expect(onUnlinked).toHaveBeenCalledWith({
+      kind: 'backup-job',
+      backupJobId: 'job-1',
+      path: '/backups/a.sql.gz',
     })
   })
 })
