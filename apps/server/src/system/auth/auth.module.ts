@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { PassportModule } from '@nestjs/passport'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { LockoutService } from './lockout.service'
 import { JwtRefreshStrategy } from './jwt.refresh.strategy'
 import { JwtStrategy } from './jwt.strategy'
 import { CaptchaModule } from '@/system/captcha/captcha.module'
@@ -12,7 +13,7 @@ import { JwtRefreshAuthGuard } from '@/processor/guard'
 @Module({
   imports: [PassportModule, SessionModule, CaptchaModule, UserPersistenceModule],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, JwtRefreshAuthGuard],
+  providers: [AuthService, LockoutService, JwtStrategy, JwtRefreshStrategy, JwtRefreshAuthGuard],
   exports: [AuthService, SessionModule],
 })
 export class AuthModule {}

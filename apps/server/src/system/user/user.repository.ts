@@ -221,6 +221,16 @@ export class UserRepository {
     })
   }
 
+  recordLoginSuccess(id: string, ip: string) {
+    return this.db.user.update({
+      where: { id },
+      data: {
+        lastLoginAt: new Date(),
+        lastLoginIp: ip,
+      },
+    })
+  }
+
   updateProfile(id: string, data: Prisma.UserUpdateInput) {
     return this.db.user.update({
       where: { id },

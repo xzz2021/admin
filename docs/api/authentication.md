@@ -7,9 +7,10 @@
 `POST /auth/rt/login`（Public + CaptchaGuard）
 
 1. 校验验证码（cookie `captchaId` / `captchaText`，服务端 Redis）
-2. 校验手机号 + 密码（argon2）
-3. 签发 access（响应体）+ refresh（httpOnly cookie `rt`）
-4. 会话登记 Redis，受 `SSO_COUNT` 限制
+2. 账号锁定检查（Redis，按手机号；已锁定返回 403）
+3. 校验手机号 + 密码（argon2）；失败计入窗口，达阈值后锁定
+4. 签发 access（响应体）+ refresh（httpOnly cookie `rt`）
+5. 会话登记 Redis，受 `SSO_COUNT` 限制
 
 ### 单 Token
 

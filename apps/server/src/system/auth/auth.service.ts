@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import Redis from 'ioredis'
 import { LoginInfoDto, RegisterDto } from './dto/auth.dto'
+import { LockoutService } from './lockout.service'
 import { RtTokenService } from './rt.token.service'
 import { SessionRevocationService } from './session-revocation.service'
 import { TokenService } from './token.service'
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly rtTokenService: RtTokenService,
     private readonly sessions: SessionRevocationService,
+    private readonly lockout: LockoutService,
   ) {
     const wechat = this.configService.get<{ appId: string; appSecret: string }>('wechat')
     this.wxAppSecret = wechat?.appSecret || ''
@@ -68,17 +70,23 @@ export class AuthService {
     return user
   }
 
-  async rtLogin(loginInfo: LoginInfoDto, _ip: string) {
-    const user = await this.getUserForLogin(loginInfo.phone)
+  async rtLogin(loginInfo: LoginInfoDto, ip: string) {
+    await this.lockout.ensureNotLocked(loginInfo.phone)
 
+    const user = await this.getUserForLogin(loginInfo.phone)
     if (!user) {
+      await this.lockout.onFail(loginInfo.phone)
       throw new BadRequestException('账号或密码错误')
     }
 
     const ok = await verifyPayPassword(user.password, loginInfo.password)
     if (!ok) {
+      await this.lockout.onFail(loginInfo.phone)
       throw new BadRequestException('账号或密码错误')
     }
+
+    await this.lockout.onSuccess(loginInfo.phone)
+    await this.users.recordLoginSuccess(user.id, ip)
 
     const { password, ...result } = user
     const { username, phone, id, roles } = result

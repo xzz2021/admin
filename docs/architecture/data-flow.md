@@ -14,6 +14,7 @@ sequenceDiagram
   S->>R: 存 captchaId
   B->>A: 提交登录 auth/rt/login
   A->>S: phone/password + captcha cookie
+  S->>R: 检查账号锁定 / 失败计数
   S->>P: 校验用户 argon2
   S->>R: 写会话 / RT
   S-->>A: access_token + userinfo（RT 写 cookie）
