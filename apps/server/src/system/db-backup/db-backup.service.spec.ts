@@ -8,6 +8,7 @@ import type { Queue } from 'bullmq'
 import type { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
 import { DbBackupConfigService } from './db-backup-config.service'
 import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
+import { DbBackupRepository } from './db-backup.repository'
 import { DbBackupService } from './db-backup.service'
 
 describe('DbBackupService', () => {
@@ -69,17 +70,18 @@ describe('DbBackupService', () => {
   }
 
   const createService = () => {
+    const jobs = new DbBackupRepository(pgService as never)
     const settings = new DbBackupConfigService(
-      pgService as never,
+      jobs,
       configService as unknown as ConfigService,
       queue as unknown as Queue,
     )
     const lifecycle = new DbBackupLifecycleService(
-      pgService as never,
+      jobs,
       fileCleanup as unknown as FileCleanupService,
     )
     return new DbBackupService(
-      pgService as never,
+      jobs,
       settings,
       pgDumpRunner,
       lifecycle,

@@ -1,13 +1,12 @@
 import { BackupTrigger } from '@/prisma/generated/prisma/client'
-import { PgService } from '@/prisma/pg.service'
 import { InjectQueue } from '@nestjs/bullmq'
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Queue } from 'bullmq'
 import { resolve } from 'node:path'
 
+import { DbBackupRepository } from './db-backup.repository'
 import {
-  DB_BACKUP_CONFIG_ID,
   DB_BACKUP_DEFAULT_CRON,
   DB_BACKUP_DEFAULT_GZIP,
   DB_BACKUP_DEFAULT_PREFIX,
@@ -18,53 +17,24 @@ import {
   DB_BACKUP_QUEUE,
   DB_BACKUP_SCHEDULED_SCHEDULER_ID,
 } from './db-backup.constants'
-import type { BackupRuntimeConfig } from './db-backup.types'
+import type { BackupConfigFields, BackupRuntimeConfig } from './db-backup.types'
 
 @Injectable()
 export class DbBackupConfigService {
   private readonly logger = new Logger(DbBackupConfigService.name)
 
   constructor(
-    private readonly pgService: PgService,
+    private readonly jobs: DbBackupRepository,
     private readonly configService: ConfigService,
     @InjectQueue(DB_BACKUP_QUEUE) private readonly queue: Queue,
   ) {}
 
   async getOrCreate() {
-    return this.pgService.dbBackupConfig.upsert({
-      where: { id: DB_BACKUP_CONFIG_ID },
-      create: {
-        id: DB_BACKUP_CONFIG_ID,
-        enabled: true,
-        cron: this.configService.get<string>('dbBackup.cron') || DB_BACKUP_DEFAULT_CRON,
-        timezone: this.configService.get<string>('dbBackup.timezone') || DB_BACKUP_DEFAULT_TIMEZONE,
-        retentionMax:
-          this.configService.get<number>('dbBackup.retentionMax') ||
-          DB_BACKUP_DEFAULT_RETENTION_MAX,
-        filePrefix:
-          this.configService.get<string>('dbBackup.filePrefix') || DB_BACKUP_DEFAULT_PREFIX,
-        gzip: this.configService.get<boolean>('dbBackup.gzip') ?? DB_BACKUP_DEFAULT_GZIP,
-      },
-      update: {},
-    })
+    return this.jobs.getOrCreateConfig(this.defaultConfig())
   }
 
-  async upsert(input: {
-    enabled: boolean
-    cron: string
-    timezone: string
-    retentionMax: number
-    filePrefix: string
-    gzip: boolean
-  }) {
-    return this.pgService.dbBackupConfig.upsert({
-      where: { id: DB_BACKUP_CONFIG_ID },
-      create: {
-        id: DB_BACKUP_CONFIG_ID,
-        ...input,
-      },
-      update: input,
-    })
+  async upsert(input: BackupConfigFields) {
+    return this.jobs.upsertConfig(input)
   }
 
   async getRuntime(): Promise<BackupRuntimeConfig> {
@@ -134,6 +104,18 @@ export class DbBackupConfigService {
     const scheduler = await this.queue.getJobScheduler(DB_BACKUP_SCHEDULED_SCHEDULER_ID)
     if (!scheduler?.next) return null
     return new Date(scheduler.next).toISOString()
+  }
+
+  private defaultConfig(): BackupConfigFields {
+    return {
+      enabled: true,
+      cron: this.configService.get<string>('dbBackup.cron') || DB_BACKUP_DEFAULT_CRON,
+      timezone: this.configService.get<string>('dbBackup.timezone') || DB_BACKUP_DEFAULT_TIMEZONE,
+      retentionMax:
+        this.configService.get<number>('dbBackup.retentionMax') || DB_BACKUP_DEFAULT_RETENTION_MAX,
+      filePrefix: this.configService.get<string>('dbBackup.filePrefix') || DB_BACKUP_DEFAULT_PREFIX,
+      gzip: this.configService.get<boolean>('dbBackup.gzip') ?? DB_BACKUP_DEFAULT_GZIP,
+    }
   }
 
   private getBackupDir(): string {

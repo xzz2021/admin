@@ -15,6 +15,8 @@ export interface BackupRuntimeConfig {
   gzip: boolean
 }
 
+export type BackupConfigFields = Omit<BackupRuntimeConfig, 'dir'>
+
 export interface BackupExecutionResult {
   fileName: string
   filePath: string

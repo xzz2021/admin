@@ -1,27 +1,19 @@
 import { BackupStatus } from '@/prisma/generated/prisma/client'
-import { PgService } from '@/prisma/pg.service'
 import { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { promises as fs } from 'node:fs'
 
+import { DbBackupRepository } from './db-backup.repository'
+
 @Injectable()
 export class DbBackupLifecycleService {
   constructor(
-    private readonly pgService: PgService,
+    private readonly jobs: DbBackupRepository,
     private readonly fileCleanupService: FileCleanupService,
   ) {}
 
   async reconcile(): Promise<number> {
-    const jobs = await this.pgService.dbBackupJob.findMany({
-      where: {
-        status: BackupStatus.SUCCESS,
-      },
-      select: {
-        id: true,
-        filePath: true,
-      },
-    })
-
+    const jobs = await this.jobs.findSuccessFileRefs()
     const expiredIds: string[] = []
     for (const job of jobs) {
       try {
@@ -31,29 +23,18 @@ export class DbBackupLifecycleService {
       }
     }
 
-    if (!expiredIds.length) {
-      await this.enqueueExpiredJobs()
-      return 0
+    if (expiredIds.length) {
+      await this.jobs.markJobsExpired(expiredIds)
     }
-    await this.pgService.dbBackupJob.updateMany({
-      where: { id: { in: expiredIds } },
-      data: { status: BackupStatus.EXPIRED },
-    })
     await this.enqueueExpiredJobs()
     return expiredIds.length
   }
 
   async applyRetention(retentionMax: number): Promise<number> {
-    const successJobs = await this.pgService.dbBackupJob.findMany({
-      where: { status: BackupStatus.SUCCESS },
-      orderBy: { createdAt: 'desc' },
-    })
+    const successJobs = await this.jobs.findSuccessJobsNewestFirst()
     const removable = successJobs.slice(Math.max(retentionMax, 0))
     if (!removable.length) return 0
-    await this.pgService.dbBackupJob.updateMany({
-      where: { id: { in: removable.map(item => item.id) } },
-      data: { status: BackupStatus.EXPIRED },
-    })
+    await this.jobs.markJobsExpired(removable.map(item => item.id))
     await this.fileCleanupService.enqueue(
       removable.map(job => ({
         kind: 'backup-job' as const,
@@ -70,10 +51,7 @@ export class DbBackupLifecycleService {
     status: BackupStatus
   }): Promise<void> {
     if (job.status !== BackupStatus.EXPIRED) {
-      await this.pgService.dbBackupJob.update({
-        where: { id: job.id },
-        data: { status: BackupStatus.EXPIRED },
-      })
+      await this.jobs.markJobExpired(job.id)
     }
     await this.enqueueCleanup(job)
   }
@@ -85,16 +63,11 @@ export class DbBackupLifecycleService {
   }
 
   async purgeExpired(backupJobId: string): Promise<void> {
-    await this.pgService.dbBackupJob.deleteMany({
-      where: { id: backupJobId, status: BackupStatus.EXPIRED },
-    })
+    await this.jobs.deleteExpiredJob(backupJobId)
   }
 
   private async enqueueExpiredJobs(): Promise<void> {
-    const expired = await this.pgService.dbBackupJob.findMany({
-      where: { status: BackupStatus.EXPIRED },
-      select: { id: true, filePath: true },
-    })
+    const expired = await this.jobs.findExpiredFileRefs()
     await this.fileCleanupService.enqueue(
       expired.map(item => ({
         kind: 'backup-job' as const,
@@ -108,10 +81,7 @@ export class DbBackupLifecycleService {
     try {
       await fs.access(path)
     } catch {
-      await this.pgService.dbBackupJob.updateMany({
-        where: { filePath: path, status: BackupStatus.SUCCESS },
-        data: { status: BackupStatus.EXPIRED },
-      })
+      await this.jobs.markSuccessExpiredByPath(path)
       throw new NotFoundException('备份文件不存在或已失效')
     }
   }

@@ -9,6 +9,7 @@ import { BackupDiskListener } from './backup-disk.listener'
 import { DB_BACKUP_QUEUE } from './db-backup.constants'
 import { DbBackupController } from './db-backup.controller'
 import { DbBackupProcessor } from './db-backup.processor'
+import { DbBackupRepository } from './db-backup.repository'
 import { DbBackupService } from './db-backup.service'
 import { PgDumpRunner } from './pg-dump.runner'
 
@@ -17,6 +18,7 @@ import { PgDumpRunner } from './pg-dump.runner'
   controllers: [DbBackupController],
   providers: [
     DbBackupService,
+    DbBackupRepository,
     DbBackupProcessor,
     PgDumpRunner,
     DbBackupConfigService,

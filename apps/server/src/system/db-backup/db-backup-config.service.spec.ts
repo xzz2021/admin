@@ -2,6 +2,7 @@ import type { ConfigService } from '@nestjs/config'
 import type { Queue } from 'bullmq'
 
 import { DbBackupConfigService } from './db-backup-config.service'
+import { DbBackupRepository } from './db-backup.repository'
 
 describe('DbBackupConfigService', () => {
   const queue = {
@@ -34,7 +35,7 @@ describe('DbBackupConfigService', () => {
 
   const createSettings = () =>
     new DbBackupConfigService(
-      pgService as never,
+      new DbBackupRepository(pgService as never),
       configService as unknown as ConfigService,
       queue as unknown as Queue,
     )

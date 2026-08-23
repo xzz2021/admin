@@ -1,5 +1,4 @@
-import { BackupStatus, BackupTrigger, Prisma } from '@/prisma/generated/prisma/client'
-import { PgService } from '@/prisma/pg.service'
+import { BackupStatus, BackupTrigger } from '@/prisma/generated/prisma/client'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { InjectQueue } from '@nestjs/bullmq'
 import {
@@ -18,10 +17,10 @@ import { resolve } from 'node:path'
 import { MessageDeliveryService } from '../message/message-delivery.service'
 import { DbBackupConfigService } from './db-backup-config.service'
 import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
+import { DbBackupRepository } from './db-backup.repository'
 import {
   DB_BACKUP_ALERT_DEBOUNCE_SEC,
   DB_BACKUP_ALERT_KEY,
-  DB_BACKUP_CONFIG_ID,
   DB_BACKUP_JOB_RUN,
   DB_BACKUP_LOCK_KEY,
   DB_BACKUP_LOCK_TTL_MS,
@@ -32,7 +31,6 @@ import {
 } from './db-backup.constants'
 import type {
   BackupConfigPayload,
-  BackupExecutionResult,
   BackupJobListItem,
   BackupJobQuery,
   DbBackupQueueJob,
@@ -45,7 +43,7 @@ export class DbBackupService implements OnModuleInit {
   private readonly redis: Redis
 
   constructor(
-    private readonly pgService: PgService,
+    private readonly jobs: DbBackupRepository,
     private readonly settings: DbBackupConfigService,
     private readonly pgDumpRunner: PgDumpRunner,
     private readonly lifecycle: DbBackupLifecycleService,
@@ -101,27 +99,12 @@ export class DbBackupService implements OnModuleInit {
   async listJobs(query: BackupJobQuery) {
     const pageIndex = Math.max(1, query.pageIndex ?? 1)
     const pageSize = Math.min(DB_BACKUP_MAX_PAGE_SIZE, Math.max(1, query.pageSize ?? 10))
-    const where: Prisma.DbBackupJobWhereInput = {}
-    if (query.status) where.status = query.status
-    if (query.trigger) where.trigger = query.trigger
-
-    const [total, list] = await Promise.all([
-      this.pgService.dbBackupJob.count({ where }),
-      this.pgService.dbBackupJob.findMany({
-        where,
-        skip: (pageIndex - 1) * pageSize,
-        take: pageSize,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          createdBy: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
-      }),
-    ])
+    const { total, list } = await this.jobs.findJobPage({
+      status: query.status,
+      trigger: query.trigger,
+      skip: (pageIndex - 1) * pageSize,
+      take: pageSize,
+    })
 
     return {
       total,
@@ -133,7 +116,7 @@ export class DbBackupService implements OnModuleInit {
   }
 
   async getJobFile(id: string) {
-    const job = await this.pgService.dbBackupJob.findUnique({ where: { id } })
+    const job = await this.jobs.findJobById(id)
     if (!job) {
       throw new NotFoundException('备份任务不存在')
     }
@@ -148,7 +131,7 @@ export class DbBackupService implements OnModuleInit {
   }
 
   async deleteJob(id: string) {
-    const job = await this.pgService.dbBackupJob.findUnique({ where: { id } })
+    const job = await this.jobs.findJobById(id)
     if (!job) {
       throw new NotFoundException('备份任务不存在')
     }
@@ -187,13 +170,13 @@ export class DbBackupService implements OnModuleInit {
         removeOnFail: true,
       })
     } catch (error) {
-      await this.finishFailure(job.id, job.startedAt, getErrorMessage(error))
+      await this.jobs.finishFailure(job.id, job.startedAt, getErrorMessage(error))
       throw new ConflictException(`备份任务入队失败: ${getErrorMessage(error)}`)
     }
 
     // jobId 已存在时 BullMQ 不报错而是返回旧任务，此时新记录不会被消费，需回滚为失败
     if (queued.data?.dbJobId !== job.id) {
-      await this.finishFailure(job.id, job.startedAt, '已有手动备份任务在队列中')
+      await this.jobs.finishFailure(job.id, job.startedAt, '已有手动备份任务在队列中')
       throw new ConflictException('已有手动备份任务在队列中，请稍后再试')
     }
 
@@ -213,7 +196,7 @@ export class DbBackupService implements OnModuleInit {
   }
 
   private async performBackup(dbJobId: string) {
-    const job = await this.pgService.dbBackupJob.findUnique({ where: { id: dbJobId } })
+    const job = await this.jobs.findJobById(dbJobId)
     if (!job) {
       throw new NotFoundException('备份任务不存在')
     }
@@ -228,17 +211,14 @@ export class DbBackupService implements OnModuleInit {
     const startedAt = new Date()
 
     try {
-      await this.pgService.dbBackupJob.update({
-        where: { id: dbJobId },
-        data: { startedAt },
-      })
+      await this.jobs.markJobStarted(dbJobId, startedAt)
       const result = await this.pgDumpRunner.run(runtimeConfig, this.settings.getDatabaseUrl())
       const durationMs = result.finishedAt.getTime() - result.startedAt.getTime()
-      await this.finishSuccess(dbJobId, result, durationMs)
+      await this.jobs.finishSuccess(dbJobId, result, durationMs)
       await this.lifecycle.applyRetention(runtimeConfig.retentionMax)
     } catch (error) {
       const message = getErrorMessage(error)
-      await this.finishFailure(dbJobId, startedAt, message)
+      await this.jobs.finishFailure(dbJobId, startedAt, message)
       await this.sendFailureAlert(message)
       throw error
     } finally {
@@ -249,23 +229,16 @@ export class DbBackupService implements OnModuleInit {
   private async createRunningJob(trigger: BackupTrigger, userId?: string | null) {
     const runtimeConfig = await this.settings.getRuntime()
     const startedAt = new Date()
-    return this.pgService.dbBackupJob.create({
-      data: {
-        trigger,
-        status: BackupStatus.RUNNING,
-        fileName: 'pending',
-        filePath: resolve(runtimeConfig.dir, 'pending'),
-        createdById: userId ?? null,
-        startedAt,
-      },
+    return this.jobs.createRunningJob({
+      trigger,
+      filePath: resolve(runtimeConfig.dir, 'pending'),
+      createdById: userId ?? null,
+      startedAt,
     })
   }
 
   private async assertNoActiveJob() {
-    const active = await this.pgService.dbBackupJob.findFirst({
-      where: { status: BackupStatus.RUNNING },
-      select: { id: true },
-    })
+    const active = await this.jobs.findRunningJobId()
     if (active) {
       throw new ConflictException('已有备份任务正在执行，请稍后再试')
     }
@@ -287,67 +260,10 @@ export class DbBackupService implements OnModuleInit {
 
   private async failOrphanRunningJobs() {
     const finishedAt = new Date()
-    const result = await this.pgService.dbBackupJob.updateMany({
-      where: { status: BackupStatus.RUNNING },
-      data: {
-        status: BackupStatus.FAILED,
-        finishedAt,
-        errorMessage: '服务重启，备份中断',
-      },
-    })
+    const result = await this.jobs.failOrphanRunningJobs(finishedAt, '服务重启，备份中断')
     if (result.count > 0) {
       this.logger.warn(`已将 ${result.count} 个中断的备份任务标记为失败`)
     }
-  }
-
-  private async finishSuccess(jobId: string, result: BackupExecutionResult, durationMs: number) {
-    await this.pgService.$transaction([
-      this.pgService.dbBackupJob.update({
-        where: { id: jobId },
-        data: {
-          status: BackupStatus.SUCCESS,
-          fileName: result.fileName,
-          filePath: result.filePath,
-          fileSize: result.fileSize,
-          checksum: result.checksum,
-          startedAt: result.startedAt,
-          finishedAt: result.finishedAt,
-          durationMs,
-          errorMessage: null,
-        },
-      }),
-      this.pgService.dbBackupConfig.update({
-        where: { id: DB_BACKUP_CONFIG_ID },
-        data: {
-          lastRunAt: result.finishedAt,
-          lastStatus: BackupStatus.SUCCESS,
-          lastError: null,
-        },
-      }),
-    ])
-  }
-
-  private async finishFailure(jobId: string, startedAt: Date, message: string) {
-    const finishedAt = new Date()
-    await this.pgService.$transaction([
-      this.pgService.dbBackupJob.update({
-        where: { id: jobId },
-        data: {
-          status: BackupStatus.FAILED,
-          finishedAt,
-          durationMs: finishedAt.getTime() - startedAt.getTime(),
-          errorMessage: message,
-        },
-      }),
-      this.pgService.dbBackupConfig.update({
-        where: { id: DB_BACKUP_CONFIG_ID },
-        data: {
-          lastRunAt: finishedAt,
-          lastStatus: BackupStatus.FAILED,
-          lastError: message.slice(0, 1000),
-        },
-      }),
-    ])
   }
 
   private async sendFailureAlert(message: string) {
