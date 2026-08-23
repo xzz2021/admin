@@ -5,7 +5,8 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AssignMenuPermissionPanel, { type RoleFormModel } from './components/AssignMenuPermissionPanel.vue'
+import AssignMenuPermissionPanel from './components/AssignMenuPermissionPanel.vue'
+import type { RoleFormModel, RoleMenuTreeNode } from './utils/roleMenuTree'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -14,7 +15,7 @@ const router = useRouter()
 const panelRef = ref<InstanceType<typeof AssignMenuPermissionPanel>>()
 const loading = ref(false)
 const saveLoading = ref(false)
-const menuTree = ref<any[]>([])
+const menuTree = ref<RoleMenuTreeNode[]>([])
 const pageKey = ref(0)
 
 const roleForm = reactive<RoleFormModel>({

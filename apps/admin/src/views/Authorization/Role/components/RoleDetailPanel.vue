@@ -8,21 +8,7 @@ import { formatToDateTime } from '@/utils/dateUtil'
 import { ElMessage, ElTable, ElTableColumn, ElTag } from 'element-plus'
 import { computed, PropType } from 'vue'
 import { buildRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
-
-interface PermissionItem {
-  id: string
-  name: string
-  code: string
-  checked?: boolean
-}
-
-interface MenuTreeNode {
-  id: string
-  title: string
-  checked?: boolean
-  permissions?: PermissionItem[]
-  children?: MenuTreeNode[]
-}
+import type { RoleMenuPermissionItem, RoleMenuTreeNode } from '../utils/roleMenuTree'
 
 type TagType = 'success' | 'warning' | 'info' | 'primary' | 'danger'
 
@@ -32,7 +18,7 @@ const props = defineProps({
     default: undefined
   },
   menuTree: {
-    type: Array as PropType<MenuTreeNode[]>,
+    type: Array as PropType<RoleMenuTreeNode[]>,
     default: () => []
   },
   loading: {
@@ -59,6 +45,7 @@ const roleInfoItems = computed<Array<{ label: string; value: string; tagType?: T
       tagType: detail?.enabled ? 'success' : 'danger'
     },
     { label: t('userDemo.remark'), value: detail?.description || '-' },
+    { label: t('exampleDemo.sort'), value: String(detail?.sort ?? '-') },
     {
       label: t('tableDemo.createdAt'),
       value: detail?.createdAt ? formatToDateTime(detail.createdAt) : '-'
@@ -98,7 +85,7 @@ const overviewCards = computed(() => [
   }
 ])
 
-const isPermissionOwned = (menu: MenuTreeNode, permission: PermissionItem) => {
+const isPermissionOwned = (menu: RoleMenuTreeNode, permission: RoleMenuPermissionItem) => {
   return !!menu.checked && !!permission.checked
 }
 

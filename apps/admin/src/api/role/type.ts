@@ -3,6 +3,7 @@ export interface RoleItem {
   name: string
   code: string
   enabled: boolean
+  sort: number
   description?: string
   isSystem?: boolean
   createdAt: string

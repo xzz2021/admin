@@ -102,6 +102,7 @@ const RoleListSchema = RoleModel.pick({
   enabled: true,
 }).extend({
   createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 const RoleListResSchema = z.object({

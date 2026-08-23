@@ -1,6 +1,6 @@
 <script setup lang="tsx">
 import { addPermissionApi, delPermissionApi, getMenuListApi, updatePermissionApi } from '@/api/menu'
-import type { MenuItem, MenuPermission, PermissionType } from '@/api/menu/types'
+import type { MenuItem, MenuPermission } from '@/api/menu/types'
 import { BaseButton } from '@/components/Button'
 import { Form, FormSchema } from '@/components/Form'
 import { Icon } from '@/components/Icon'
@@ -8,9 +8,9 @@ import { useClipboard } from '@/hooks/web/useClipboard'
 import { useForm } from '@/hooks/web/useForm'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
-import { ElButton, ElMessage, ElMessageBox, ElPopconfirm, ElTable, ElTableColumn, ElTag } from 'element-plus'
-import { cloneDeep, pick } from 'lodash-es'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, PropType, reactive, ref, unref, watch } from 'vue'
+import { buildMenuPayload, normalizeMenuRow, normalizePermissions } from '../utils/menuForm'
 import {
   buildMenuFormSnapshot,
   collectMenuIds,
@@ -19,7 +19,6 @@ import {
   prepareMenuFormImport
 } from '../utils/menuFormSnapshot'
 import { filterMenuTreeForParent, findMenuById } from '../utils/menuTree'
-import { getPermissionCodeSuffix } from '../utils/permissionCode'
 import {
   adaptPermissionSnapshotToMenu,
   buildMenuPermissionSnapshot,
@@ -27,44 +26,11 @@ import {
 } from '../utils/permissionSnapshot'
 import { isTempPermissionId } from '../utils/syncPermissions'
 import AddButtonPermission from './AddButtonPermission.vue'
+import MenuPermissionTable from './MenuPermissionTable.vue'
 
 const { t } = useI18n()
 const { required } = useValidator()
 const { copy, getText } = useClipboard()
-
-const getPermissionTypeLabel = (type: PermissionType) => {
-  const map: Record<PermissionType, string> = {
-    BUTTON: t('menu.permissionTypeButton'),
-    DATA: t('menu.permissionTypeData'),
-    API: t('menu.permissionTypeApi'),
-    OTHER: t('menu.permissionTypeOther')
-  }
-  return map[type] ?? type
-}
-
-const MENU_FIELDS = [
-  'type',
-  'parentId',
-  'name',
-  'path',
-  'component',
-  'redirect',
-  'title',
-  'enabled',
-  'sort',
-  'icon',
-  'affix',
-  'activeMenu',
-  'alwaysShow',
-  'breadcrumb',
-  'canTo',
-  'hidden',
-  'noCache',
-  'noTagsView',
-  'external',
-  'link',
-  'keepAlive'
-] as const
 
 const props = defineProps({
   currentRow: {
@@ -77,48 +43,18 @@ const emit = defineEmits<{
   'permissions-change': [permissions: MenuPermission[]]
 }>()
 
-const normalizePermissions = (list: any[] = []): MenuPermission[] => {
-  return list.map((item) => ({
-    id: item.id,
-    name: item.name ?? item.label ?? '',
-    code: item.code ?? item.value ?? '',
-    type: (item.type ?? 'BUTTON') as PermissionType,
-    sort: item.sort ?? 0,
-    enabled: item.enabled ?? true,
-    menuId: item.menuId
-  }))
-}
-
-const normalizeMenuRow = (row: MenuItem | null): Partial<MenuItem> | null => {
-  if (!row) return null
-  const normalized = cloneDeep(row) as any
-
-  if (normalized.meta) {
-    Object.assign(normalized, normalized.meta)
-    delete normalized.meta
-  }
-
-  if (normalized.status !== undefined && normalized.enabled === undefined) {
-    normalized.enabled = normalized.status === 1 || normalized.status === true
-    delete normalized.status
-  }
-
-  normalized.permissions = normalizePermissions(normalized.permissions ?? normalized.permissionList)
-  delete normalized.permissionList
-
-  if (normalized.parentId === 0) {
-    normalized.parentId = null
-  }
-
-  return normalized
-}
-
 const permissionSaving = ref(false)
 const permissionImporting = ref(false)
 const formImporting = ref(false)
 const cacheComponent = ref('')
 const editingMenuId = ref<string>()
 const isEditMode = computed(() => !!editingMenuId.value)
+const showDrawer = ref(false)
+const editingPermission = ref<MenuPermission | null>(null)
+const drawerMenuPath = ref('')
+
+const { formRegister, formMethods } = useForm()
+const { setValues, getFormData, getElFormExpose, setSchema } = formMethods
 
 const getMenuId = async () => {
   const formData = await getFormData()
@@ -191,6 +127,17 @@ const handleImportMenuForm = async () => {
   } finally {
     formImporting.value = false
   }
+}
+
+const reloadPermissionsFromApi = async () => {
+  const menuId = await getMenuId()
+  if (!menuId) return
+
+  const res = await getMenuListApi()
+  const menu = findMenuById(res.data.list || [], menuId)
+  const permissions = normalizePermissions(menu?.permissions ?? [])
+  await setValues({ permissions })
+  emit('permissions-change', permissions)
 }
 
 const handleCopyPermissions = async () => {
@@ -278,17 +225,6 @@ const handleImportPermissions = async () => {
   }
 }
 
-const reloadPermissionsFromApi = async () => {
-  const menuId = await getMenuId()
-  if (!menuId) return
-
-  const res = await getMenuListApi()
-  const menu = findMenuById(res.data.list || [], menuId)
-  const permissions = normalizePermissions(menu?.permissions ?? [])
-  await setValues({ permissions })
-  emit('permissions-change', permissions)
-}
-
 const handleClose = async (row: MenuPermission) => {
   const formData = await getFormData()
   const menuId = await getMenuId()
@@ -309,10 +245,6 @@ const handleClose = async (row: MenuPermission) => {
     ElMessage.error(t('menu.deletePermissionFailed'))
   }
 }
-
-const showDrawer = ref(false)
-const editingPermission = ref<MenuPermission | null>(null)
-const drawerMenuPath = ref('')
 
 const openPermissionDrawer = async (row?: MenuPermission) => {
   const formData = await getFormData()
@@ -554,88 +486,18 @@ const formSchema = reactive<FormSchema[]>([
     formItemProps: {
       labelWidth: '0px',
       slots: {
-        default: (data: any) => (
-          <>
-            <div class="flex flex-wrap gap-8px items-center mt-5px">
-              <BaseButton type="primary" size="small" onClick={() => openPermissionDrawer()}>
-                {t('menu.addPermission')}
-              </BaseButton>
-              <BaseButton size="small" onClick={() => handleCopyPermissions()}>
-                <Icon icon="copy" class="mr-4px" />
-                {t('menu.copyPermission')}
-              </BaseButton>
-              <BaseButton
-                size="small"
-                disabled={!isEditMode.value}
-                loading={permissionImporting.value}
-                onClick={() => handleImportPermissions()}
-              >
-                <Icon icon="clipboard-paste" class="mr-4px" />
-                {t('menu.importPermission')}
-              </BaseButton>
-            </div>
-            <ElTable
-              key={JSON.stringify(data?.permissions?.map((p: MenuPermission) => p.id))}
-              data={data?.permissions}
-              class="mt-10px"
-            >
-              <ElTableColumn type="index" width="50" />
-              <ElTableColumn prop="name" label={t('common.name')} />
-              <ElTableColumn
-                prop="code"
-                label={t('common.code')}
-                v-slots={{
-                  default: ({ row }: { row: MenuPermission }) => (
-                    <span title={row.code}>{getPermissionCodeSuffix(row.code, data?.path)}</span>
-                  )
-                }}
-              />
-              <ElTableColumn
-                prop="type"
-                label={t('common.type')}
-                width="100"
-                v-slots={{
-                  default: ({ row }: { row: MenuPermission }) => (
-                    <ElTag size="small">{getPermissionTypeLabel(row.type)}</ElTag>
-                  )
-                }}
-              />
-              <ElTableColumn
-                prop="enabled"
-                label={t('menu.status')}
-                width="80"
-                v-slots={{
-                  default: ({ row }: { row: MenuPermission }) => (
-                    <ElTag type={row.enabled ? 'success' : 'danger'} size="small">
-                      {row.enabled ? t('userDemo.enable') : t('userDemo.disable')}
-                    </ElTag>
-                  )
-                }}
-              />
-              <ElTableColumn
-                label={t('userDemo.action')}
-                width="140"
-                v-slots={{
-                  default: ({ row }: { row: MenuPermission }) => (
-                    <>
-                      <ElButton size="small" type="primary" onClick={() => openPermissionDrawer(row)}>
-                        {t('common.edit')}
-                      </ElButton>
-                      <ElPopconfirm title={t('menu.confirmDeletePermission')} onConfirm={() => handleClose(row)}>
-                        {{
-                          reference: () => (
-                            <ElButton size="small" type="danger">
-                              {t('exampleDemo.del')}
-                            </ElButton>
-                          )
-                        }}
-                      </ElPopconfirm>
-                    </>
-                  )
-                }}
-              />
-            </ElTable>
-          </>
+        default: (data: { permissions?: MenuPermission[]; path?: string }) => (
+          <MenuPermissionTable
+            permissions={data?.permissions ?? []}
+            menuPath={data?.path}
+            editMode={isEditMode.value}
+            importing={permissionImporting.value}
+            onAdd={() => openPermissionDrawer()}
+            onEdit={(row: MenuPermission) => openPermissionDrawer(row)}
+            onDelete={(row: MenuPermission) => handleClose(row)}
+            onCopy={() => handleCopyPermissions()}
+            onImport={() => handleImportPermissions()}
+          />
         )
       }
     }
@@ -648,20 +510,6 @@ const rules = reactive({
   title: [required()],
   name: [required()]
 })
-
-const { formRegister, formMethods } = useForm()
-const { setValues, getFormData, getElFormExpose, setSchema } = formMethods
-
-const buildMenuPayload = (formData: Recordable) => {
-  const payload = pick(formData, MENU_FIELDS) as Recordable
-  if (!payload.parentId) {
-    payload.parentId = null
-  }
-  if (formData.id) {
-    payload.id = formData.id
-  }
-  return payload
-}
 
 const submit = async () => {
   const elForm = await getElFormExpose()

@@ -7,6 +7,17 @@ import { eachTree } from '@/utils/tree'
 import { ElCheckbox, ElForm, ElFormItem, ElInput, ElMessage, ElMessageBox, ElSwitch, ElTag, ElTree } from 'element-plus'
 import { computed, nextTick, PropType, ref, watch } from 'vue'
 import { applyRoleMenuPermissionSnapshot, parseRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
+import {
+  collectRoleSubmitData,
+  filterRoleMenuNode,
+  findFirstMenuNode,
+  getMenuPermissionCount,
+  groupPermissionsByType,
+  ROLE_PERMISSION_TYPE_I18N,
+  type RoleFormModel,
+  type RoleMenuPermissionItem,
+  type RoleMenuTreeNode
+} from '../utils/roleMenuTree'
 
 const emit = defineEmits<{
   cancel: []
@@ -15,62 +26,16 @@ const emit = defineEmits<{
 
 const treeRef = ref<InstanceType<typeof ElTree>>()
 const menuSearch = ref('')
-const currentMenu = ref<MenuTreeNode>()
+const currentMenu = ref<RoleMenuTreeNode>()
 const isExpandAll = ref(true)
 const permissionChangeTick = ref(0)
 
 const { t } = useI18n()
 const { getText } = useClipboard()
 
-export interface RoleFormModel {
-  id?: string
-  menu?: MenuTreeNode[]
-  name: string
-  code: string
-  enabled: boolean
-  description?: string
-}
-
-export interface RoleSubmitData {
-  code: string
-  name: string
-  enabled: boolean
-  description: string
-  menus: {
-    id: string
-    permissionIds: string[]
-  }[]
-}
-
-interface PermissionItem {
-  id: string
-  name: string
-  code: string
-  type: string
-  checked?: boolean
-}
-
-interface MenuTreeNode {
-  id: string
-  title: string
-  checked?: boolean
-  permissions?: PermissionItem[]
-  children?: MenuTreeNode[]
-}
-
-const getPermissionTypeLabel = (type: string) => {
-  const map: Record<string, string> = {
-    BUTTON: t('role.permissionTypeButton'),
-    DATA: t('role.permissionTypeData'),
-    API: t('role.permissionTypeApi'),
-    OTHER: t('role.permissionTypeOther')
-  }
-  return map[type] || t('role.permissionTypeOther')
-}
-
 const props = defineProps({
   menuTree: {
-    type: Array as PropType<MenuTreeNode[]>,
+    type: Array as PropType<RoleMenuTreeNode[]>,
     default: () => []
   },
   loading: {
@@ -85,37 +50,15 @@ const props = defineProps({
 
 const roleFormModel = defineModel<RoleFormModel>('roleForm', { required: true })
 
-const filterTreeNode = (value: string, data: MenuTreeNode) => {
-  if (!value) return true
-  return data.title?.toLowerCase().includes(value.toLowerCase())
-}
-
 watch(menuSearch, (value) => {
   treeRef.value?.filter(value)
 })
-
-const findFirstMenuNode = (tree: MenuTreeNode[]): MenuTreeNode | undefined => {
-  for (const node of tree) {
-    if (node.permissions?.length) return node
-    if (node.children?.length) {
-      const found = findFirstMenuNode(node.children)
-      if (found) return found
-    }
-  }
-  return tree[0]
-}
 
 const bumpPermissionChange = () => {
   permissionChangeTick.value++
 }
 
-const getMenuPermissionCount = (node: MenuTreeNode) => {
-  const total = node.permissions?.length ?? 0
-  const selected = node.permissions?.filter((permission) => permission.checked).length ?? 0
-  return { selected, total }
-}
-
-const clearMenuPermissions = (node: MenuTreeNode) => {
+const clearMenuPermissions = (node: RoleMenuTreeNode) => {
   node.permissions?.forEach((permission) => {
     permission.checked = false
   })
@@ -133,14 +76,13 @@ const syncMenuCheckedState = () => {
   bumpPermissionChange()
 }
 
-const checkMenuNode = (node: MenuTreeNode) => {
+const checkMenuNode = (node: RoleMenuTreeNode) => {
   if (node.checked) return
-  // deep=false：仅勾选当前节点及祖先，不联动勾选子节点
   treeRef.value?.setChecked(node.id, true, false)
   syncMenuCheckedState()
 }
 
-const handleCheckChange = (_node: MenuTreeNode, _checked: boolean) => {
+const handleCheckChange = () => {
   syncMenuCheckedState()
 }
 
@@ -165,7 +107,7 @@ watch(
   { immediate: true, deep: true }
 )
 
-const handleNodeClick = (node: MenuTreeNode) => {
+const handleNodeClick = (node: RoleMenuTreeNode) => {
   currentMenu.value = node
 }
 
@@ -203,20 +145,12 @@ const menuPermissionCountMap = computed(() => {
 
 const currentMenuPermissions = computed(() => currentMenu.value?.permissions || [])
 
-const permissionGroups = computed(() => {
-  const groups = new Map<string, PermissionItem[]>()
-  currentMenuPermissions.value.forEach((permission) => {
-    const type = permission.type || 'OTHER'
-    const list = groups.get(type) || []
-    list.push(permission)
-    groups.set(type, list)
-  })
-  return Array.from(groups.entries()).map(([type, permissions]) => ({
-    type,
-    label: getPermissionTypeLabel(type),
-    permissions
+const permissionGroups = computed(() =>
+  groupPermissionsByType(currentMenuPermissions.value).map((group) => ({
+    ...group,
+    label: t(ROLE_PERMISSION_TYPE_I18N[group.type] || ROLE_PERMISSION_TYPE_I18N.OTHER)
   }))
-})
+)
 
 const isCurrentMenuAllChecked = computed(() => {
   const permissions = currentMenuPermissions.value
@@ -233,7 +167,7 @@ const toggleCurrentMenuPermissions = (checked: boolean) => {
   }
 }
 
-const togglePermission = (permission: PermissionItem, checked: boolean) => {
+const togglePermission = (permission: RoleMenuPermissionItem, checked: boolean) => {
   permission.checked = checked
   bumpPermissionChange()
   if (checked && currentMenu.value) {
@@ -245,7 +179,7 @@ const toggleExpandAll = () => {
   isExpandAll.value = !isExpandAll.value
   const nodes = treeRef.value?.store?.nodesMap
   if (!nodes) return
-  Object.values(nodes).forEach((node: any) => {
+  Object.values(nodes).forEach((node: { expanded: boolean }) => {
     node.expanded = isExpandAll.value
   })
 }
@@ -263,7 +197,7 @@ const isAllMenuPermissionChecked = computed(() => {
   permissionChangeTick.value
   let hasMenu = false
   let allChecked = true
-  eachTree(props.menuTree, (node: MenuTreeNode) => {
+  eachTree(props.menuTree, (node: RoleMenuTreeNode) => {
     hasMenu = true
     if (!node.checked || node.permissions?.some((permission) => !permission.checked)) {
       allChecked = false
@@ -274,7 +208,7 @@ const isAllMenuPermissionChecked = computed(() => {
 
 const toggleAllMenuPermissions = () => {
   const checked = !isAllMenuPermissionChecked.value
-  eachTree(props.menuTree, (node: MenuTreeNode) => {
+  eachTree(props.menuTree, (node: RoleMenuTreeNode) => {
     node.checked = checked
     node.permissions?.forEach((permission) => {
       permission.checked = checked
@@ -323,32 +257,8 @@ const handleImportPermissions = async () => {
   )
 }
 
-const collectSubmitData = (): RoleSubmitData => {
-  const menus: RoleSubmitData['menus'] = []
-
-  eachTree(props.menuTree, (node) => {
-    if (!node.checked) return
-
-    const permissionIds =
-      node.permissions?.filter((permission) => permission.checked).map((permission) => permission.id) || []
-
-    menus.push({
-      id: node.id,
-      permissionIds
-    })
-  })
-
-  return {
-    code: roleFormModel.value.code,
-    name: roleFormModel.value.name,
-    enabled: roleFormModel.value.enabled,
-    description: roleFormModel.value.description || '',
-    menus
-  }
-}
-
 defineExpose({
-  collectSubmitData
+  collectSubmitData: () => collectRoleSubmitData(roleFormModel.value, props.menuTree)
 })
 </script>
 
@@ -406,7 +316,7 @@ defineExpose({
             highlight-current
             :expand-on-click-node="false"
             :default-expand-all="isExpandAll"
-            :filter-node-method="filterTreeNode"
+            :filter-node-method="filterRoleMenuNode"
             :props="{ label: 'title', children: 'children' }"
             @node-click="handleNodeClick"
             @check-change="handleCheckChange"

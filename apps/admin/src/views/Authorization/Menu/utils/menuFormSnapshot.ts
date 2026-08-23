@@ -1,35 +1,14 @@
 import type { MenuItem } from '@/api/menu/types'
 import { eachTree } from '@/utils/tree'
+import { MENU_FORM_FIELDS, type MenuFormField } from './menuForm'
 
 export const MENU_FORM_SNAPSHOT_TYPE = 'menu-form' as const
 export const MENU_FORM_SNAPSHOT_VERSION = 1 as const
 
 /** 可复制/导入的菜单字段（不含 id / permissions） */
-export const MENU_FORM_SNAPSHOT_FIELDS = [
-  'type',
-  'parentId',
-  'name',
-  'path',
-  'component',
-  'redirect',
-  'title',
-  'enabled',
-  'sort',
-  'icon',
-  'affix',
-  'activeMenu',
-  'alwaysShow',
-  'breadcrumb',
-  'canTo',
-  'hidden',
-  'noCache',
-  'noTagsView',
-  'external',
-  'link',
-  'keepAlive'
-] as const
+export const MENU_FORM_SNAPSHOT_FIELDS = MENU_FORM_FIELDS
 
-export type MenuFormSnapshotField = (typeof MENU_FORM_SNAPSHOT_FIELDS)[number]
+export type MenuFormSnapshotField = MenuFormField
 
 export type MenuFormSnapshotData = Partial<Pick<MenuItem, MenuFormSnapshotField>>
 

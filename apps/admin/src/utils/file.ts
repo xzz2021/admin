@@ -223,20 +223,19 @@ export async function downloadFile({
 
 export const formatDataFn = (data: any[]) => {
   return data.map((item) => {
-    const { id, children, permissionList, parentId, meta, ...rest } = item
-    // 移除meta和permissionList的id
+    const { id, children, permissions, parentId, meta, ...rest } = item
     if (meta) {
       delete meta.id
     }
-    if (permissionList) {
-      permissionList.forEach((item: any) => {
+    if (permissions) {
+      permissions.forEach((item: any) => {
         delete item.id
       })
     }
 
     return {
       ...rest,
-      permissionList: permissionList?.length ? permissionList : undefined,
+      permissions: permissions?.length ? permissions : undefined,
       meta: meta ? meta : undefined,
       children: children?.length ? formatDataFn(children) : undefined
     }

@@ -53,6 +53,10 @@ const tableColumns = reactive<TableColumn[]>([
     label: t('role.roleCode')
   },
   {
+    field: 'sort',
+    label: t('exampleDemo.sort')
+  },
+  {
     field: 'enabled',
     label: t('menu.status'),
     slots: {
@@ -67,6 +71,11 @@ const tableColumns = reactive<TableColumn[]>([
     field: 'createdAt',
     label: t('tableDemo.displayTime'),
     formatter: (row: RoleItem) => formatToDateTime(row.createdAt)
+  },
+  {
+    field: 'updatedAt',
+    label: t('tableDemo.updatedAt'),
+    formatter: (row: RoleItem) => formatToDateTime(row.updatedAt)
   },
   {
     field: 'description',
@@ -142,7 +151,8 @@ const handleDetail = (row: RoleItem) => {
         enabled: row.enabled,
         description: row.description ?? '',
         createdAt: row.createdAt,
-        updatedAt: row.updatedAt
+        updatedAt: row.updatedAt,
+        sort: row.sort
       }
     }
   })

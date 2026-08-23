@@ -80,7 +80,7 @@ const MenuSortArraySchema = z.object({
 export class MenuSortArrayDto extends createZodDto(MenuSortArraySchema) {}
 
 const MenuListSchema = MenuSchema.extend({
-  permissionList: z.array(PermissionSchema),
+  permissions: z.array(PermissionSchema),
   children: z.array(MenuSchema),
 })
 export class MenuListRes extends createZodDto(MenuListSchema) {}
@@ -90,7 +90,7 @@ const SeedMenuSchema = MenuSchema.omit({
   parentId: true,
 }).extend({
   children: z.array(MenuSchema),
-  permissionList: z.array(PermissionSchema),
+  permissions: z.array(PermissionSchema),
 })
 export class SeedMenuDto extends createZodDto(SeedMenuSchema) {}
 
