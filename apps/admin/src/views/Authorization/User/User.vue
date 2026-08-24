@@ -17,10 +17,11 @@ import { ElDivider, ElInput, ElTag, ElTree } from 'element-plus'
 import { nextTick, onMounted, reactive, ref, unref, watch } from 'vue'
 import Detail from './components/Detail.vue'
 import Write from './components/Write.vue'
+import { ALL_DEPARTMENT_NODE_ID, toUserListDepartmentId, withAllDepartmentNode } from './utils/departmentFilter'
 
 const { t } = useI18n()
 
-const currentNodeKey = ref('')
+const currentNodeKey = ref(ALL_DEPARTMENT_NODE_ID)
 const departmentList = ref<DepartmentItem[]>([])
 const roleMap = ref<Record<string, string>>({})
 const searchParams = ref<Recordable>({})
@@ -37,19 +38,20 @@ const currentDepartment = ref('')
 const { tableRegister, tableState, tableMethods } = useTable<UserItem, string>({
   fetchDataApi: async () => {
     const { pageSize, currentPage } = tableState
+    const departmentId = toUserListDepartmentId(unref(currentNodeKey))
     const res = await getUserByDepartmentIdApi({
-      id: unref(currentNodeKey) || undefined,
+      ...(departmentId ? { id: departmentId } : {}),
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
-      ...unref(searchParams)
+      ...unref(searchParams),
     })
     return {
       list: res.data.list || [],
-      total: res.data.total || 0
+      total: res.data.total || 0,
     }
   },
   getRowId: (row) => row.id,
-  deleteApi: (ids) => deleteUserApi(ids)
+  deleteApi: (ids) => deleteUserApi(ids),
 })
 
 const { total, loading, dataList, pageSize, currentPage, delLoading } = tableState
@@ -59,12 +61,12 @@ const searchSchema = reactive<FormSchema[]>([
   {
     field: 'username',
     label: t('userDemo.username'),
-    component: 'Input'
+    component: 'Input',
   },
   {
     field: 'phone',
     label: t('login.phone'),
-    component: 'Input'
+    component: 'Input',
   },
   {
     field: 'enabled',
@@ -73,34 +75,34 @@ const searchSchema = reactive<FormSchema[]>([
     componentProps: {
       options: [
         { label: t('userDemo.enable'), value: true },
-        { label: t('userDemo.disable'), value: false }
-      ]
-    }
-  }
+        { label: t('userDemo.disable'), value: false },
+      ],
+    },
+  },
 ])
 
 const tableColumns = reactive<TableColumn[]>([
   {
     field: 'selection',
-    type: 'selection'
+    type: 'selection',
   },
   {
     field: 'index',
     label: t('userDemo.index'),
-    type: 'index'
+    type: 'index',
   },
   {
     field: 'username',
-    label: t('userDemo.username')
+    label: t('userDemo.username'),
   },
   {
     field: 'phone',
-    label: t('login.phone')
+    label: t('login.phone'),
   },
   {
     field: 'department.name',
     label: t('userDemo.department'),
-    minWidth: 120
+    minWidth: 120,
   },
   {
     field: 'roles',
@@ -119,8 +121,8 @@ const tableColumns = reactive<TableColumn[]>([
             ))}
           </>
         )
-      }
-    }
+      },
+    },
   },
   {
     field: 'enabled',
@@ -131,14 +133,14 @@ const tableColumns = reactive<TableColumn[]>([
         <ElTag type={data.row.enabled ? 'success' : 'danger'}>
           {data.row.enabled ? t('userDemo.enable') : t('userDemo.disable')}
         </ElTag>
-      )
-    }
+      ),
+    },
   },
   {
     field: 'createdAt',
     label: t('tableDemo.displayTime'),
     width: 180,
-    formatter: (row: UserItem) => formatToDateTime(row.createdAt)
+    formatter: (row: UserItem) => formatToDateTime(row.createdAt),
   },
   {
     field: 'action',
@@ -161,9 +163,9 @@ const tableColumns = reactive<TableColumn[]>([
             </BaseButton>
           </>
         )
-      }
-    }
-  }
+      },
+    },
+  },
 ])
 
 const setSearchParams = (params: Recordable) => {
@@ -173,11 +175,12 @@ const setSearchParams = (params: Recordable) => {
 }
 
 const filterNode = (value: string, data: DepartmentItem) => {
-  if (!value) return true
+  if (!value || data.id === ALL_DEPARTMENT_NODE_ID) return true
   return data.name.includes(value)
 }
 
-const currentChange = (data: DepartmentItem) => {
+const currentChange = (data?: DepartmentItem) => {
+  if (!data?.id) return
   currentNodeKey.value = data.id
   currentPage.value = 1
   getList()
@@ -186,9 +189,9 @@ const currentChange = (data: DepartmentItem) => {
 const openDialog = (row: UserItem | undefined, type: 'add' | 'edit' | 'detail') => {
   actionType.value = type
   currentRow.value = row
-  defaultDepartmentId.value = type === 'add' ? currentNodeKey.value : ''
+  defaultDepartmentId.value = type === 'add' ? toUserListDepartmentId(currentNodeKey.value) || '' : ''
   dialogTitle.value = t(
-    type === 'add' ? 'exampleDemo.add' : type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail'
+    type === 'add' ? 'exampleDemo.add' : type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail',
   )
   dialogVisible.value = true
 }
@@ -213,10 +216,10 @@ const save = async () => {
 
 const loadBaseData = async () => {
   const [departmentRes, roleRes] = await Promise.all([getDepartmentListApi(), getRoleListApi()])
-  departmentList.value = departmentRes.data.list || []
+  departmentList.value = withAllDepartmentNode(departmentRes.data.list || [], t('userDemo.all'))
   roleMap.value = Object.fromEntries((roleRes.data?.list || []).map((role) => [role.id, role.name]))
 
-  currentNodeKey.value = departmentList.value[0]?.id || ''
+  currentNodeKey.value = ALL_DEPARTMENT_NODE_ID
   await nextTick()
   treeEl.value?.setCurrentKey(currentNodeKey.value)
   getList()

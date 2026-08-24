@@ -22,6 +22,7 @@ const USER_LIST_SELECT = {
         select: {
           id: true,
           name: true,
+          isSystem: true,
         },
       },
     },
@@ -208,18 +209,16 @@ export class UserRepository {
     roleIds?: string[]
     assignedById?: string | null
   }) {
-    return this.db.$transaction(async tx => {
-      return tx.user.create({
-        data: {
-          username: data.username,
-          password: data.password,
-          phone: data.phone,
-          department: { connect: { id: data.departmentId } },
-          roles: {
-            create: this.roleAssignments(data.roleIds, data.assignedById),
-          },
+    return this.db.user.create({
+      data: {
+        username: data.username,
+        password: data.password,
+        phone: data.phone,
+        department: { connect: { id: data.departmentId } },
+        roles: {
+          create: this.roleAssignments(data.roleIds, data.assignedById),
         },
-      })
+      },
     })
   }
 
@@ -272,7 +271,7 @@ export class UserRepository {
   private roleAssignments(roleIds?: string[], assignedById?: string | null) {
     return roleIds?.map(roleId => ({
       role: { connect: { id: roleId } },
-      assignedById: assignedById ?? null,
+      assignedBy: assignedById ? { connect: { id: assignedById } } : undefined,
       assignedAt: assignedById ? new Date() : null,
     }))
   }

@@ -14,12 +14,12 @@ const { required } = useValidator()
 const props = defineProps({
   currentRow: {
     type: Object as PropType<UserItem | undefined>,
-    default: () => undefined
+    default: () => undefined,
   },
   defaultDepartmentId: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 })
 
 const formSchema = reactive<FormSchema[]>([
@@ -27,20 +27,20 @@ const formSchema = reactive<FormSchema[]>([
     field: 'username',
     label: t('userDemo.username'),
     component: 'Input',
-    colProps: { span: 24 }
+    colProps: { span: 24 },
   },
   {
     field: 'phone',
     label: t('login.phone'),
     component: 'Input',
-    colProps: { span: 24 }
+    colProps: { span: 24 },
   },
   {
     field: 'password',
     label: t('userDemo.password'),
     component: 'InputPassword',
     colProps: { span: 24 },
-    hidden: !!props.currentRow
+    hidden: !!props.currentRow,
   },
   {
     field: 'department',
@@ -52,17 +52,18 @@ const formSchema = reactive<FormSchema[]>([
       props: {
         label: 'name',
         value: 'id',
-        children: 'children'
+        children: 'children',
       },
       highlightCurrent: true,
       expandOnClickNode: false,
       checkStrictly: true,
-      checkOnClickNode: true
+      checkOnClickNode: true,
+      defaultExpandAll: true,
     },
     optionApi: async () => {
       const res = await getDepartmentListApi()
       return res.data.list || []
-    }
+    },
   },
   {
     field: 'roles',
@@ -73,21 +74,21 @@ const formSchema = reactive<FormSchema[]>([
     componentProps: {
       multiple: true,
       collapseTags: true,
-      maxCollapseTags: 2
+      maxCollapseTags: 2,
     },
     optionApi: async () => {
       const res = await getRoleListApi()
       return (res.data?.list || []).map((role) => ({
         label: role.name,
-        value: role.id
+        value: role.id,
       }))
-    }
+    },
   },
   {
     field: 'email',
     label: t('userDemo.email'),
     component: 'Input',
-    colProps: { span: 24 }
+    colProps: { span: 24 },
   },
   {
     field: 'enabled',
@@ -98,15 +99,15 @@ const formSchema = reactive<FormSchema[]>([
     componentProps: {
       inlinePrompt: true,
       activeText: t('userDemo.enable'),
-      inactiveText: t('userDemo.disable')
-    }
-  }
+      inactiveText: t('userDemo.disable'),
+    },
+  },
 ])
 
 const rules = reactive<Record<string, ReturnType<typeof required>[]>>({
   username: [required()],
   phone: [required()],
-  department: [required()]
+  department: [required()],
 })
 
 const { formRegister, formMethods } = useForm()
@@ -126,7 +127,7 @@ const submit = async (): Promise<UserFormData | undefined> => {
     department: formData.department,
     roles: formData.roles || [],
     email: formData.email || undefined,
-    enabled: formData.enabled ?? true
+    enabled: formData.enabled ?? true,
   }
 
   if (formData.id) {
@@ -153,7 +154,7 @@ watch(
         department: defaultDepartmentId || '',
         roles: [],
         email: '',
-        enabled: true
+        enabled: true,
       })
       return
     }
@@ -166,10 +167,10 @@ watch(
       department: currentRow.department?.id || '',
       roles: currentRow.roles || [],
       email: currentRow.email || '',
-      enabled: currentRow.enabled ?? true
+      enabled: currentRow.enabled ?? true,
     })
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 defineExpose({ submit })

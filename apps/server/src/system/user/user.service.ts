@@ -55,7 +55,7 @@ export class UserService {
     const list = rawlist.map(u => ({
       ...u,
       createdAt: formatDateToYMDHMS(u.createdAt),
-      roles: u.roles.map(r => r.role.id),
+      roles: u.roles.map(r => r.role),
     }))
 
     return { list, total, message: '部门用户列表查询成功' }

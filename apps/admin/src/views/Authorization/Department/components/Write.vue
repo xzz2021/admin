@@ -4,8 +4,8 @@ import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useValidator } from '@/hooks/web/useValidator'
-import { PropType, reactive, ref, watch } from 'vue'
-import { filterDepartmentTreeForParent } from '../utils/departmentTree'
+import { PropType, computed, markRaw, reactive, watch } from 'vue'
+import { collectDescendantIds, snapshotDepartmentTree } from '../utils/departmentTree'
 
 const { t } = useI18n()
 const { required } = useValidator()
@@ -13,16 +13,19 @@ const { required } = useValidator()
 const props = defineProps({
   currentRow: {
     type: Object as PropType<DepartmentItem | null>,
-    default: () => null
+    default: () => null,
   },
-  /** 父组件已加载的完整部门树，用于上级部门选择 */
   departmentList: {
     type: Array as PropType<DepartmentItem[]>,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
-
-const editingId = ref<string>()
+// 当前节点不能选择自己和子孙节点作为父级
+const disabledParentIds = computed(() => {
+  const id = props.currentRow?.id
+  if (!id) return new Set<string>()
+  return collectDescendantIds(props.departmentList, id)
+})
 
 const formSchema = reactive<FormSchema[]>([
   {
@@ -35,22 +38,24 @@ const formSchema = reactive<FormSchema[]>([
       props: {
         label: 'name',
         value: 'id',
-        children: 'children'
+        children: 'children',
+        disabled: (data: DepartmentItem) => disabledParentIds.value.has(data.id),
       },
       defaultExpandAll: true,
       highlightCurrent: true,
       expandOnClickNode: false,
       checkStrictly: true,
       checkOnClickNode: true,
-      clearable: true
+      clearable: true,
     },
-    optionApi: async () => filterDepartmentTreeForParent(props.departmentList, editingId.value)
+    //  props是单向数据流  Form 会对 schema 做深层 watch,所以这里需要用 markRaw 来避免重复渲染
+    optionApi: () => markRaw(snapshotDepartmentTree(props.departmentList)),
   },
   {
     field: 'name',
     label: t('userDemo.departmentName'),
     component: 'Input',
-    colProps: { span: 24 }
+    colProps: { span: 24 },
   },
   {
     field: 'enabled',
@@ -61,8 +66,8 @@ const formSchema = reactive<FormSchema[]>([
     componentProps: {
       inlinePrompt: true,
       activeText: t('userDemo.enable'),
-      inactiveText: t('userDemo.disable')
-    }
+      inactiveText: t('userDemo.disable'),
+    },
   },
   {
     field: 'description',
@@ -73,13 +78,13 @@ const formSchema = reactive<FormSchema[]>([
       type: 'textarea',
       rows: 4,
       maxlength: 200,
-      showWordLimit: true
-    }
-  }
+      showWordLimit: true,
+    },
+  },
 ])
 
 const rules = reactive({
-  name: [required()]
+  name: [required()],
 })
 
 const { formRegister, formMethods } = useForm()
@@ -98,20 +103,19 @@ const submit = async (): Promise<DepartmentFormData | undefined> => {
     parentId: formData.parentId || null,
     name: formData.name,
     enabled: formData.enabled ?? true,
-    description: formData.description ?? ''
+    description: formData.description ?? '',
   }
 }
 
 watch(
   () => props.currentRow,
   (currentRow) => {
-    editingId.value = currentRow?.id
     if (!currentRow) {
       setValues({
         parentId: null,
         name: '',
         enabled: true,
-        description: ''
+        description: '',
       })
       return
     }
@@ -121,10 +125,10 @@ watch(
       parentId: currentRow.parentId ?? null,
       name: currentRow.name,
       enabled: currentRow.enabled ?? true,
-      description: currentRow.description ?? ''
+      description: currentRow.description ?? '',
     })
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 defineExpose({ submit })

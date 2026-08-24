@@ -1,29 +1,4 @@
 import type { DepartmentItem } from '@/api/department/types'
-import { cloneDeep } from 'lodash-es'
-
-/** 收集节点及其全部子孙 ID */
-export const collectDescendantIds = (tree: DepartmentItem[], rootId: string): Set<string> => {
-  const ids = new Set<string>()
-
-  const findNode = (nodes: DepartmentItem[]): DepartmentItem | undefined => {
-    for (const node of nodes) {
-      if (node.id === rootId) return node
-      if (node.children?.length) {
-        const found = findNode(node.children)
-        if (found) return found
-      }
-    }
-  }
-
-  const addDescendants = (node: DepartmentItem) => {
-    ids.add(node.id)
-    node.children?.forEach(addDescendants)
-  }
-
-  const root = findNode(tree)
-  if (root) addDescendants(root)
-  return ids
-}
 
 export type DepartmentTreeFilter = {
   name?: string
@@ -67,19 +42,37 @@ export const filterDepartmentTree = (tree: DepartmentItem[], filters: Department
 export const filterDepartmentTreeByName = (tree: DepartmentItem[], keyword: string): DepartmentItem[] =>
   filterDepartmentTree(tree, { name: keyword })
 
-/** 父级选择时排除自身及子孙节点 */
-export const filterDepartmentTreeForParent = (tree: DepartmentItem[], excludeId?: string): DepartmentItem[] => {
-  if (!excludeId) return cloneDeep(tree)
+/** 收集节点及其全部子孙 ID（含自身） */
+export const collectDescendantIds = (tree: DepartmentItem[], rootId: string): Set<string> => {
+  const ids = new Set<string>()
 
-  const excludeIds = collectDescendantIds(tree, excludeId)
+  const findNode = (nodes: DepartmentItem[]): DepartmentItem | undefined => {
+    for (const node of nodes) {
+      if (node.id === rootId) return node
+      if (node.children?.length) {
+        const found = findNode(node.children)
+        if (found) return found
+      }
+    }
+  }
 
-  const filterNodes = (nodes: DepartmentItem[]): DepartmentItem[] =>
-    nodes
-      .filter((node) => !excludeIds.has(node.id))
-      .map((node) => ({
-        ...node,
-        children: node.children?.length ? filterNodes(node.children) : undefined
-      }))
+  const add = (node: DepartmentItem) => {
+    ids.add(node.id)
+    node.children?.forEach(add)
+  }
 
-  return filterNodes(tree)
+  const root = findNode(tree)
+  if (root) add(root)
+  return ids
 }
+
+/** 拍成与表格断开的纯对象树，供上级选择使用 */
+export const snapshotDepartmentTree = (nodes: DepartmentItem[]): DepartmentItem[] =>
+  nodes.map((node) => {
+    const children = node.children?.length ? snapshotDepartmentTree(node.children) : undefined
+    return {
+      id: node.id,
+      name: node.name,
+      children: children?.length ? children : undefined,
+    }
+  })
