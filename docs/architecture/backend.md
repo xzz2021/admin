@@ -4,12 +4,12 @@
 
 ## 入口与模块装配
 
-| 文件                       | 作用                                                                             |
-| -------------------------- | -------------------------------------------------------------------------------- |
-| `src/main.ts`              | 启动、WsAdapter、trust proxy=2、Helmet、cookie-parser、Zod 管道、Swagger（可关） |
-| `src/app.module.ts`        | 导入 `CORE_MODULE` + `CORE_SYSTEM_MODULE`，注册全局 Guard                        |
-| `src/core/app.core.ts`     | 基础设施模块聚合                                                                 |
-| `src/system/app.system.ts` | 业务模块聚合                                                                     |
+| 文件                       | 作用                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `src/main.ts`              | 启动、WsAdapter、trust proxy=私网、Helmet、cookie-parser、Zod 管道、Swagger（可关） |
+| `src/app.module.ts`        | 导入 `CORE_MODULE` + `CORE_SYSTEM_MODULE`，注册全局 Guard                           |
+| `src/core/app.core.ts`     | 基础设施模块聚合                                                                    |
+| `src/system/app.system.ts` | 业务模块聚合                                                                        |
 
 全局 HTTP 前缀 `api` 在 `main.ts` 中**已注释**，Nest 路由为根路径（如 `/auth/login`）。生产由 Nginx 去掉 `/api` 后转发。
 

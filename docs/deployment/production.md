@@ -40,11 +40,11 @@ Compose **不对外暴露端口**。浏览器只打到 NPM，NPM 只反代 **adm
                               └─ /api/* → server:3000（admin Nginx 去掉 /api）
 ```
 
-| NPM Proxy Host | 值                                                         |
-| -------------- | ---------------------------------------------------------- |
-| Forward        | `http://admin:80`                                          |
-| Websockets     | 开启                                                       |
-| 真实 IP        | 传递 `X-Real-IP` / `X-Forwarded-For` / `X-Forwarded-Proto` |
+| NPM Proxy Host | 值                                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Forward        | `http://admin:80`                                                                                                                                 |
+| Websockets     | 开启                                                                                                                                              |
+| 真实 IP        | 开启 Websockets；保留 NPM 默认的 `X-Forwarded-For` / `X-Forwarded-Proto`。admin Nginx 只用私网对端的转发头，并覆盖后传给 server，客户端无法伪造。 |
 
 生产前端 `VITE_API_BASE_PATH=/api/`（`.env.pro`）。请求与页面同源，由 admin Nginx 处理 `/api`，**不要**再为同一域名把 `/api` 指到 `server:3000`，否则会和容器内反代叠两层或绕开安全头。
 

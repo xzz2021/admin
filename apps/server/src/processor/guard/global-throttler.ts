@@ -1,12 +1,7 @@
 // custom-throttler.guard.ts
 import { RATE_KEY } from '@/processor/decorator'
-import {
-  ExecutionContext,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  ServiceUnavailableException,
-} from '@nestjs/common'
+import { getIp } from '@/processor/utils'
+import { ExecutionContext, HttpException, HttpStatus, Injectable, ServiceUnavailableException } from '@nestjs/common'
 import { ThrottlerGuard } from '@nestjs/throttler'
 
 const REDIS_ERROR_CODES = new Set(['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN'])
@@ -27,7 +22,7 @@ function isRedisUnavailableError(error: unknown): boolean {
 
   collect(error)
 
-  if (codes.some(code => REDIS_ERROR_CODES.has(code))) return true
+  if (codes.some((code) => REDIS_ERROR_CODES.has(code))) return true
 
   const combined = messages.join(' ')
   return (
@@ -74,11 +69,8 @@ export class GlobalThrottlerGuard extends ThrottlerGuard {
     const apiKey = req.headers['x-api-key'] as string
     if (apiKey) return `k:${apiKey}`
 
-    // 4. 未登录：回退到 IP + UA，降低共享IP误伤
-    const xff = (req.headers['x-forwarded-for'] as string) || ''
-    const reqIp = req?.ips?.length ? req?.ips[0] : req?.ip
-    const ip =
-      (xff.split(',')[0] || '').trim() || reqIp || req.connection?.remoteAddress || 'unknown'
+    // 4. 未登录：回退到 IP + UA，降低共享IP误伤（IP 走 trust proxy，不读原始 XFF）
+    const ip = getIp(req) || req.connection?.remoteAddress || 'unknown'
     const ua = req.headers['user-agent'] || ''
     return `ip:${ip}|ua:${ua}`
   }

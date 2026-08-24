@@ -40,7 +40,8 @@
 - SPA：`try_files` → `index.html`
 - `location ^~ /api/` → `proxy_pass http://server:3000/`（去掉 `/api` 前缀）
 - WebSocket：`Upgrade` / `Connection`；读写超时 3600s；`client_max_body_size 20m`
-- 安全响应头与静态缓存
+- 信任边界：`real_ip` 仅从 Docker 私网采纳 `X-Forwarded-For`，再用 `$remote_addr` 覆盖 `X-Real-IP` / `X-Forwarded-For`；`X-Forwarded-Proto` 仅允许受信任对端的 `http`/`https`
+- 安全响应头：CSP 的 `script-src` 仅为 `'self'`（无 `unsafe-inline` / `unsafe-eval`）；静态缓存
 
 热更新正在跑的容器（配置在宿主机改完后）：
 

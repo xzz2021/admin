@@ -22,14 +22,21 @@ const requireIp2region = createRequire(__filename)
 let searcher: IpSearcher | null = null
 
 function isLan(ip: string) {
-  const value = ip.toLowerCase()
+  const value = extractIP(ip).toLowerCase()
   if (value === 'localhost' || value === '::1' || value.startsWith('fe80:')) return true
+  if (/^f[cd][0-9a-f]{0,2}:/i.test(value)) return true
   const parts = value.split('.')
   if (parts.length !== 4) return false
   const a = Number.parseInt(parts[0] ?? '', 10)
   const b = Number.parseInt(parts[1] ?? '', 10)
   if (Number.isNaN(a) || Number.isNaN(b)) return false
   return a === 127 || a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31)
+}
+
+function firstHop(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value
+  if (!raw) return ''
+  return raw.split(',')[0]?.trim() ?? ''
 }
 
 function getSearcher(): IpSearcher {
@@ -44,7 +51,7 @@ export function formatIpRegion(region?: string | null): string {
   if (!region) return ''
   const [country, , province, city] = region.split('|')
   return [country, province, city]
-    .filter(part => part && part !== '0')
+    .filter((part) => part && part !== '0')
     .join(' ')
     .slice(0, MAX_LOCATION_LENGTH)
 }
@@ -66,16 +73,16 @@ export function getIp(request: Request | IncomingMessage) {
     raw?: { connection?: { remoteAddress?: string }; socket?: { remoteAddress?: string } }
   }
 
-  let ip: string =
-    (request.headers['x-forwarded-for'] as string | undefined) ||
-    (request.headers['X-Forwarded-For'] as string | undefined) ||
-    (request.headers['X-Real-IP'] as string | undefined) ||
-    (request.headers['x-real-ip'] as string | undefined) ||
-    req.ip ||
-    req.raw?.connection?.remoteAddress ||
-    req.raw?.socket?.remoteAddress ||
-    ''
-  if (ip.includes(',')) ip = ip.split(',')[0] ?? ip
+  // Express + trust proxy 已按受信任跳解析；不要再读客户端伪造的 XFF。
+  if (typeof req.ip === 'string' && req.ip.length > 0) {
+    return firstHop(req.ip)
+  }
 
-  return ip
+  const socketIp =
+    request.socket?.remoteAddress || req.raw?.connection?.remoteAddress || req.raw?.socket?.remoteAddress || ''
+
+  const headerIp = firstHop(request.headers['x-real-ip'] ?? request.headers['x-forwarded-for'])
+  if (headerIp && isLan(socketIp)) return headerIp
+
+  return socketIp
 }

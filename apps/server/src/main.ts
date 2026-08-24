@@ -16,15 +16,15 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.useWebSocketAdapter(new WsAdapter(app))
 
-  // 修复：INestApplication 没有 set 方法，使用 express 实例设置 trust proxy     反向代理/CDN 后必开 才能拿到用户真实ip
-  // 仅信任固定的两层代理：Nginx Proxy Manager -> admin Nginx。
-  app.getHttpAdapter().getInstance().set('trust proxy', 2)
+  // Express 只把私网跳当作代理；admin Nginx 会覆盖 X-Forwarded-* 后再转到这里。
+  app.getHttpAdapter().getInstance().set('trust proxy', ['loopback', 'linklocal', 'uniquelocal'])
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER)) // 使用winston替换掉nest内置日志
 
   // app.setGlobalPrefix('api');
   const configService = app.get(ConfigService)
-  if (configService.get<boolean>('swagger.enabled')) {
+  const swaggerEnabled = configService.get<boolean>('swagger.enabled')
+  if (swaggerEnabled) {
     createSwagger(app, {
       username: configService.getOrThrow<string>('swagger.username'),
       password: configService.getOrThrow<string>('swagger.password'),
@@ -35,14 +35,17 @@ async function bootstrap() {
     app.use(
       helmet({
         crossOriginEmbedderPolicy: false,
-        contentSecurityPolicy: {
-          directives: {
-            imgSrc: [`'self'`, 'data:', '*'],
-            scriptSrc: [`'self'`, 'https:', `'unsafe-inline'`],
-            manifestSrc: [`'self'`, 'apollo-server-landing-page.cdn.apollographql.com'],
-            frameSrc: [`'self'`, 'sandbox.embed.apollographql.com'],
-          },
-        },
+        // Swagger UI 需要内联脚本；生产关 Swagger 后使用空 CSP（本服务只返回 JSON）
+        contentSecurityPolicy: swaggerEnabled
+          ? false
+          : {
+              useDefaults: false,
+              directives: {
+                defaultSrc: ["'none'"],
+                frameAncestors: ["'none'"],
+                baseUri: ["'none'"],
+              },
+            },
         crossOriginResourcePolicy: { policy: 'cross-origin' }, // 加这一行才能加载图片资源
       }),
     )
