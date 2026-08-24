@@ -16,9 +16,7 @@ export class StaticfileService implements OnModuleInit {
     try {
       await this.reconcilePendingCleanup()
     } catch (error) {
-      this.logger.warn(
-        `待清理文件对账失败: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      this.logger.warn(`待清理文件对账失败: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 

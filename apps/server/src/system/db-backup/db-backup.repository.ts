@@ -40,12 +40,7 @@ export class DbBackupRepository {
     })
   }
 
-  async findJobPage(query: {
-    status?: BackupStatus
-    trigger?: BackupTrigger
-    skip: number
-    take: number
-  }) {
+  async findJobPage(query: { status?: BackupStatus; trigger?: BackupTrigger; skip: number; take: number }) {
     const where: Prisma.DbBackupJobWhereInput = {}
     if (query.status) where.status = query.status
     if (query.trigger) where.trigger = query.trigger
@@ -74,12 +69,7 @@ export class DbBackupRepository {
     })
   }
 
-  createRunningJob(data: {
-    trigger: BackupTrigger
-    filePath: string
-    createdById?: string | null
-    startedAt: Date
-  }) {
+  createRunningJob(data: { trigger: BackupTrigger; filePath: string; createdById?: string | null; startedAt: Date }) {
     return this.db.dbBackupJob.create({
       data: {
         trigger: data.trigger,

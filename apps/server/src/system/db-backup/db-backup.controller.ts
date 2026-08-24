@@ -1,17 +1,6 @@
 import { BackupTrigger } from '@/prisma/generated/prisma/client'
 import { RequiredPermission, User } from '@/processor/decorator'
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Header,
-  Param,
-  Post,
-  Query,
-  Res,
-  StreamableFile,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Header, Param, Post, Query, Res, StreamableFile } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { createReadStream } from 'node:fs'
 import type { Response } from 'express'
@@ -58,10 +47,7 @@ export class DbBackupController {
   @ApiOperation({ summary: '下载数据库备份文件' })
   async download(@Param() params: BackupJobIdDto, @Res({ passthrough: true }) res: Response) {
     const job = await this.dbBackupService.getJobFile(params.id)
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${encodeURIComponent(job.fileName)}"`,
-    )
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(job.fileName)}"`)
     return new StreamableFile(createReadStream(job.filePath))
   }
 

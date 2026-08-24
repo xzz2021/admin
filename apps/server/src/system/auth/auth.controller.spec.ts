@@ -26,9 +26,7 @@ describe('AuthController authentication boundary', () => {
   })
 
   it('requires user update permission for force logout', () => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, AuthController.prototype['forceLogout'])).toBe(
-      'user:update',
-    )
+    expect(Reflect.getMetadata(PERMISSION_KEY, AuthController.prototype['forceLogout'])).toBe('user:update')
   })
 })
 
@@ -72,10 +70,7 @@ describe('AuthController cookie adapter', () => {
       rtRefresh: jest.fn().mockResolvedValue({ cookie: setCookie, body }),
     } as unknown as AuthService)
 
-    const result = await controller.refresh(
-      { user: { id: 'u1', jti: 'old' } } as never,
-      res as never,
-    )
+    const result = await controller.refresh({ user: { id: 'u1', jti: 'old' } } as never, res as never)
 
     expect(result).toEqual(body)
     expect(cookie).toHaveBeenCalledWith('rt', 'refresh-token', setCookie.options)
@@ -87,11 +82,7 @@ describe('AuthController cookie adapter', () => {
       logout: jest.fn().mockResolvedValue({ cookie: clearCookie, body }),
     } as unknown as AuthService)
 
-    const result = await controller.logout(
-      { id: 'u1' },
-      { user: { jti: 'j1' } } as never,
-      res as never,
-    )
+    const result = await controller.logout({ id: 'u1' }, { user: { jti: 'j1' } } as never, res as never)
 
     expect(result).toEqual(body)
     expect(clearCookieFn).toHaveBeenCalledWith('rt', clearCookie.options)

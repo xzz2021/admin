@@ -22,7 +22,7 @@ function isRedisUnavailableError(error: unknown): boolean {
 
   collect(error)
 
-  if (codes.some((code) => REDIS_ERROR_CODES.has(code))) return true
+  if (codes.some(code => REDIS_ERROR_CODES.has(code))) return true
 
   const combined = messages.join(' ')
   return (

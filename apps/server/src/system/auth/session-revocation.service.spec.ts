@@ -55,8 +55,6 @@ describe('SessionRevocationService', () => {
   it('requestForceLogout fails when presence module is not loaded', async () => {
     emit.mockResolvedValue([])
 
-    await expect(service().requestForceLogout('op-1', 'user-2')).rejects.toBeInstanceOf(
-      BadRequestException,
-    )
+    await expect(service().requestForceLogout('op-1', 'user-2')).rejects.toBeInstanceOf(BadRequestException)
   })
 })

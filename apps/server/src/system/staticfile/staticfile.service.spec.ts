@@ -72,9 +72,7 @@ describe('StaticfileService', () => {
       where: { id: { in: [1] }, deletedAt: null },
       data: { deletedAt: expect.any(Date) },
     })
-    expect(enqueue).toHaveBeenCalledWith([
-      { kind: 'managed-file', fileId: 1, path: '/static-root/a.png' },
-    ])
+    expect(enqueue).toHaveBeenCalledWith([{ kind: 'managed-file', fileId: 1, path: '/static-root/a.png' }])
   })
 
   it('enqueues the uploaded file for cleanup when the database write fails', async () => {

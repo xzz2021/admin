@@ -51,16 +51,12 @@ export class LogService implements LoggerService {
           requestUrl: data.requestUrl.slice(0, 255),
           isSuccess: data.isSuccess,
           responseMsg: data.responseMsg?.slice(0, 500) ?? null,
-          detailInfo:
-            data.detailInfo == null ? Prisma.DbNull : (data.detailInfo as Prisma.InputJsonValue),
+          detailInfo: data.detailInfo == null ? Prisma.DbNull : (data.detailInfo as Prisma.InputJsonValue),
           duration: data.duration,
         },
       })
     } catch (error) {
-      this.logger.error(
-        '写入用户操作日志失败',
-        error instanceof Error ? error.stack : String(error),
-      )
+      this.logger.error('写入用户操作日志失败', error instanceof Error ? error.stack : String(error))
     }
   }
 
@@ -80,10 +76,7 @@ export class LogService implements LoggerService {
       where.requestUrl = { contains: requestUrl }
     }
     if (dateRange) {
-      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [
-        string,
-        string,
-      ]
+      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [string, string]
       where.createdAt = {
         gte: new Date(start),
         lte: new Date(end),

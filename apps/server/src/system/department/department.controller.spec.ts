@@ -13,8 +13,6 @@ describe('DepartmentController permission boundary', () => {
     ['department:delete', 'delete'],
     ['department:seed', 'generateDepartmentSeed'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, DepartmentController.prototype[methodName])).toBe(
-      permission,
-    )
+    expect(Reflect.getMetadata(PERMISSION_KEY, DepartmentController.prototype[methodName])).toBe(permission)
   })
 })

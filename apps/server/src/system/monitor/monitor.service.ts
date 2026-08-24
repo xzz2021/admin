@@ -11,19 +11,8 @@ import si from 'systeminformation'
 
 import { MonitorErrorBuffer } from './monitor-error.buffer'
 import { MonitorLatencyTracker } from './monitor-latency.tracker'
-import {
-  MONITOR_CRON,
-  MONITOR_ERRORS_MAX,
-  MONITOR_METRICS_MAX,
-  MONITOR_REDIS,
-} from './monitor.constants'
-import type {
-  HealthProbe,
-  MetricPoint,
-  MonitorErrorItem,
-  MonitorPayload,
-  MonitorSnapshot,
-} from './monitor.types'
+import { MONITOR_CRON, MONITOR_ERRORS_MAX, MONITOR_METRICS_MAX, MONITOR_REDIS } from './monitor.constants'
+import type { HealthProbe, MetricPoint, MonitorErrorItem, MonitorPayload, MonitorSnapshot } from './monitor.types'
 
 @Injectable()
 export class MonitorService implements OnModuleInit {
@@ -75,9 +64,7 @@ export class MonitorService implements OnModuleInit {
       await this.redis.lpush(MONITOR_REDIS.ERRORS, JSON.stringify(entry))
       await this.redis.ltrim(MONITOR_REDIS.ERRORS, 0, MONITOR_ERRORS_MAX - 1)
     } catch (error) {
-      this.logger.debug(
-        `写入监控错误日志失败: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      this.logger.debug(`写入监控错误日志失败: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -105,9 +92,7 @@ export class MonitorService implements OnModuleInit {
       await pipeline.exec()
       void this.maybeAlertDown(snapshot)
     } catch (error) {
-      this.logger.warn(
-        `监控数据采集失败: ${error instanceof Error ? errMsg(error) : String(error)}`,
-      )
+      this.logger.warn(`监控数据采集失败: ${error instanceof Error ? errMsg(error) : String(error)}`)
     } finally {
       this.collecting = false
     }
@@ -144,9 +129,7 @@ export class MonitorService implements OnModuleInit {
           600,
         )
       } catch (error) {
-        this.logger.debug(
-          `监控告警发送失败: ${error instanceof Error ? error.message : String(error)}`,
-        )
+        this.logger.debug(`监控告警发送失败: ${error instanceof Error ? error.message : String(error)}`)
       }
     }
   }

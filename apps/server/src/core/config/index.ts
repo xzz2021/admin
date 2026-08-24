@@ -67,10 +67,7 @@ const productionEnvironmentSchema = z
     REDIS_PASSWORD: z
       .string()
       .min(6)
-      .refine(
-        value => !weakSecretPattern.test(value),
-        'REDIS_PASSWORD is a placeholder or weak value',
-      ),
+      .refine(value => !weakSecretPattern.test(value), 'REDIS_PASSWORD is a placeholder or weak value'),
     STATIC_FILE_ROOT_PATH: z.string().min(1),
     STATIC_FILE_SERVE_ROOT: z.string().min(1),
     SWAGGER: z.enum(['true', 'false']).default('false'),
@@ -78,10 +75,7 @@ const productionEnvironmentSchema = z
     SWAGGER_PASSWORD: z
       .string()
       .min(6)
-      .refine(
-        value => !weakSecretPattern.test(value),
-        'SWAGGER_PASSWORD is a placeholder or weak value',
-      )
+      .refine(value => !weakSecretPattern.test(value), 'SWAGGER_PASSWORD is a placeholder or weak value')
       .optional(),
   })
   .passthrough()

@@ -1,9 +1,6 @@
 import { PgService } from '@/prisma/pg.service'
 import { uniqueBy } from '@/processor/utils/array'
-import {
-  sqlBatchUpdateDictionaryItems,
-  sqlBatchUpdateDictionaryTypes,
-} from '@/processor/utils/sql-batch'
+import { sqlBatchUpdateDictionaryItems, sqlBatchUpdateDictionaryTypes } from '@/processor/utils/sql-batch'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { DictionarySeedArrayDto, UpsertDictionaryDto } from './dto/dictionary.dto'
 import { UpsertItemDto } from './dto/entry.dto'
@@ -164,12 +161,8 @@ export class DictionaryService {
         select: { typeId: true, value: true },
       })
       const existingItemKeys = new Set(existingItems.map(item => `${item.typeId}:${item.value}`))
-      const itemsToCreate = items.filter(
-        item => !existingItemKeys.has(`${item.typeId}:${item.value}`),
-      )
-      const itemsToUpdate = items.filter(item =>
-        existingItemKeys.has(`${item.typeId}:${item.value}`),
-      )
+      const itemsToCreate = items.filter(item => !existingItemKeys.has(`${item.typeId}:${item.value}`))
+      const itemsToUpdate = items.filter(item => existingItemKeys.has(`${item.typeId}:${item.value}`))
 
       if (itemsToCreate.length) {
         await tx.dictionaryItem.createMany({

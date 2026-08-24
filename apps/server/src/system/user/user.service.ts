@@ -5,11 +5,7 @@ import { RbacPermissionCacheService } from '@/processor/rbac'
 import { formatDateToYMDHMS, hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { SessionRevocationService } from '@/system/auth/session-revocation.service'
 import { FileCleanupService } from '@/system/file-cleanup/file-cleanup.service'
-import {
-  getStaticFileRoot,
-  sanitizePathSegment,
-  tryResolvePathInsideRoot,
-} from '@/system/staticfile/multer.config'
+import { getStaticFileRoot, sanitizePathSegment, tryResolvePathInsideRoot } from '@/system/staticfile/multer.config'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import {
@@ -186,12 +182,7 @@ export class UserService {
     return { message: '更新个人密码成功', id: res.id }
   }
 
-  async resetPassword({
-    id,
-    password,
-    operateId,
-    ip,
-  }: AdminUpdatePwdDto & { operateId: string; ip?: string }) {
+  async resetPassword({ id, password, operateId, ip }: AdminUpdatePwdDto & { operateId: string; ip?: string }) {
     const hashPassword = await hashPayPassword(password)
     const res = await this.users.updateById(id, {
       password: hashPassword,
@@ -249,10 +240,7 @@ export class UserService {
 
   private toAvatarDiskPath(avatar: string | null | undefined): string | null {
     if (!avatar) return null
-    const serveRoot = (this.configService.get<string>('staticFileServeRoot') || '').replace(
-      /\/$/,
-      '',
-    )
+    const serveRoot = (this.configService.get<string>('staticFileServeRoot') || '').replace(/\/$/, '')
     const relative =
       serveRoot && (avatar === serveRoot || avatar.startsWith(`${serveRoot}/`))
         ? avatar.slice(serveRoot.length).replace(/^\//, '')

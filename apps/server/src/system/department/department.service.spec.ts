@@ -23,9 +23,7 @@ describe('DepartmentService tree updates', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    update.mockImplementation(({ where }: { where: { id: string } }) =>
-      Promise.resolve({ id: where.id }),
-    )
+    update.mockImplementation(({ where }: { where: { id: string } }) => Promise.resolve({ id: where.id }))
     executeRaw.mockResolvedValue(1)
   })
 
@@ -157,9 +155,8 @@ describe('DepartmentService delete rules', () => {
 
 describe('DepartmentService unique names', () => {
   const create = jest.fn()
-  const transaction = jest.fn(
-    async (callback: (tx: { department: { create: typeof create } }) => Promise<unknown>) =>
-      callback({ department: { create } }),
+  const transaction = jest.fn(async (callback: (tx: { department: { create: typeof create } }) => Promise<unknown>) =>
+    callback({ department: { create } }),
   )
   const service = new DepartmentService(
     new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
@@ -174,8 +171,6 @@ describe('DepartmentService unique names', () => {
       }),
     )
 
-    await expect(service.add({ name: '研发部', enabled: true })).rejects.toThrow(
-      '同级已存在同名部门',
-    )
+    await expect(service.add({ name: '研发部', enabled: true })).rejects.toThrow('同级已存在同名部门')
   })
 })

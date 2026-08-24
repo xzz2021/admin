@@ -23,10 +23,7 @@ export class AppController {
   @Public()
   @Get('health')
   async health(@Res({ passthrough: true }) res: Response) {
-    const [redisOk, dbOk] = await Promise.all([
-      this.redisHealthService.ping(),
-      this.pgService.ping(),
-    ])
+    const [redisOk, dbOk] = await Promise.all([this.redisHealthService.ping(), this.pgService.ping()])
     const ok = redisOk && dbOk
 
     res.status(ok ? 200 : 503)

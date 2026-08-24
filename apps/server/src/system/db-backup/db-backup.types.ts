@@ -1,9 +1,4 @@
-import type {
-  BackupStatus,
-  BackupTrigger,
-  DbBackupConfig,
-  DbBackupJob,
-} from '@/prisma/generated/prisma/client'
+import type { BackupStatus, BackupTrigger, DbBackupConfig, DbBackupJob } from '@/prisma/generated/prisma/client'
 
 export interface BackupRuntimeConfig {
   dir: string

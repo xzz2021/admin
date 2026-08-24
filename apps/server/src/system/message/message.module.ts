@@ -32,13 +32,7 @@ import { NotificationController } from './notification.controller'
     BullModule.registerQueue({ name: MESSAGE_QUEUE }),
   ],
   controllers: [MessageInboxController, NotificationController],
-  providers: [
-    MessageRepository,
-    MessageDeliveryService,
-    MessageService,
-    MessageProcessor,
-    MessageGateway,
-  ],
+  providers: [MessageRepository, MessageDeliveryService, MessageService, MessageProcessor, MessageGateway],
   exports: [MessageDeliveryService],
 })
 export class MessageModule {}

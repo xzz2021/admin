@@ -6,13 +6,7 @@ import { RedisService } from '@liaoliaots/nestjs-redis'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import type Redis from 'ioredis'
 import { ONLINE_AWAY_MS, ONLINE_PRESENCE_TTL_SEC, ONLINE_REDIS } from './online.constants'
-import type {
-  OnlineListResult,
-  OnlineSession,
-  OnlineStatus,
-  OnlineUserItem,
-  UpsertOnlineInput,
-} from './online.types'
+import type { OnlineListResult, OnlineSession, OnlineStatus, OnlineUserItem, UpsertOnlineInput } from './online.types'
 import { parseUserAgent } from './online.ua'
 
 const SUPER_ADMIN_ROLE = 'super_admin'
@@ -225,9 +219,7 @@ export class OnlineService {
     try {
       jtis = await this.redis.smembers(ONLINE_REDIS.INDEX)
     } catch (error) {
-      this.logger.warn(
-        `读取在线索引失败: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      this.logger.warn(`读取在线索引失败: ${error instanceof Error ? error.message : String(error)}`)
       return []
     }
     if (!jtis.length) return []

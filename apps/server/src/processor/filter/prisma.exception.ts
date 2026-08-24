@@ -89,12 +89,7 @@ export const checkPrismaError = (exception: unknown): PrismaErrorResult | null =
     return { msg: '数据库暂不可用，请稍后重试', meta: exception.message, transient: true }
   }
 
-  if (
-    exception &&
-    typeof exception === 'object' &&
-    'code' in exception &&
-    typeof exception.code === 'string'
-  ) {
+  if (exception && typeof exception === 'object' && 'code' in exception && typeof exception.code === 'string') {
     const err = exception as { code: string; message?: string; toString?: () => string }
     const meta = err.message || err.toString?.()
     if (TRANSIENT_CODES.has(err.code) || isTransientMessage(meta)) {

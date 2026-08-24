@@ -26,11 +26,7 @@ export class AuthController {
   @Public()
   @ApiOperation({ summary: '用户登录(refreshToken版本)' })
   @UseGuards(CaptchaGuard)
-  async rtLogin(
-    @Body() loginInfo: LoginInfoDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async rtLogin(@Body() loginInfo: LoginInfoDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const { body, cookie } = await this.authService.rtLogin(loginInfo, clientIp(req.ip) ?? '')
     applyCookieCommand(res, cookie)
     return body
@@ -48,16 +44,8 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({ summary: '用户主动退出登录' })
-  async logout(
-    @Body() body: ForceLogoutDto,
-    @Req() req: JwtReqDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { body: result, cookie } = await this.authService.logout(
-      body.id,
-      req.user.jti,
-      clientIp(req.ip),
-    )
+  async logout(@Body() body: ForceLogoutDto, @Req() req: JwtReqDto, @Res({ passthrough: true }) res: Response) {
+    const { body: result, cookie } = await this.authService.logout(body.id, req.user.jti, clientIp(req.ip))
     applyCookieCommand(res, cookie)
     return result
   }

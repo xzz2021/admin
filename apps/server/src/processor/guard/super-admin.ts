@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common'
+import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus } from '@nestjs/common'
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {

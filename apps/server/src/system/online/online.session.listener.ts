@@ -18,12 +18,8 @@ export class OnlineSessionListener implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    this.events.on(SESSION_EVENTS.USER_REVOKED, (payload: SessionUserRevokedPayload) =>
-      this.onUserRevoked(payload),
-    )
-    this.events.on(SESSION_EVENTS.SESSION_ENDED, (payload: SessionEndedPayload) =>
-      this.onSessionEnded(payload),
-    )
+    this.events.on(SESSION_EVENTS.USER_REVOKED, (payload: SessionUserRevokedPayload) => this.onUserRevoked(payload))
+    this.events.on(SESSION_EVENTS.SESSION_ENDED, (payload: SessionEndedPayload) => this.onSessionEnded(payload))
     this.events.on(SESSION_EVENTS.FORCE_LOGOUT_REQUESTED, (payload: ForceLogoutRequestedPayload) =>
       this.onForceLogoutRequested(payload),
     )
@@ -41,10 +37,7 @@ export class OnlineSessionListener implements OnModuleInit {
   }
 
   private async onForceLogoutRequested(payload: ForceLogoutRequestedPayload): Promise<string[]> {
-    const jtis = await this.onlineService.terminateUserByOperator(
-      payload.operatorId,
-      payload.targetUserId,
-    )
+    const jtis = await this.onlineService.terminateUserByOperator(payload.operatorId, payload.targetUserId)
     this.onlineGateway.notifyForceLogout(jtis, 'forced')
     this.onlineGateway.notifyForceLogoutByUser(payload.targetUserId, 'forced')
     return jtis

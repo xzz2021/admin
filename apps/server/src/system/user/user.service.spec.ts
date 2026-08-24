@@ -12,15 +12,10 @@ jest.mock('@/processor/utils', () => ({
 }))
 
 jest.mock('@/system/staticfile/multer.config', () => ({
-  sanitizePathSegment: (segment: string) =>
-    segment.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64) || 'unknown',
+  sanitizePathSegment: (segment: string) => segment.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64) || 'unknown',
   getStaticFileRoot: () => '/static-root',
   tryResolvePathInsideRoot: (root: string, target: string) =>
-    target.startsWith(`${root}/`) || target === root
-      ? target
-      : target.startsWith('/')
-        ? null
-        : `${root}/${target}`,
+    target.startsWith(`${root}/`) || target === root ? target : target.startsWith('/') ? null : `${root}/${target}`,
 }))
 
 describe('UserService session revocation', () => {
@@ -188,9 +183,7 @@ describe('UserService uploadAvatar', () => {
 
     await service.uploadAvatar(file, 'user-1', '13800138000')
 
-    expect(enqueue).toHaveBeenCalledWith([
-      { kind: 'orphan-path', path: '/static-root/avatar/13800138000/old.png' },
-    ])
+    expect(enqueue).toHaveBeenCalledWith([{ kind: 'orphan-path', path: '/static-root/avatar/13800138000/old.png' }])
   })
 
   it('enqueues the new avatar file when the database update fails', async () => {
@@ -202,9 +195,7 @@ describe('UserService uploadAvatar', () => {
     } as Express.Multer.File
 
     await expect(service.uploadAvatar(file, 'user-1', '13800138000')).rejects.toThrow('db down')
-    expect(enqueue).toHaveBeenCalledWith([
-      { kind: 'orphan-path', path: '/static-root/avatar/13800138000/avatar.png' },
-    ])
+    expect(enqueue).toHaveBeenCalledWith([{ kind: 'orphan-path', path: '/static-root/avatar/13800138000/avatar.png' }])
   })
 
   it('rejects missing user id', async () => {
@@ -219,9 +210,8 @@ describe('UserService uploadAvatar', () => {
 describe('UserService role assignment', () => {
   const userCreate = jest.fn()
   const userFindUnique = jest.fn()
-  const transaction = jest.fn(
-    async (callback: (tx: { user: { create: typeof userCreate } }) => Promise<unknown>) =>
-      callback({ user: { create: userCreate } }),
+  const transaction = jest.fn(async (callback: (tx: { user: { create: typeof userCreate } }) => Promise<unknown>) =>
+    callback({ user: { create: userCreate } }),
   )
 
   const createService = () =>

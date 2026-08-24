@@ -15,9 +15,7 @@ describe('RoleController permission boundary', () => {
     ['role:delete', 'remove'],
     ['role:seed', 'generateRoleSeed'],
   ] as const)('requires %s on %s', (permission, methodName) => {
-    expect(Reflect.getMetadata(PERMISSION_KEY, RoleController.prototype[methodName])).toBe(
-      permission,
-    )
+    expect(Reflect.getMetadata(PERMISSION_KEY, RoleController.prototype[methodName])).toBe(permission)
   })
 
   it('does not require management permission for current user menu bootstrap', () => {

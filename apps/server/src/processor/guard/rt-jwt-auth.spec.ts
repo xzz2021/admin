@@ -33,9 +33,7 @@ describe('RtJwtAuthGuard', () => {
     isAccessBlacklisted.mockResolvedValue(false)
     isRtBlacklisted.mockResolvedValue(true)
 
-    await expect(guard.canActivate(createContext({ jti: 'jti-1' }))).rejects.toBeInstanceOf(
-      UnauthorizedException,
-    )
+    await expect(guard.canActivate(createContext({ jti: 'jti-1' }))).rejects.toBeInstanceOf(UnauthorizedException)
     expect(isAccessBlacklisted).toHaveBeenCalledWith('jti-1')
     expect(isRtBlacklisted).toHaveBeenCalledWith('jti-1')
   })
@@ -52,9 +50,7 @@ describe('RtJwtAuthGuard', () => {
     const jwtSpy = jest.spyOn(AuthGuard('jwt').prototype, 'canActivate').mockResolvedValue(false)
     const guard = new RtJwtAuthGuard(new Reflector(), tokenService, rtTokenService)
 
-    await expect(guard.canActivate(createContext(undefined, '/public/secret-api'))).resolves.toBe(
-      false,
-    )
+    await expect(guard.canActivate(createContext(undefined, '/public/secret-api'))).resolves.toBe(false)
     expect(jwtSpy).toHaveBeenCalled()
   })
 

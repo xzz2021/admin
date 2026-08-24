@@ -1,14 +1,7 @@
 import { BackupStatus, BackupTrigger } from '@/prisma/generated/prisma/client'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { InjectQueue } from '@nestjs/bullmq'
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  OnModuleInit,
-  Optional,
-} from '@nestjs/common'
+import { ConflictException, Injectable, Logger, NotFoundException, OnModuleInit, Optional } from '@nestjs/common'
 import { Job, Queue } from 'bullmq'
 import type Redis from 'ioredis'
 import { randomUUID } from 'node:crypto'
@@ -29,12 +22,7 @@ import {
   DB_BACKUP_QUEUE,
   DB_BACKUP_RELEASE_LOCK_LUA,
 } from './db-backup.constants'
-import type {
-  BackupConfigPayload,
-  BackupJobListItem,
-  BackupJobQuery,
-  DbBackupQueueJob,
-} from './db-backup.types'
+import type { BackupConfigPayload, BackupJobListItem, BackupJobQuery, DbBackupQueueJob } from './db-backup.types'
 import { PgDumpRunner } from './pg-dump.runner'
 
 @Injectable()
@@ -61,10 +49,7 @@ export class DbBackupService implements OnModuleInit {
   }
 
   async getConfigPayload(): Promise<BackupConfigPayload> {
-    const [config, nextRunAt] = await Promise.all([
-      this.settings.getOrCreate(),
-      this.settings.getNextRunAt(),
-    ])
+    const [config, nextRunAt] = await Promise.all([this.settings.getOrCreate(), this.settings.getNextRunAt()])
     return {
       ...config,
       nextRunAt,

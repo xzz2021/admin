@@ -26,16 +26,11 @@ export class AuditLogService {
           ip: input.ip?.slice(0, 45) ?? null,
           location: await lookupIpLocation(input.ip),
           metadata:
-            input.metadata == null
-              ? Prisma.DbNull
-              : (sanitizeAuditMetadata(input.metadata) as Prisma.InputJsonValue),
+            input.metadata == null ? Prisma.DbNull : (sanitizeAuditMetadata(input.metadata) as Prisma.InputJsonValue),
         },
       })
     } catch (error) {
-      this.logger.error(
-        '写入领域审计日志失败',
-        error instanceof Error ? error.stack : String(error),
-      )
+      this.logger.error('写入领域审计日志失败', error instanceof Error ? error.stack : String(error))
     }
   }
 
@@ -50,10 +45,7 @@ export class AuditLogService {
     if (resourceId) where.resourceId = resourceId
     if (success !== undefined) where.success = success
     if (dateRange) {
-      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [
-        string,
-        string,
-      ]
+      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [string, string]
       where.createdAt = {
         gte: new Date(start),
         lte: new Date(end),

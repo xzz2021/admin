@@ -51,11 +51,7 @@ export class DbBackupConfigService {
   }
 
   getDatabaseUrl(): string {
-    return (
-      this.configService.get<string>('pgDatabaseUrl') ||
-      this.configService.get<string>('PG_DATABASE_URL') ||
-      ''
-    )
+    return this.configService.get<string>('pgDatabaseUrl') || this.configService.get<string>('PG_DATABASE_URL') || ''
   }
 
   /**
@@ -74,11 +70,7 @@ export class DbBackupConfigService {
     }
 
     const existing = await this.queue.getJobScheduler(DB_BACKUP_SCHEDULED_SCHEDULER_ID)
-    if (
-      existing &&
-      existing.pattern === config.cron &&
-      (existing.tz || undefined) === (config.timezone || undefined)
-    ) {
+    if (existing && existing.pattern === config.cron && (existing.tz || undefined) === (config.timezone || undefined)) {
       return
     }
 
@@ -111,8 +103,7 @@ export class DbBackupConfigService {
       enabled: true,
       cron: this.configService.get<string>('dbBackup.cron') || DB_BACKUP_DEFAULT_CRON,
       timezone: this.configService.get<string>('dbBackup.timezone') || DB_BACKUP_DEFAULT_TIMEZONE,
-      retentionMax:
-        this.configService.get<number>('dbBackup.retentionMax') || DB_BACKUP_DEFAULT_RETENTION_MAX,
+      retentionMax: this.configService.get<number>('dbBackup.retentionMax') || DB_BACKUP_DEFAULT_RETENTION_MAX,
       filePrefix: this.configService.get<string>('dbBackup.filePrefix') || DB_BACKUP_DEFAULT_PREFIX,
       gzip: this.configService.get<boolean>('dbBackup.gzip') ?? DB_BACKUP_DEFAULT_GZIP,
     }

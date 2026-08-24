@@ -25,10 +25,7 @@ export abstract class BaseService<T> {
     })
   }
 
-  public async findPage(
-    where: Partial<T>,
-    options: Partial<Options>,
-  ): Promise<{ list: T[]; total: number }> {
+  public async findPage(where: Partial<T>, options: Partial<Options>): Promise<{ list: T[]; total: number }> {
     const { select, include, sort = { id: 'desc' }, pageNo = 1, pageSize = 20 } = options
     const orderBy = typeof sort === 'string' ? JSON.parse(sort) : sort
     const skip = (Number(pageNo) - 1) * Number(pageSize)

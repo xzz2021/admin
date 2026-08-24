@@ -39,16 +39,13 @@ export class RoleService {
   ) {
     const [menus, permissions] = await Promise.all([
       this.roles.findEnabledMenusByIds(menuIds, tx),
-      permissionIds.length
-        ? this.roles.findEnabledPermissionsByIds(permissionIds, tx)
-        : Promise.resolve([]),
+      permissionIds.length ? this.roles.findEnabledPermissionsByIds(permissionIds, tx) : Promise.resolve([]),
     ])
     if (menus.length !== menuIds.length) throw new BadRequestException('存在无效或被禁用的菜单')
 
     if (!permissionIds.length) return
 
-    if (permissions.length !== permissionIds.length)
-      throw new BadRequestException('存在无效或被禁用的权限')
+    if (permissions.length !== permissionIds.length) throw new BadRequestException('存在无效或被禁用的权限')
 
     const permissionMenuMap = new Map<string, string>()
     for (const permission of permissions) {

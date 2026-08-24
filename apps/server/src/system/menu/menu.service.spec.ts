@@ -16,10 +16,9 @@ describe('MenuService tree updates', () => {
     ) => callback({ menu: { findMany, update }, $executeRaw: executeRaw }),
   )
 
-  const service = new MenuService(
-    new MenuRepository({ $transaction: transaction } as unknown as PgService),
-    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
-  )
+  const service = new MenuService(new MenuRepository({ $transaction: transaction } as unknown as PgService), {
+    record: jest.fn(),
+  } as unknown as import('@/core/logger/audit-log.service').AuditLogService)
 
   beforeEach(() => {
     jest.clearAllMocks()

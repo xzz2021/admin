@@ -39,12 +39,7 @@ export class RtTokenService extends TokenSessionService {
         this.tokenConfig.expiresTime,
         jti,
       ),
-      this.signJwt(
-        { id: userId },
-        this.tokenConfig.refreshSecret,
-        this.tokenConfig.refreshExpiresTime,
-        jti,
-      ),
+      this.signJwt({ id: userId }, this.tokenConfig.refreshSecret, this.tokenConfig.refreshExpiresTime, jti),
     ])
 
     await this.sessions.register(userId, jti, refreshExp, oldJti)

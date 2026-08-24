@@ -87,10 +87,7 @@ export class HttpCacheInterceptor implements NestInterceptor {
           // 处理数组、多类型和对象
           if (Array.isArray(value)) {
             return value
-              .map(
-                v =>
-                  `${key}=${encodeURIComponent(typeof v === 'object' ? JSON.stringify(v) : String(v))}`,
-              )
+              .map(v => `${key}=${encodeURIComponent(typeof v === 'object' ? JSON.stringify(v) : String(v))}`)
               .join('&')
           } else if (typeof value === 'object' && value !== null) {
             return `${key}=${encodeURIComponent(JSON.stringify(value))}`

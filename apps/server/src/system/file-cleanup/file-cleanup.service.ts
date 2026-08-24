@@ -49,9 +49,7 @@ export class FileCleanupService {
     } catch {
       // 静态目录未配置时仍允许清理备份目录
     }
-    const backupDir =
-      this.configService.get<string>('dbBackup.dir') ||
-      this.configService.get<string>('DB_BACKUP_DIR')
+    const backupDir = this.configService.get<string>('dbBackup.dir') || this.configService.get<string>('DB_BACKUP_DIR')
     if (backupDir) {
       roots.push(backupDir)
       roots.push(resolve(backupDir))

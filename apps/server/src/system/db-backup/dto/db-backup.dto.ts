@@ -30,17 +30,10 @@ const timezoneSchema = z
 
 const prefixSchema = DbBackupConfigModel.shape.filePrefix
   .trim()
-  .refine(
-    value => /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(value),
-    '文件名前缀只能包含字母、数字、点、下划线、中划线',
-  )
+  .refine(value => /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(value), '文件名前缀只能包含字母、数字、点、下划线、中划线')
 
 const UpdateBackupConfigSchema = z.object({
-  enabled: z
-    .boolean()
-    .optional()
-    .default(true)
-    .meta({ description: '是否启用定时备份', example: true }),
+  enabled: z.boolean().optional().default(true).meta({ description: '是否启用定时备份', example: true }),
   cron: cronSchema.optional().default(DB_BACKUP_DEFAULT_CRON),
   timezone: timezoneSchema.optional().default(DB_BACKUP_DEFAULT_TIMEZONE),
   retentionMax: z.coerce
@@ -52,22 +45,12 @@ const UpdateBackupConfigSchema = z.object({
     .default(DB_BACKUP_DEFAULT_RETENTION_MAX)
     .meta({ description: '最大保留数量', example: 24 }),
   filePrefix: prefixSchema.optional().default(DB_BACKUP_DEFAULT_PREFIX),
-  gzip: z
-    .boolean()
-    .optional()
-    .default(DB_BACKUP_DEFAULT_GZIP)
-    .meta({ description: '是否压缩', example: true }),
+  gzip: z.boolean().optional().default(DB_BACKUP_DEFAULT_GZIP).meta({ description: '是否压缩', example: true }),
 })
 export class UpdateBackupConfigDto extends createZodDto(UpdateBackupConfigSchema) {}
 
 const BackupJobQuerySchema = z.object({
-  pageIndex: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .optional()
-    .default(1)
-    .meta({ description: '页码', example: 1 }),
+  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
   pageSize: z.coerce
     .number()
     .int()
@@ -77,10 +60,7 @@ const BackupJobQuerySchema = z.object({
     .default(10)
     .meta({ description: '每页条数', example: 10 }),
   status: z.nativeEnum(BackupStatus).optional().meta({ description: '状态', example: 'SUCCESS' }),
-  trigger: z
-    .nativeEnum(BackupTrigger)
-    .optional()
-    .meta({ description: '触发方式', example: 'MANUAL' }),
+  trigger: z.nativeEnum(BackupTrigger).optional().meta({ description: '触发方式', example: 'MANUAL' }),
 })
 export class BackupJobQueryDto extends createZodDto(BackupJobQuerySchema) {}
 

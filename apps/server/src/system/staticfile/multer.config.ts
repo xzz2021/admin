@@ -112,11 +112,7 @@ function createFileFilter(
 }
 
 function createSafeFilenameHandler(allowedExts: Set<string>) {
-  return (
-    _req: Request,
-    file: Express.Multer.File,
-    cb: (error: Error | null, filename: string) => void,
-  ) => {
+  return (_req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
     try {
       cb(null, sanitizeUploadFilename(file.originalname, allowedExts))
     } catch (error) {
@@ -172,10 +168,7 @@ export const multerConfigForAvatar: MulterOptions = {
 /** @deprecated 保留兼容；内部已走安全配置 */
 export const multerConfig = generateMulterConfig('file/test')
 
-export const generateMulterConfigOfImg = (
-  directory: string,
-  isImg: boolean = true,
-): MulterOptions => {
+export const generateMulterConfigOfImg = (directory: string, isImg: boolean = true): MulterOptions => {
   const allowedMimes = isImg ? IMAGE_MIME : MANAGE_MIME
   const allowedExts = isImg ? IMAGE_EXT : MANAGE_EXT
   return {

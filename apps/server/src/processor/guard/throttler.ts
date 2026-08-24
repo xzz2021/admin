@@ -1,12 +1,6 @@
 //  全局动态限流
 
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common'
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common'
 
 import { SKIP_THROTTLE_KEY } from '@/processor/decorator'
 import { RedisService } from '@liaoliaots/nestjs-redis'
@@ -78,8 +72,7 @@ export class DynamicThrottlerGuard2 implements CanActivate {
 
   private buildKey(req: Request) {
     // 注意：Express 会把 header key 转小写
-    const idem =
-      (req.headers['idempotency-key'] as string) || (req.headers['Idempotency-Key'] as any)
+    const idem = (req.headers['idempotency-key'] as string) || (req.headers['Idempotency-Key'] as any)
     if (idem) return `idem:${idem}`
 
     const user = (req as any)?.user?.id ?? (req as any)?.ip ?? 'anonymous'

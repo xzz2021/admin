@@ -32,10 +32,7 @@ export class RtJwtAuthGuard extends AuthGuard('jwt') {
     const jti = request.user?.jti as string | undefined
     if (!jti) return true
 
-    if (
-      (await this.tokenService.isBlacklisted(jti)) ||
-      (await this.rtTokenService.isBlacklisted(jti))
-    ) {
+    if ((await this.tokenService.isBlacklisted(jti)) || (await this.rtTokenService.isBlacklisted(jti))) {
       throw new UnauthorizedException('token 已失效')
     }
 

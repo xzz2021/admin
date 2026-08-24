@@ -35,10 +35,7 @@ export class DepartmentService {
   }
 
   async findAll() {
-    const [list, total] = await Promise.all([
-      this.departments.findRootTrees(),
-      this.departments.count(),
-    ])
+    const [list, total] = await Promise.all([this.departments.findRootTrees(), this.departments.count()])
     return { list, total, message: '获取部门列表成功' }
   }
 
@@ -115,11 +112,7 @@ export class DepartmentService {
     }
   }
 
-  private async upsertNode(
-    tx: Prisma.TransactionClient,
-    node: DepartmentSeedDto,
-    parentId: string | null,
-  ) {
+  private async upsertNode(tx: Prisma.TransactionClient, node: DepartmentSeedDto, parentId: string | null) {
     const { name, enabled, description, children } = node
     const tag = await this.departments.create({ name, enabled, description, path: '' }, tx)
     const path = await this.buildPath(tag.id, parentId, tx)

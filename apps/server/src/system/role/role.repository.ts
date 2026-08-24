@@ -213,9 +213,7 @@ export class RoleRepository {
         ...data,
         menus: {
           deleteMany: {},
-          ...(menuIds.length
-            ? { create: menuIds.map(menuId => ({ menu: { connect: { id: menuId } } })) }
-            : {}),
+          ...(menuIds.length ? { create: menuIds.map(menuId => ({ menu: { connect: { id: menuId } } })) } : {}),
         },
         permissions: {
           deleteMany: {},

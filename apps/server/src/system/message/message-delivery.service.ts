@@ -77,12 +77,7 @@ export class MessageDeliveryService {
     return { message: '系统通知已加入发送队列' }
   }
 
-  async enqueueAlert(input: {
-    title: string
-    content: string
-    level?: NoticeLevel
-    meta?: Record<string, unknown>
-  }) {
+  async enqueueAlert(input: { title: string; content: string; level?: NoticeLevel; meta?: Record<string, unknown> }) {
     await this.addJob({
       type: MessageType.ALERT,
       title: input.title,
@@ -108,9 +103,7 @@ export class MessageDeliveryService {
       const ok = await this.redis.set(key, '1', 'EX', ttlSec, 'NX')
       if (ok !== 'OK') return false
     } catch (error) {
-      this.logger.debug(
-        `告警防抖锁失败，仍尝试发送: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      this.logger.debug(`告警防抖锁失败，仍尝试发送: ${error instanceof Error ? error.message : String(error)}`)
     }
     try {
       await this.enqueueAlert(input)
@@ -185,8 +178,7 @@ export class MessageDeliveryService {
       return { count: 0 }
     }
 
-    const level =
-      data.level ?? (data.type === MessageType.ALERT ? NoticeLevel.WARNING : NoticeLevel.INFO)
+    const level = data.level ?? (data.type === MessageType.ALERT ? NoticeLevel.WARNING : NoticeLevel.INFO)
     const now = new Date()
     const rows: Prisma.MessageCreateManyInput[] = receiverIds.map(receiverId => ({
       dispatchId: data.dispatchId,
@@ -260,9 +252,7 @@ export class MessageDeliveryService {
       try {
         await this.redis.publish(MESSAGE_PUSH_CHANNEL, JSON.stringify(payload))
       } catch (error) {
-        this.logger.warn(
-          `消息推送发布失败 user=${userId}: ${error instanceof Error ? error.message : String(error)}`,
-        )
+        this.logger.warn(`消息推送发布失败 user=${userId}: ${error instanceof Error ? error.message : String(error)}`)
       }
     }
   }

@@ -25,9 +25,7 @@ describe('DbBackupRepository', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    db.$transaction.mockImplementation(async (ops: unknown[]) =>
-      Promise.all(ops as Promise<unknown>[]),
-    )
+    db.$transaction.mockImplementation(async (ops: unknown[]) => Promise.all(ops as Promise<unknown>[]))
     db.dbBackupJob.update.mockResolvedValue({})
     db.dbBackupConfig.update.mockResolvedValue({})
   })

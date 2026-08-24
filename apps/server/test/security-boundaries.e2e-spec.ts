@@ -119,19 +119,13 @@ describe('Security boundaries (e2e)', () => {
   it('rejects a blacklisted refresh token over HTTP', async () => {
     isBlacklisted.mockResolvedValue(true)
 
-    await request(app.getHttpServer())
-      .post('/security-test/refresh')
-      .set('x-token-jti', 'revoked-jti')
-      .expect(401)
+    await request(app.getHttpServer()).post('/security-test/refresh').set('x-token-jti', 'revoked-jti').expect(401)
   })
 
   it('rejects a refresh token missing from the active session list', async () => {
     listSessions.mockResolvedValue(['other-jti'])
 
-    await request(app.getHttpServer())
-      .post('/security-test/refresh')
-      .set('x-token-jti', 'inactive-jti')
-      .expect(401)
+    await request(app.getHttpServer()).post('/security-test/refresh').set('x-token-jti', 'inactive-jti').expect(401)
   })
 
   it('allows an active refresh token', async () => {
@@ -149,10 +143,7 @@ describe('Security boundaries (e2e)', () => {
   it('allows a request with the required management permission', async () => {
     permissions = ['fileList:view']
 
-    await request(app.getHttpServer())
-      .get('/security-test/permission')
-      .expect(200)
-      .expect({ allowed: true })
+    await request(app.getHttpServer()).get('/security-test/permission').expect(200).expect({ allowed: true })
   })
 
   it('rejects a dangerous upload type before calling the service', async () => {

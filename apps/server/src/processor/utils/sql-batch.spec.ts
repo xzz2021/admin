@@ -20,9 +20,7 @@ describe('sqlReplaceDescendantPaths', () => {
 
     expect(text).toMatch(/UPDATE\s+"Department"/i)
     expect(text).toMatch(/regexp_replace/i)
-    expect(values).toEqual(
-      expect.arrayContaining(['^/root-a/node', '/root-b/node', '/root-a/node/%']),
-    )
+    expect(values).toEqual(expect.arrayContaining(['^/root-a/node', '/root-b/node', '/root-a/node/%']))
   })
 })
 
@@ -58,9 +56,7 @@ describe('sqlBatchUpdateRoles', () => {
 
 describe('sqlBatchUpdateDictionaryTypes', () => {
   it('updates existing dictionary types by unique code in one statement', () => {
-    const { text } = inspectSql(
-      sqlBatchUpdateDictionaryTypes([{ code: 'status', name: '状态', enabled: true }]),
-    )
+    const { text } = inspectSql(sqlBatchUpdateDictionaryTypes([{ code: 'status', name: '状态', enabled: true }]))
 
     expect(text).toMatch(/UPDATE\s+"DictionaryType"/i)
   })
@@ -69,9 +65,7 @@ describe('sqlBatchUpdateDictionaryTypes', () => {
 describe('sqlBatchUpdateDictionaryItems', () => {
   it('updates existing dictionary items by typeId and value in one statement', () => {
     const { text, values } = inspectSql(
-      sqlBatchUpdateDictionaryItems([
-        { typeId: 't1', value: 'on', label: '启用', sort: 1, enabled: true },
-      ]),
+      sqlBatchUpdateDictionaryItems([{ typeId: 't1', value: 'on', label: '启用', sort: 1, enabled: true }]),
     )
 
     expect(text).toMatch(/UPDATE\s+"DictionaryItem"/i)

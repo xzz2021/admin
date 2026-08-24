@@ -4,12 +4,7 @@ import { isTransientDbError } from '@/processor/filter/prisma.exception'
 import { hashPayPassword, verifyPayPassword } from '@/processor/utils'
 import { UserRepository } from '@/system/user/user.repository'
 import { RedisService } from '@liaoliaots/nestjs-redis'
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import Redis from 'ioredis'
@@ -203,12 +198,7 @@ export class AuthService {
     }
   }
 
-  private async recordLoginFailure(
-    phone: string,
-    ip: string,
-    actorId: string | null,
-    reason: string,
-  ) {
+  private async recordLoginFailure(phone: string, ip: string, actorId: string | null, reason: string) {
     try {
       await this.lockout.onFail(phone)
     } catch (error) {
@@ -250,11 +240,7 @@ export class AuthService {
       if (!isTransientDbError(error)) throw error
     }
 
-    const { accessToken, cookie } = await this.rtTokenService.signToken(
-      userId,
-      extraPayload,
-      oldJti,
-    )
+    const { accessToken, cookie } = await this.rtTokenService.signToken(userId, extraPayload, oldJti)
     // refresh 会轮换 jti：清理旧 presence，避免同一用户短暂双记录
     await this.sessions.endSession(oldJti)
     return {

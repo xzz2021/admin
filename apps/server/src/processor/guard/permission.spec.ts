@@ -33,9 +33,7 @@ describe('PermissionGuard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    getOrLoad.mockImplementation(async (_userId: string, loader: () => Promise<string[]>) =>
-      loader(),
-    )
+    getOrLoad.mockImplementation(async (_userId: string, loader: () => Promise<string[]>) => loader())
   })
 
   it('allows routes without permission metadata', async () => {
@@ -51,9 +49,7 @@ describe('PermissionGuard', () => {
   it('uses cached permissions without querying the repository', async () => {
     getOrLoad.mockResolvedValue(['user:update'])
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
-      true,
-    )
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
     expect(getOrLoad).toHaveBeenCalledWith('user-1', expect.any(Function))
     expect(findEnabledRolePermissionTree).not.toHaveBeenCalled()
   })
@@ -71,25 +67,19 @@ describe('PermissionGuard', () => {
       ],
     })
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
-      true,
-    )
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
     expect(findEnabledRolePermissionTree).toHaveBeenCalledWith('user-1')
   })
 
   it('grants all permissions to an enabled super admin role', async () => {
     getOrLoad.mockResolvedValue([ALL_PERMISSIONS])
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
-      true,
-    )
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
   })
 
   it('rejects a request when the required permission is missing', async () => {
     getOrLoad.mockResolvedValue(['user:view'])
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(
-      false,
-    )
+    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(false)
   })
 })

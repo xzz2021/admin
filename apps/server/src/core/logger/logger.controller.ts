@@ -2,13 +2,7 @@ import { RequiredPermission, Serialize } from '@/processor/decorator'
 import { Body, Controller, Delete, Get, Query } from '@nestjs/common'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AuditLogService } from './audit-log.service'
-import {
-  AuditLogListResDto,
-  DeleteLogDto,
-  LogListResDto,
-  QueryAuditLogParams,
-  QueryLogParams,
-} from './dto/logger.dto'
+import { AuditLogListResDto, DeleteLogDto, LogListResDto, QueryAuditLogParams, QueryLogParams } from './dto/logger.dto'
 import { LogService } from './logger.service'
 
 @ApiTags('日志')

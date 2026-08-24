@@ -117,10 +117,7 @@ async function waitForSpawn(child: ReturnType<typeof spawn>): Promise<void> {
   })
 }
 
-async function waitForChild(
-  child: ReturnType<typeof spawn>,
-  getStderr: () => string,
-): Promise<void> {
+async function waitForChild(child: ReturnType<typeof spawn>, getStderr: () => string): Promise<void> {
   await new Promise<void>((resolvePromise, rejectPromise) => {
     child.once('error', rejectPromise)
     child.once('close', code => {

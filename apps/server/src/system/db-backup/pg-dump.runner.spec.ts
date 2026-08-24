@@ -21,9 +21,7 @@ describe('PgDumpRunner', () => {
   })
 
   it('builds pg_dump args without exposing password', () => {
-    const args = buildPgDumpArgs(
-      new URL('postgresql://app_runtime:secret%40123@localhost:5432/admin2'),
-    )
+    const args = buildPgDumpArgs(new URL('postgresql://app_runtime:secret%40123@localhost:5432/admin2'))
 
     expect(args).toEqual([
       '-Fp',

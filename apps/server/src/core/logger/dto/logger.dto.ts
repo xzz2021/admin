@@ -17,13 +17,7 @@ const LogSchema = UserOperationLogModel.pick({
 export class LogDto extends createZodDto(LogSchema) {}
 
 const QueryLogParamsSchema = z.object({
-  pageIndex: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .optional()
-    .default(1)
-    .meta({ description: '页码', example: 1 }),
+  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
   pageSize: z.coerce
     .number()
     .int()
@@ -54,13 +48,7 @@ const LogListResSchema = LogSchema.extend({
 export class LogListResDto extends createZodDto(LogListResSchema) {}
 
 const QueryAuditLogParamsSchema = z.object({
-  pageIndex: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .optional()
-    .default(1)
-    .meta({ description: '页码', example: 1 }),
+  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
   pageSize: z.coerce
     .number()
     .int()
@@ -69,18 +57,8 @@ const QueryAuditLogParamsSchema = z.object({
     .optional()
     .default(10)
     .meta({ description: '每页条数', example: 10 }),
-  action: z
-    .string()
-    .min(1)
-    .max(80)
-    .optional()
-    .meta({ description: '领域动作', example: 'user.update' }),
-  resource: z
-    .string()
-    .min(1)
-    .max(100)
-    .optional()
-    .meta({ description: '聚合根类型', example: 'User' }),
+  action: z.string().min(1).max(80).optional().meta({ description: '领域动作', example: 'user.update' }),
+  resource: z.string().min(1).max(100).optional().meta({ description: '聚合根类型', example: 'User' }),
   resourceId: z.string().min(1).max(64).optional().meta({ description: '聚合根 ID' }),
   success: z
     .preprocess((val: unknown) => {

@@ -45,11 +45,7 @@ export class DbBackupLifecycleService {
     return removable.length
   }
 
-  async expireAndEnqueue(job: {
-    id: string
-    filePath: string
-    status: BackupStatus
-  }): Promise<void> {
+  async expireAndEnqueue(job: { id: string; filePath: string; status: BackupStatus }): Promise<void> {
     if (job.status !== BackupStatus.EXPIRED) {
       await this.jobs.markJobExpired(job.id)
     }
@@ -57,9 +53,7 @@ export class DbBackupLifecycleService {
   }
 
   async enqueueCleanup(job: { id: string; filePath: string }): Promise<void> {
-    await this.fileCleanupService.enqueue([
-      { kind: 'backup-job', backupJobId: job.id, path: job.filePath },
-    ])
+    await this.fileCleanupService.enqueue([{ kind: 'backup-job', backupJobId: job.id, path: job.filePath }])
   }
 
   async purgeExpired(backupJobId: string): Promise<void> {

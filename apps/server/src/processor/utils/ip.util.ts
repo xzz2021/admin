@@ -51,7 +51,7 @@ export function formatIpRegion(region?: string | null): string {
   if (!region) return ''
   const [country, , province, city] = region.split('|')
   return [country, province, city]
-    .filter((part) => part && part !== '0')
+    .filter(part => part && part !== '0')
     .join(' ')
     .slice(0, MAX_LOCATION_LENGTH)
 }

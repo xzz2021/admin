@@ -71,9 +71,7 @@ describe('AuthService rtLogin lockout', () => {
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toBeInstanceOf(ForbiddenException)
     expect(findEnabledByPhoneForLogin).not.toHaveBeenCalled()
     expect(onFail).not.toHaveBeenCalled()
-    expect(record).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'auth.lockout', success: false }),
-    )
+    expect(record).toHaveBeenCalledWith(expect.objectContaining({ action: 'auth.lockout', success: false }))
   })
 
   it('records a failure for an unknown phone with the same credential error', async () => {
@@ -83,9 +81,7 @@ describe('AuthService rtLogin lockout', () => {
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toThrow('账号或密码错误')
     expect(onFail).toHaveBeenCalledWith(phone)
     expect(onSuccess).not.toHaveBeenCalled()
-    expect(record).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'auth.login_failed', success: false }),
-    )
+    expect(record).toHaveBeenCalledWith(expect.objectContaining({ action: 'auth.login_failed', success: false }))
   })
 
   it('records a failure for a wrong password with the same credential error', async () => {
@@ -95,9 +91,7 @@ describe('AuthService rtLogin lockout', () => {
     await expect(createService().rtLogin(loginInfo, ip)).rejects.toThrow('账号或密码错误')
     expect(onFail).toHaveBeenCalledWith(phone)
     expect(signToken).not.toHaveBeenCalled()
-    expect(record).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'auth.login_failed', actorId: user.id }),
-    )
+    expect(record).toHaveBeenCalledWith(expect.objectContaining({ action: 'auth.login_failed', actorId: user.id }))
   })
 
   it('propagates lockout thrown by the current failure', async () => {

@@ -38,10 +38,7 @@ export class OnlineController {
   @RequiredPermission('onlineUser:kick')
   @ApiOperation({ summary: '强制下线指定会话（排除自身与超管）' })
   async kick(@Body() body: KickByJtiDto, @User() user: JwtUser) {
-    const jtis = await this.onlineService.terminateSessionByOperator(
-      { id: user.id, jti: user.jti },
-      body,
-    )
+    const jtis = await this.onlineService.terminateSessionByOperator({ id: user.id, jti: user.jti }, body)
     this.onlineGateway.notifyForceLogout(jtis, 'kicked')
     return { message: '已强制该会话下线', jti: body.jti }
   }

@@ -15,9 +15,7 @@ export class DiskCleanupEventBus {
   }
 
   async emitUnlinked(job: FileCleanupJob): Promise<unknown[]> {
-    const listeners = this.emitter.listeners(DISK_CLEANUP_EVENTS.UNLINKED) as Array<
-      (job: FileCleanupJob) => unknown
-    >
+    const listeners = this.emitter.listeners(DISK_CLEANUP_EVENTS.UNLINKED) as Array<(job: FileCleanupJob) => unknown>
     if (!listeners.length) return []
     return Promise.all(listeners.map(listener => Promise.resolve(listener(job))))
   }

@@ -24,13 +24,7 @@ const CreateRoleSchema = RoleModel.pick({
 export class CreateRoleDto extends createZodDto(CreateRoleSchema) {}
 
 const QueryRoleParamsSchema = z.object({
-  pageIndex: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .optional()
-    .default(1)
-    .meta({ description: '页码', example: 1 }),
+  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
   pageSize: z.coerce
     .number()
     .int()
@@ -123,9 +117,7 @@ const MetaPermissionSchema = MenuModel.pick({
   noCache: true,
   noTagsView: true,
 }).extend({
-  permissions: z
-    .array(z.string())
-    .meta({ description: '权限code列表', example: ['add', 'edit', 'delete'] }),
+  permissions: z.array(z.string()).meta({ description: '权限code列表', example: ['add', 'edit', 'delete'] }),
 })
 
 const MenuPermissionListSchema = MenuModel.pick({

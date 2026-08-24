@@ -49,9 +49,7 @@ export function sqlBatchUpdateRoles(
     enabled: boolean | null
   }>,
 ) {
-  const values = Prisma.join(
-    rows.map(row => sqlValueRow([row.code, row.name, row.description, row.enabled])),
-  )
+  const values = Prisma.join(rows.map(row => sqlValueRow([row.code, row.name, row.description, row.enabled])))
   return Prisma.sql`
     UPDATE "Role" AS r
     SET
@@ -64,9 +62,7 @@ export function sqlBatchUpdateRoles(
   `
 }
 
-export function sqlBatchUpdateDictionaryTypes(
-  rows: Array<{ code: string; name: string; enabled: boolean | null }>,
-) {
+export function sqlBatchUpdateDictionaryTypes(rows: Array<{ code: string; name: string; enabled: boolean | null }>) {
   const values = Prisma.join(rows.map(row => sqlValueRow([row.code, row.name, row.enabled])))
   return Prisma.sql`
     UPDATE "DictionaryType" AS d
@@ -88,9 +84,7 @@ export function sqlBatchUpdateDictionaryItems(
     enabled: boolean | null
   }>,
 ) {
-  const values = Prisma.join(
-    rows.map(row => sqlValueRow([row.typeId, row.value, row.label, row.sort, row.enabled])),
-  )
+  const values = Prisma.join(rows.map(row => sqlValueRow([row.typeId, row.value, row.label, row.sort, row.enabled])))
   return Prisma.sql`
     UPDATE "DictionaryItem" AS i
     SET

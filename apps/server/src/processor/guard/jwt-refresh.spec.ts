@@ -9,10 +9,7 @@ describe('JwtRefreshAuthGuard', () => {
   const listSessions = jest.fn()
   const rtTokenService = { isBlacklisted, listSessions } as unknown as RtTokenService
 
-  const createContext = (
-    user?: { id?: string; jti?: string },
-    url = '/auth/refresh',
-  ): ExecutionContext =>
+  const createContext = (user?: { id?: string; jti?: string }, url = '/auth/refresh'): ExecutionContext =>
     ({
       switchToHttp: () => ({
         getRequest: () => ({ url, user }),
@@ -29,9 +26,9 @@ describe('JwtRefreshAuthGuard', () => {
     const guard = new JwtRefreshAuthGuard(rtTokenService)
     isBlacklisted.mockResolvedValue(true)
 
-    await expect(
-      guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' })),
-    ).rejects.toBeInstanceOf(UnauthorizedException)
+    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    )
     expect(isBlacklisted).toHaveBeenCalledWith('jti-1')
     expect(listSessions).not.toHaveBeenCalled()
   })
@@ -51,20 +48,14 @@ describe('JwtRefreshAuthGuard', () => {
     isBlacklisted.mockResolvedValue(false)
     listSessions.mockResolvedValue(['jti-1'])
 
-    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).resolves.toBe(
-      true,
-    )
+    await expect(guard.canActivate(createContext({ id: 'user-1', jti: 'jti-1' }))).resolves.toBe(true)
   })
 
   it('does not skip refresh JWT for /public/ URLs', async () => {
-    const jwtSpy = jest
-      .spyOn(AuthGuard('jwt-refresh').prototype, 'canActivate')
-      .mockResolvedValue(false)
+    const jwtSpy = jest.spyOn(AuthGuard('jwt-refresh').prototype, 'canActivate').mockResolvedValue(false)
     const guard = new JwtRefreshAuthGuard(rtTokenService)
 
-    await expect(
-      guard.canActivate(createContext(undefined, '/public/refresh-bypass')),
-    ).resolves.toBe(false)
+    await expect(guard.canActivate(createContext(undefined, '/public/refresh-bypass'))).resolves.toBe(false)
     expect(jwtSpy).toHaveBeenCalled()
   })
 })

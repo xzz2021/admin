@@ -31,9 +31,7 @@ type MsgSocket = WebSocket & {
   path: '/message/ws',
   cors: { origin: true, credentials: true },
 })
-export class MessageGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit, OnModuleDestroy
-{
+export class MessageGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MessageGateway.name)
   private readonly sockets = new Map<string, Set<MsgSocket>>()
   private subscriber: Redis | null = null
@@ -67,16 +65,12 @@ export class MessageGateway
           const payload = JSON.parse(raw) as MessagePushPayload
           this.pushToUser(payload)
         } catch (error) {
-          this.logger.debug(
-            `解析推送消息失败: ${error instanceof Error ? error.message : String(error)}`,
-          )
+          this.logger.debug(`解析推送消息失败: ${error instanceof Error ? error.message : String(error)}`)
         }
       })
       this.logger.log(`已订阅 Redis 频道 ${MESSAGE_PUSH_CHANNEL}`)
     } catch (error) {
-      this.logger.error(
-        `消息推送订阅失败: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      this.logger.error(`消息推送订阅失败: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -122,9 +116,7 @@ export class MessageGateway
       const unread = await this.delivery.getUnreadCount(userId)
       client.send(JSON.stringify({ event: 'connected', data: { ok: true, unread } }))
     } catch (error) {
-      this.logger.debug(
-        `消息 WS 鉴权失败: ${error instanceof Error ? error.message : String(error)}`,
-      )
+      this.logger.debug(`消息 WS 鉴权失败: ${error instanceof Error ? error.message : String(error)}`)
       this.closeWith(client, 'unauthorized')
     }
   }

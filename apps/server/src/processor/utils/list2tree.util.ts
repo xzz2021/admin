@@ -10,9 +10,7 @@ export type ListNode<T extends object = any> = T & {
 }
 
 // 推荐使用 时间复杂度O(n)
-export function listToTree<T extends { id: string; parentId: string | null }>(
-  list: T[],
-): (T & { children: T[] })[] {
+export function listToTree<T extends { id: string; parentId: string | null }>(list: T[]): (T & { children: T[] })[] {
   const map = new Map<string, T & { children: T[] }>()
   const roots: (T & { children: T[] })[] = []
 
@@ -37,10 +35,7 @@ export function listToTree<T extends { id: string; parentId: string | null }>(
 }
 
 //  不推荐使用 时间复杂度O(n^2)
-export function list2Tree<T extends ListNode[]>(
-  items: T,
-  parentId: number | null = null,
-): TreeNode<T[number]>[] {
+export function list2Tree<T extends ListNode[]>(items: T, parentId: number | null = null): TreeNode<T[number]>[] {
   return items
     .filter(item => item.parentId === parentId)
     .map(item => {

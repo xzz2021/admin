@@ -1,9 +1,5 @@
 // captcha.guard.ts
-import {
-  CAPTCHA_ID_COOKIE,
-  CAPTCHA_TEXT_COOKIE,
-  CaptchaService,
-} from '@/system/captcha/captcha.service'
+import { CAPTCHA_ID_COOKIE, CAPTCHA_TEXT_COOKIE, CaptchaService } from '@/system/captcha/captcha.service'
 import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 
 @Injectable()

@@ -15,9 +15,7 @@ describe('sanitizeRichText', () => {
   })
 
   it('移除事件属性', () => {
-    expect(sanitizeRichText('<img src="https://a.com/a.png" onerror="alert(1)">')).not.toContain(
-      'onerror',
-    )
+    expect(sanitizeRichText('<img src="https://a.com/a.png" onerror="alert(1)">')).not.toContain('onerror')
   })
 
   it('拦截危险协议与内联框架', () => {

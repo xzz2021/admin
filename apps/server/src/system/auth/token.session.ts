@@ -34,12 +34,7 @@ export abstract class TokenSessionService {
     this.sessions = new SessionRegistry(redis, options)
   }
 
-  protected signJwt(
-    payload: Record<string, unknown>,
-    secret: string,
-    expiresIn: number,
-    jwtid: string,
-  ) {
+  protected signJwt(payload: Record<string, unknown>, secret: string, expiresIn: number, jwtid: string) {
     return this.jwt.signAsync(payload, { expiresIn, jwtid, secret })
   }
 

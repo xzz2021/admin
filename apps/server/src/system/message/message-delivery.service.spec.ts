@@ -102,9 +102,7 @@ describe('MessageDeliveryService', () => {
         sender: null,
       },
     ])
-    messages.groupUnreadByReceiverIds.mockResolvedValue([
-      { receiverId: 'admin-1', _count: { _all: 3 } },
-    ])
+    messages.groupUnreadByReceiverIds.mockResolvedValue([{ receiverId: 'admin-1', _count: { _all: 3 } }])
 
     const result = await createService().dispatch({
       dispatchId: 'd1',
@@ -116,10 +114,7 @@ describe('MessageDeliveryService', () => {
     expect(result).toEqual({ count: 1 })
     expect(messages.insertDispatched).toHaveBeenCalled()
     expect(redis.set).toHaveBeenCalledWith('message:unread:admin-1', '3', 'EX', 3600)
-    expect(redis.publish).toHaveBeenCalledWith(
-      MESSAGE_PUSH_CHANNEL,
-      expect.stringContaining('"userId":"admin-1"'),
-    )
+    expect(redis.publish).toHaveBeenCalledWith(MESSAGE_PUSH_CHANNEL, expect.stringContaining('"userId":"admin-1"'))
   })
 
   it('reads unread count from redis when present', async () => {

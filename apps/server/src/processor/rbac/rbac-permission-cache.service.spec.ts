@@ -12,8 +12,7 @@ describe('RbacPermissionCacheService', () => {
     pipeline: jest.fn(),
   }
 
-  const createService = () =>
-    new RbacPermissionCacheService({ getOrThrow: () => redis } as unknown as RedisService)
+  const createService = () => new RbacPermissionCacheService({ getOrThrow: () => redis } as unknown as RedisService)
 
   const pipelineExec = jest.fn()
 
@@ -106,10 +105,7 @@ describe('RbacPermissionCacheService', () => {
       return ['user:update']
     })
 
-    const [a, b] = await Promise.all([
-      service.getOrLoad('user-1', loader),
-      service.getOrLoad('user-1', loader),
-    ])
+    const [a, b] = await Promise.all([service.getOrLoad('user-1', loader), service.getOrLoad('user-1', loader)])
 
     expect(a).toEqual(['user:update'])
     expect(b).toEqual(['user:update'])

@@ -4,13 +4,7 @@ import { createZodDto } from 'nestjs-zod'
 
 const QueryUserParamsSchema = z.object({
   id: z.string().min(1).optional().meta({ description: '部门id, 不传则查询所有用户' }),
-  pageIndex: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .optional()
-    .default(1)
-    .meta({ description: '页码', example: 1 }),
+  pageIndex: z.coerce.number().int().min(1).optional().default(1).meta({ description: '页码', example: 1 }),
   pageSize: z.coerce
     .number()
     .int()

@@ -76,10 +76,7 @@ describe('DbBackupService', () => {
       configService as unknown as ConfigService,
       queue as unknown as Queue,
     )
-    const lifecycle = new DbBackupLifecycleService(
-      jobs,
-      fileCleanup as unknown as FileCleanupService,
-    )
+    const lifecycle = new DbBackupLifecycleService(jobs, fileCleanup as unknown as FileCleanupService)
     return new DbBackupService(
       jobs,
       settings,
@@ -177,9 +174,7 @@ describe('DbBackupService', () => {
       data: { dbJobId: 'job-1', trigger: BackupTrigger.MANUAL },
     })
 
-    await expect(service.enqueueBackup(BackupTrigger.MANUAL, 'user-1')).rejects.toBeInstanceOf(
-      ConflictException,
-    )
+    await expect(service.enqueueBackup(BackupTrigger.MANUAL, 'user-1')).rejects.toBeInstanceOf(ConflictException)
     expect(pgService.$transaction).toHaveBeenCalled()
   })
 
@@ -187,9 +182,7 @@ describe('DbBackupService', () => {
     const service = createService()
     pgService.dbBackupJob.findFirst.mockResolvedValue({ id: 'running-job' })
 
-    await expect(service.enqueueBackup(BackupTrigger.MANUAL, 'user-1')).rejects.toBeInstanceOf(
-      ConflictException,
-    )
+    await expect(service.enqueueBackup(BackupTrigger.MANUAL, 'user-1')).rejects.toBeInstanceOf(ConflictException)
     expect(queue.add).not.toHaveBeenCalled()
   })
 
@@ -200,9 +193,7 @@ describe('DbBackupService', () => {
       remove: jest.fn(),
     })
 
-    await expect(service.enqueueBackup(BackupTrigger.MANUAL, 'user-1')).rejects.toBeInstanceOf(
-      ConflictException,
-    )
+    await expect(service.enqueueBackup(BackupTrigger.MANUAL, 'user-1')).rejects.toBeInstanceOf(ConflictException)
     expect(queue.add).not.toHaveBeenCalled()
   })
 

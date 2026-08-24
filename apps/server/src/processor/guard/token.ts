@@ -16,8 +16,7 @@ export class TokenGuard extends AuthGuard('token') {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest()
-    const ok =
-      isPublicRoute(this.reflector, context) || ((await super.canActivate(context)) as boolean)
+    const ok = isPublicRoute(this.reflector, context) || ((await super.canActivate(context)) as boolean)
     if (!ok) return false
     const user = request.user
     const userId = user?.sub as string
