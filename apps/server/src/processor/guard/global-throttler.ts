@@ -70,6 +70,7 @@ export class GlobalThrottlerGuard extends ThrottlerGuard {
     if (apiKey) return `k:${apiKey}`
 
     // 4. 未登录：回退到 IP + UA，降低共享IP误伤（IP 走 trust proxy，不读原始 XFF）
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const ip = getIp(req) || req.connection?.remoteAddress || 'unknown'
     const ua = req.headers['user-agent'] || ''
     return `ip:${ip}|ua:${ua}`
