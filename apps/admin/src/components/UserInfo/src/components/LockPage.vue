@@ -5,13 +5,10 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { useNow } from '@/hooks/web/useNow'
 import { useStorage } from '@/hooks/web/useStorage'
 import { useLockStore } from '@/store/modules/lock'
-import { useTagsViewStore } from '@/store/modules/tagsView'
 import { useUserStore } from '@/store/modules/user'
 import { ElInput } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
-
-const tagsViewStore = useTagsViewStore()
 
 const { clear } = useStorage()
 
@@ -47,9 +44,8 @@ async function unLock() {
 // 返回登录
 async function goLogin() {
   clear()
-  tagsViewStore.delAllViews()
   lockStore.resetLockInfo()
-  userStore.reset() //  直接退出登录
+  userStore.reset()
 }
 
 const passwordInputRef = ref<ComponentRef<typeof ElInput>>()

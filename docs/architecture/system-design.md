@@ -121,7 +121,6 @@ Controller（HTTP / 权限装饰器）
 ## 部署形态
 
 - Compose 服务：`postgres`、`redis`、`migrate`（一次性）、`server`、`admin`
-- **不暴露宿主机端口**；依赖外部网络 `shared_net` 由 NPM 反代
-- 注意：根 `README.md` 写创建网络 `shared`，`compose.yml` 实际使用外部网络名 **`shared_net`**
+- **不暴露宿主机端口**；外部网络名 **`shared_net`**，由 NPM 反代到 `admin:80`（`/api` 由 admin Nginx 转到 server）
 
 详见 [docker.md](../deployment/docker.md)。

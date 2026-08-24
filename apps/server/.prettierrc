@@ -2,7 +2,7 @@
   "singleQuote": true,
   "semi": false,
   "trailingComma": "all",
-  "printWidth": 100,
+  "printWidth": 120,
   "endOfLine": "auto",
-  "arrowParens": "avoid"
+  "arrowParens": "always"
 }

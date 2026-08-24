@@ -1,82 +1,59 @@
 # Docker 部署
 
+编排与镜像的事实来源。生产操作步骤见 [production.md](./production.md)，变量名见 [environment.md](./environment.md)。
+
 ## 编排文件
 
-根目录 `compose.yml`，服务：
+根目录 **`compose.yml`**（另有 `compose.local.yml`，只起本机 Postgres/Redis，并映射宿主机端口，不用于生产）。
 
-| 服务     | 镜像/构建                            | 说明                                                                                  |
-| -------- | ------------------------------------ | ------------------------------------------------------------------------------------- |
-| postgres | postgres:18-alpine                   | 数据卷 `postgres-data`；挂载 `docker/postgres/init-users.sh` 初始化定义数据库三类账号 |
-| redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                                           |
-| migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`                                                   |
-| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；bind mount `./data/server/public`、`./data/server/backups`    |
-| admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                                                   |
+| 服务     | 镜像/构建                            | 说明                                                                               |
+| -------- | ------------------------------------ | ---------------------------------------------------------------------------------- |
+| postgres | postgres:18-alpine                   | 卷 `postgres-data`；挂载 `docker/postgres/init-users.sh` 初始化管理/迁移/运行账号  |
+| redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                                        |
+| migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`，成功后退出                                    |
+| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；bind mount `./data/server/public`、`./data/server/backups` |
+| admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                                                |
 
-网络：
+启动顺序：postgres/redis healthy → migrate 成功退出 → server / admin。
 
-- `shared_net`：`external: true`，供 Nginx Proxy Manager 等接入, 宿主机需创建共享网络`docker network create shared_net`
+### 网络与端口
 
-**不暴露宿主机 ports**。对外由外部反代访问 `admin:80` / `server:3000`。
+- 外部网络名 **`shared_net`**（`external: true`），给 Nginx Proxy Manager 等接入。
+- 宿主机需先执行：`docker network create shared_net`
+- **不映射宿主机 ports**。对外只应让 NPM 访问 `admin:80`；`/api` 由 admin 容器内 Nginx 转到 `server:3000`（见下方）。不要再单独把 `/api` 指到 `server:3000`，除非明确改用「NPM 分流」拓扑（见 production.md）。
 
 ## Dockerfile 要点
 
 ### server（`apps/server/Dockerfile`）
 
-1. **builder**：Node 24.18，pnpm 11.13.1，`prisma generate` + `nest build`, 会输出prisma Client文件及后端nestjs打包文件
-2. **migrator**：继承 builder，跑迁移与 seed,同步数据库结构和初始数据
-3. **runner**：alpine 生产依赖，主要用于运行后端nestjs服务, 额外安装 `postgresql18-client` 供 `pg_dump` 备份；`node dist/src/main.js`，USER node，EXPOSE 3000
+1. **builder**：`node:24.18`，pnpm 11.13.1，`prisma generate` + `nest build`
+2. **migrator**：继承 builder，跑迁移与 seed
+3. **runner**：alpine 生产依赖；安装 `postgresql18-client` 供 `pg_dump`；`USER node`（uid 1000）；EXPOSE 3000
 
 ### admin（`apps/admin/Dockerfile`）
 
-1. **builder**：`pnpm --filter admin build:pro`, 输出前端打包文件
-2. **runtime**：`nginx:1.31-alpine`，拷贝 `dist-pro` + `nginx.conf`
+1. **builder**：`pnpm --filter admin build:pro`，产出 `apps/admin/dist-pro`
+2. **runtime**：`nginx:1.31-alpine`，拷贝 `dist-pro` 与 **`docker/nginx/nginx.conf`** → `/etc/nginx/conf.d/default.conf`
 
-## admin Nginx（`apps/admin/nginx.conf`）
+## admin Nginx（`docker/nginx/nginx.conf`）
 
 - SPA：`try_files` → `index.html`
-- `location ^~ /api/` → `proxy_pass http://server:3000/`（剥离 `/api`）
-- WebSocket Upgrade；读写超时 3600s；`client_max_body_size 20m`
+- `location ^~ /api/` → `proxy_pass http://server:3000/`（去掉 `/api` 前缀）
+- WebSocket：`Upgrade` / `Connection`；读写超时 3600s；`client_max_body_size 20m`
 - 安全响应头与静态缓存
 
-## 常用命令
+热更新正在跑的容器（配置在宿主机改完后）：
 
 ```bash
-cp .env.example .env   # 修改密钥与密码
-# Linux：先创建 bind 目录并交给容器内 node（uid 1000），避免 Docker 以 root 建目录导致 EACCES
-mkdir -p data/server/public data/server/backups
-chown -R 1000:1000 data/server
-docker network create shared_net
-docker compose -f compose.yml up -d --build
-docker compose down
-docker compose run --rm migrate   # 仅迁移
-```
-
-数据库备份相关环境变量：
-
-```bash
-DB_BACKUP_DIR=/app/apps/server/backups
-DB_BACKUP_CRON=0 0 * * * *
-DB_BACKUP_TIMEZONE=Asia/Shanghai
-DB_BACKUP_RETENTION_MAX=24
-DB_BACKUP_PREFIX=backstage_db
-DB_BACKUP_GZIP=true
-```
-
-仅热更新 nginx 配置（根 README）：
-
-```bash
-docker cp apps/admin/nginx.conf app-admin:/etc/nginx/conf.d/default.conf
+docker cp docker/nginx/nginx.conf app-admin:/etc/nginx/conf.d/default.conf
 docker exec app-admin nginx -t
 docker exec app-admin nginx -s reload
 ```
 
 ## 其它
 
-- `.dockerignore`：排除 node_modules、多数 .env、测试等；放行 `apps/admin/.env.pro`、`dist-pro` 等
-- 新数据库首次创建用户SQL：`docker/postgres/migrate-existing-users.sql`（Postgres数据卷第一次被创建并完成 initdb 的那一次会启动）
-- 备份与静态上传走宿主机 bind mount：`./data/server/backups`、`./data/server/public`（勿用命名卷，避免 root 属主导致 `node` 无法写入）；对外下载仍走后端鉴权接口
-- 首次部署前请 `mkdir -p data/server/{public,backups} && chown -R 1000:1000 data/server`（与镜像内 `node` uid 对齐）
-- `server` 生产镜像固定安装 PostgreSQL 18 客户端，与 Compose 中的 PostgreSQL 18 服务端保持主版本一致
-- 数据库备份通过 BullMQ 队列异步执行（Queue 与 Processor 同在 server 容器），定时任务使用 repeatable job；`attempts=1`
-- 立即备份使用固定 `jobId=db-backup:manual` 幂等入队；定时备份使用 `upsertJobScheduler(db-backup:scheduled)`，配置未变时不重设
+- `.dockerignore`：排除 node_modules、多数 `.env`、测试等；放行 `apps/admin/.env.pro`、`dist-pro` 等
+- 空数据卷首次 initdb 会跑 `docker/postgres/init-users.sh`。已有卷补用户见 `docker/postgres/migrate-existing-users.sql`
+- 备份与上传目录必须是宿主机 bind mount（`./data/server/backups`、`./data/server/public`），且属主为 uid 1000，与镜像内 `node` 一致
+- 数据库备份由 server 内 BullMQ 执行；环境变量见 [environment.md](./environment.md)
 - CI（`.github/workflows/ci.yml`）只跑 `pnpm check`，不构建/推送镜像

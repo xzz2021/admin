@@ -4,7 +4,6 @@ import { getRawRoute } from '@/utils/routerHelper'
 import { defineStore } from 'pinia'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { store } from '../index'
-import { useUserStoreWithOut } from './user'
 
 export interface TagsViewState {
   visitedViews: RouteLocationNormalizedLoaded[]
@@ -16,7 +15,7 @@ export const useTagsViewStore = defineStore('tagsView', {
   state: (): TagsViewState => ({
     visitedViews: [],
     cachedViews: new Set(),
-    selectedTag: undefined
+    selectedTag: undefined,
   }),
   getters: {
     getVisitedViews(): RouteLocationNormalizedLoaded[] {
@@ -27,7 +26,7 @@ export const useTagsViewStore = defineStore('tagsView', {
     },
     getSelectedTag(): RouteLocationNormalizedLoaded | undefined {
       return this.selectedTag
-    }
+    },
   },
   actions: {
     // 新增缓存和tag
@@ -41,8 +40,8 @@ export const useTagsViewStore = defineStore('tagsView', {
       if (view.meta?.noTagsView) return
       this.visitedViews.push(
         Object.assign({}, view, {
-          title: view.meta?.title || 'no-name'
-        })
+          title: view.meta?.title || 'no-name',
+        }),
       )
     },
     // 新增缓存
@@ -82,17 +81,12 @@ export const useTagsViewStore = defineStore('tagsView', {
         this.cachedViews.delete(this.getCachedViews[index])
       }
     },
-    // 删除所有缓存和tag
-    delAllViews() {
-      this.delAllVisitedViews()
+    delAllViews(keepAffix = true) {
+      this.delAllVisitedViews(keepAffix)
       this.addCachedView()
     },
-    // 删除所有tag
-    delAllVisitedViews() {
-      const userStore = useUserStoreWithOut()
-
-      // const affixTags = this.visitedViews.filter((tag) => tag.meta.affix)
-      this.visitedViews = userStore.getUserInfo ? this.visitedViews.filter((tag) => tag?.meta?.affix) : []
+    delAllVisitedViews(keepAffix = true) {
+      this.visitedViews = keepAffix ? this.visitedViews.filter((tag) => tag?.meta?.affix) : []
     },
     // 删除其它
     delOthersViews(view: RouteLocationNormalizedLoaded) {
@@ -144,9 +138,9 @@ export const useTagsViewStore = defineStore('tagsView', {
           break
         }
       }
-    }
+    },
   },
-  persist: false
+  persist: false,
 })
 
 export const useTagsViewStoreWithOut = () => {

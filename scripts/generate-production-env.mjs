@@ -31,7 +31,7 @@ const values = {
   POSTGRES_MIGRATOR_PASSWORD: postgresMigratorPassword,
   POSTGRES_APP_USER: "app_runtime",
   POSTGRES_APP_PASSWORD: postgresAppPassword,
-  // MIGRATION_DATABASE_URL: `postgresql://app_migrator:${encodeURIComponent(postgresMigratorPassword)}@postgres:5432/app`,
+  PG_DATABASE_URL: `postgresql://app_migrator:${encodeURIComponent(postgresMigratorPassword)}@postgres:5432/app`,
   APP_DATABASE_URL: `postgresql://app_runtime:${encodeURIComponent(postgresAppPassword)}@postgres:5432/app`,
   REDIS_HOST: "redis",
   REDIS_PORT: "6379",

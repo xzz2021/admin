@@ -41,7 +41,7 @@ export const useUserStore = defineStore('user', {
       loginInfo: undefined,
       unReadCount: 0,
       // 用户头像版本号  因为用户更新图片名称可能相同 所以需要版本号来区分
-      avatarVersion: Date.now()
+      avatarVersion: Date.now(),
     }
   },
   getters: {
@@ -72,7 +72,7 @@ export const useUserStore = defineStore('user', {
     },
     getUnReadCount(): number {
       return this.unReadCount
-    }
+    },
   },
   actions: {
     setTokenKey(tokenKey: string) {
@@ -95,7 +95,7 @@ export const useUserStore = defineStore('user', {
       ElMessageBox.confirm(t('common.loginOutMessage'), t('common.reminder'), {
         confirmButtonText: t('common.ok'),
         cancelButtonText: t('common.cancel'),
-        type: 'warning'
+        type: 'warning',
       }).then(async () => {
         this.reset()
       })
@@ -107,7 +107,7 @@ export const useUserStore = defineStore('user', {
     },
     reset() {
       const tagsViewStore = useTagsViewStore()
-      tagsViewStore.delAllViews()
+      tagsViewStore.delAllViews(false)
       this.setToken('')
       this.setUserInfo()
       this.setRoleRouters([])
@@ -127,9 +127,9 @@ export const useUserStore = defineStore('user', {
       // 明确剔除 password，防止被写入持久化存储
       this.loginInfo = {
         phone: loginInfo.phone,
-        ...(loginInfo.username ? { username: loginInfo.username } : {})
+        ...(loginInfo.username ? { username: loginInfo.username } : {}),
       }
-    }
+    },
     // async setUnReadCount() {
     //   const res = await getUnReadMsgCountApi()
     //   this.unReadCount = res?.total || 0
@@ -144,11 +144,11 @@ export const useUserStore = defineStore('user', {
       if (info && 'password' in info) {
         ctx.store.loginInfo = {
           phone: info.phone,
-          ...(info.username ? { username: info.username } : {})
+          ...(info.username ? { username: info.username } : {}),
         }
       }
-    }
-  }
+    },
+  },
 })
 
 export const useUserStoreWithOut = () => {
