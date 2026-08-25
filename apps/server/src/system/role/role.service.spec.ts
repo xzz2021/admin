@@ -5,6 +5,7 @@ import { RoleService } from './role.service'
 
 describe('RoleService seed and queries', () => {
   const roleFindMany = jest.fn()
+  const roleCount = jest.fn()
   const roleFindUnique = jest.fn()
   const roleCreateMany = jest.fn()
   const roleUpsert = jest.fn()
@@ -36,6 +37,7 @@ describe('RoleService seed and queries', () => {
       $executeRaw: executeRaw,
       role: {
         findMany: roleFindMany,
+        count: roleCount,
         findUnique: roleFindUnique,
         createMany: roleCreateMany,
         upsert: roleUpsert,
@@ -131,6 +133,13 @@ describe('RoleService seed and queries', () => {
     resolveRoleMenus([])
     resolveRolePermissions([])
     await expect(pending).resolves.toEqual([])
+  })
+
+  it('throws when the role list is empty', async () => {
+    roleFindMany.mockResolvedValue([])
+    roleCount.mockResolvedValue(0)
+
+    await expect(service.getRoleList({ pageIndex: 1, pageSize: 10 })).rejects.toThrow('角色列表数据为空')
   })
 
   it('reads creator name from the included user relation', async () => {

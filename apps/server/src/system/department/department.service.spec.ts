@@ -119,13 +119,21 @@ describe('DepartmentService list queries', () => {
     expect(findMany).toHaveBeenCalled()
     expect(count).toHaveBeenCalled()
 
-    resolveList([])
-    resolveCount(0)
+    const list = [{ id: 'dept-1', name: '研发部', children: [] }]
+    resolveList(list)
+    resolveCount(1)
     await expect(pending).resolves.toEqual({
-      list: [],
-      total: 0,
+      list,
+      total: 1,
       message: '获取部门列表成功',
     })
+  })
+
+  it('throws when the department list is empty', async () => {
+    findMany.mockResolvedValue([])
+    count.mockResolvedValue(0)
+
+    await expect(service.findAll()).rejects.toThrow('部门列表为空')
   })
 })
 

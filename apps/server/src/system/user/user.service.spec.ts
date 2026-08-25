@@ -118,7 +118,7 @@ describe('UserService session revocation', () => {
           roles: expect.objectContaining({
             create: [
               expect.objectContaining({
-                assignedById: 'admin-1',
+                assignedBy: { connect: { id: 'admin-1' } },
                 assignedAt: expect.any(Date),
               }),
             ],
@@ -217,7 +217,7 @@ describe('UserService role assignment', () => {
   const createService = () =>
     new UserService(
       new UserRepository({
-        user: { update: jest.fn(), findUnique: userFindUnique },
+        user: { create: userCreate, update: jest.fn(), findUnique: userFindUnique },
         $transaction: transaction,
       } as unknown as PgService),
       { invalidateUsers: jest.fn() } as unknown as RbacPermissionCacheService,
@@ -253,7 +253,7 @@ describe('UserService role assignment', () => {
           roles: {
             create: [
               expect.objectContaining({
-                assignedById: 'admin-1',
+                assignedBy: { connect: { id: 'admin-1' } },
                 assignedAt: expect.any(Date),
               }),
             ],
