@@ -3,10 +3,15 @@ FROM node:24.18 AS builder
 
 WORKDIR /app
 
+# 镜像内无 .git：跳过 husky。pnpm 11 默认会在 prisma generate / nest build 前
+# 再跑一遍 install，把无关的 admin 依赖也装进来。
+ENV HUSKY=0
+
 RUN npm i -g pnpm@11.13.1
 
 # 切换 pnpm 源为镜像源
-RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com \
+  && pnpm config set verify-deps-before-run false
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server/package.json apps/server/
@@ -14,7 +19,7 @@ COPY apps/server/package.json apps/server/
 
 # 使用 BuildKit 缓存 pnpm store
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
-  pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile --filter server...
 
 COPY . .
 
@@ -39,6 +44,7 @@ FROM node:24.18-alpine3.24 AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV HUSKY=0
 
 RUN apk add --no-cache postgresql18-client \
   && pg_dump --version
@@ -46,16 +52,14 @@ RUN apk add --no-cache postgresql18-client \
 RUN npm i -g pnpm@11.13.1
 
 # 切换 pnpm 源为镜像源
-RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com \
+  && pnpm config set verify-deps-before-run false
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/server/package.json apps/server/
 # COPY packages packages/
 
-
-
-# 避免husky报错
-# 使用 BuildKit 缓存 pnpm store
+# --ignore-scripts：跳过 husky prepare；随后只 rebuild 运行所需的 argon2
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
   pnpm install --prod --frozen-lockfile --filter server... --ignore-scripts \
   && pnpm rebuild argon2 \

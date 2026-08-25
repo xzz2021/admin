@@ -2,6 +2,10 @@ FROM node:24.18 AS builder
 
 WORKDIR /app
 
+# 镜像内无 .git：跳过 husky。pnpm 11 默认 verifyDepsBeforeRun=install，
+# COPY 全仓后执行脚本会把 server/prisma 再装一遍，这里关掉。
+ENV HUSKY=0
+
 RUN npm i -g pnpm@11.13.1
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -9,7 +13,8 @@ COPY apps/admin/package.json apps/admin/
 COPY packages packages/
 
 # 切换 pnpm 源为镜像源
-RUN pnpm config set registry https://registry.npmmirror.com
+RUN pnpm config set registry https://registry.npmmirror.com \
+  && pnpm config set verify-deps-before-run false
 
 # 使用 BuildKit 缓存 pnpm store
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \

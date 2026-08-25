@@ -26,13 +26,13 @@
 
 ### server（`apps/server/Dockerfile`）
 
-1. **builder**：`node:24.18`，pnpm 11.13.1，`prisma generate` + `nest build`
+1. **builder**：`HUSKY=0` + `verify-deps-before-run=false`，`pnpm --filter server...` 安装，再 `prisma generate` + `nest build`（避免 pnpm 11 在脚本前把 admin/husky 再装一遍）
 2. **migrator**：继承 builder，跑迁移与 seed
 3. **runner**：alpine 生产依赖；安装 `postgresql18-client` 供 `pg_dump`；`USER node`（uid 1000）；EXPOSE 3000
 
 ### admin（`apps/admin/Dockerfile`）
 
-1. **builder**：`pnpm --filter admin build:pro`，产出 `apps/admin/dist-pro`
+1. **builder**：`HUSKY=0` + `verify-deps-before-run=false`，只装 admin 依赖后 `build:pro`，产出 `apps/admin/dist-pro`（不会再装 prisma / 跑 husky）
 2. **runtime**：`nginx:1.31-alpine`，拷贝 `dist-pro` 与 **`docker/nginx/nginx.conf`** → `/etc/nginx/conf.d/default.conf`
 
 ## admin Nginx（`docker/nginx/nginx.conf`）
