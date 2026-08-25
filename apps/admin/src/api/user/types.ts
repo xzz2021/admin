@@ -16,7 +16,9 @@ export interface UserRole {
   id: string
   name: string
 }
-
+export interface UserRoleRef {
+  role: UserRole
+}
 export interface UserItem {
   id: string
   username: string
@@ -40,7 +42,7 @@ export interface PersonalUserDetail {
   nickname?: string
   createdAt?: string
   department?: UserDepartment
-  roles?: UserRole[]
+  roles?: UserRoleRef[]
 }
 
 export interface UpdatePersonalInfoPayload {

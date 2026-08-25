@@ -1,5 +1,0 @@
--- 有 IP 的表同步记录离线解析的地理位置（精确到城市）
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastLoginLocation" VARCHAR(100);
-ALTER TABLE "UserSession" ADD COLUMN IF NOT EXISTS "location" VARCHAR(100);
-ALTER TABLE "AuditLog" ADD COLUMN IF NOT EXISTS "location" VARCHAR(100);
-ALTER TABLE "UserOperationLog" ADD COLUMN IF NOT EXISTS "location" VARCHAR(100);

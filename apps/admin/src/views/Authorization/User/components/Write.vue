@@ -179,6 +179,9 @@ watch(
         email: '',
         enabled: true,
       })
+      // 清空验证
+      // const elForm = await getElFormExpose()
+      // const valid = await elForm?.clearValidate()
       return
     }
 
