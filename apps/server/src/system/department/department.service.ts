@@ -36,6 +36,7 @@ export class DepartmentService {
 
   async findAll() {
     const [list, total] = await Promise.all([this.departments.findRootTrees(), this.departments.count()])
+    if (!list?.length) throw new BadRequestException('部门列表为空')
     return { list, total, message: '获取部门列表成功' }
   }
 

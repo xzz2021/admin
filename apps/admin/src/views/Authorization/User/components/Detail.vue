@@ -10,12 +10,8 @@ const { t } = useI18n()
 const props = defineProps({
   currentRow: {
     type: Object as PropType<UserItem | undefined>,
-    default: () => undefined
+    default: () => undefined,
   },
-  roleMap: {
-    type: Object as PropType<Record<string, string>>,
-    default: () => ({})
-  }
 })
 
 const detailSchema = computed<DescriptionsSchema[]>(() => [
@@ -24,26 +20,26 @@ const detailSchema = computed<DescriptionsSchema[]>(() => [
   { field: 'email', label: t('userDemo.email') },
   {
     field: 'department.name',
-    label: t('userDemo.department')
+    label: t('userDemo.department'),
   },
   {
     field: 'roles',
     label: t('userDemo.role'),
     slots: {
-      default: () => {
-        const roles = props.currentRow?.roles || []
+      default: (data: any) => {
+        const roles = data?.row || []
         if (!roles.length) return null
         return (
           <>
-            {roles.map((roleId) => (
-              <ElTag key={roleId} class="mr-4px">
-                {props.roleMap[roleId] || roleId}
+            {roles.map((role) => (
+              <ElTag key={role.id} class="mr-4px mb-4px">
+                {role.name}
               </ElTag>
             ))}
           </>
         )
-      }
-    }
+      },
+    },
   },
   {
     field: 'enabled',
@@ -53,10 +49,10 @@ const detailSchema = computed<DescriptionsSchema[]>(() => [
         <ElTag type={props.currentRow?.enabled ? 'success' : 'danger'}>
           {props.currentRow?.enabled ? t('userDemo.enable') : t('userDemo.disable')}
         </ElTag>
-      )
-    }
+      ),
+    },
   },
-  { field: 'createdAt', label: t('tableDemo.displayTime') }
+  { field: 'createdAt', label: t('tableDemo.displayTime') },
 ])
 </script>
 

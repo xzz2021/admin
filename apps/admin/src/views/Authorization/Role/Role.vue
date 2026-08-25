@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { delRoleApi, getRoleListApi } from '@/api/role'
+import { delRoleApi } from '@/api/role'
 import type { RoleItem } from '@/api/role/type'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
@@ -8,6 +8,7 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
+import { useRoleStore } from '@/store/modules/role'
 import { formatToDateTime } from '@/utils/dateUtil'
 import { ElTag } from 'element-plus'
 import { onActivated, reactive, ref, unref } from 'vue'
@@ -15,24 +16,25 @@ import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const router = useRouter()
+const roleStore = useRoleStore()
 
 const searchParams = ref<Recordable>({})
 
 const { tableRegister, tableState, tableMethods } = useTable<RoleItem, string>({
   fetchDataApi: async () => {
     const { pageSize, currentPage } = tableState
-    const res = await getRoleListApi({
+    const res = await roleStore.requestNewList({
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
-      ...unref(searchParams)
+      ...unref(searchParams),
     })
-    return {
-      list: res.data.list || [],
-      total: res.data.total || 0
-    }
+    return res
   },
   getRowId: (row) => row.id,
-  deleteApi: (ids) => delRoleApi(ids[0])
+  deleteApi: async (ids) => {
+    const result = await delRoleApi(ids[0])
+    return result
+  },
 })
 
 const { dataList, loading, total, currentPage, pageSize } = tableState
@@ -42,20 +44,17 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'index',
     label: t('userDemo.index'),
-    type: 'index'
+    type: 'index',
   },
   {
     field: 'name',
-    label: t('role.roleName')
+    label: t('role.roleName'),
   },
   {
     field: 'code',
-    label: t('role.roleCode')
+    label: t('role.roleCode'),
   },
-  {
-    field: 'sort',
-    label: t('exampleDemo.sort')
-  },
+
   {
     field: 'enabled',
     label: t('menu.status'),
@@ -64,22 +63,17 @@ const tableColumns = reactive<TableColumn[]>([
         <ElTag type={data.row.enabled ? 'success' : 'danger'}>
           {data.row.enabled ? t('userDemo.enable') : t('userDemo.disable')}
         </ElTag>
-      )
-    }
-  },
-  {
-    field: 'createdAt',
-    label: t('tableDemo.displayTime'),
-    formatter: (row: RoleItem) => formatToDateTime(row.createdAt)
+      ),
+    },
   },
   {
     field: 'updatedAt',
     label: t('tableDemo.updatedAt'),
-    formatter: (row: RoleItem) => formatToDateTime(row.updatedAt)
+    formatter: (row: RoleItem) => formatToDateTime(row.updatedAt),
   },
   {
     field: 'description',
-    label: t('userDemo.remark')
+    label: t('userDemo.remark'),
   },
   {
     field: 'action',
@@ -101,9 +95,9 @@ const tableColumns = reactive<TableColumn[]>([
             </BaseButton>
           </>
         )
-      }
-    }
-  }
+      },
+    },
+  },
 ])
 
 const searchSchema = reactive<FormSchema[]>([
@@ -112,9 +106,9 @@ const searchSchema = reactive<FormSchema[]>([
     label: `${t('role.roleName')}/${t('role.roleCode')}`,
     component: 'Input',
     componentProps: {
-      placeholder: t('role.roleKeywordPlaceholder')
-    }
-  }
+      placeholder: t('role.roleKeywordPlaceholder'),
+    },
+  },
 ])
 
 const setSearchParams = (data: Recordable) => {
@@ -133,9 +127,9 @@ const handleEdit = (row: RoleItem) => {
         name: row.name,
         code: row.code,
         enabled: row.enabled,
-        description: row.description ?? ''
-      }
-    }
+        description: row.description ?? '',
+      },
+    },
   })
 }
 
@@ -152,9 +146,9 @@ const handleDetail = (row: RoleItem) => {
         description: row.description ?? '',
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
-        sort: row.sort
-      }
-    }
+        sort: row.sort,
+      },
+    },
   })
 }
 

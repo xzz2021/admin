@@ -38,10 +38,6 @@ export const filterDepartmentTree = (tree: DepartmentItem[], filters: Department
   return filterNodes(tree)
 }
 
-/** @deprecated 使用 filterDepartmentTree */
-export const filterDepartmentTreeByName = (tree: DepartmentItem[], keyword: string): DepartmentItem[] =>
-  filterDepartmentTree(tree, { name: keyword })
-
 /** 收集节点及其全部子孙 ID（含自身） */
 export const collectDescendantIds = (tree: DepartmentItem[], rootId: string): Set<string> => {
   const ids = new Set<string>()

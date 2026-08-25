@@ -1,7 +1,5 @@
 <script setup lang="tsx">
-import { getDepartmentListApi } from '@/api/department'
 import type { DepartmentItem } from '@/api/department/types'
-import { getRoleListApi } from '@/api/role'
 import { addUserApi, deleteUserApi, getUserByDepartmentIdApi, updateUserApi } from '@/api/user'
 import type { UserItem } from '@/api/user/types'
 import { BaseButton } from '@/components/Button'
@@ -12,18 +10,18 @@ import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
+import { useDepartmentStore } from '@/store/modules/department'
+import { useRoleStore } from '@/store/modules/role'
 import { formatToDateTime } from '@/utils/dateUtil'
 import { ElDivider, ElInput, ElTag, ElTree } from 'element-plus'
-import { nextTick, onMounted, reactive, ref, unref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, unref, watch } from 'vue'
 import Detail from './components/Detail.vue'
 import Write from './components/Write.vue'
-import { ALL_DEPARTMENT_NODE_ID, toUserListDepartmentId, withAllDepartmentNode } from './utils/departmentFilter'
-
 const { t } = useI18n()
-
-const currentNodeKey = ref(ALL_DEPARTMENT_NODE_ID)
-const departmentList = ref<DepartmentItem[]>([])
-const roleMap = ref<Record<string, string>>({})
+const departmentStore = useDepartmentStore()
+const roleStore = useRoleStore()
+const currentNodeKey = ref('__all__')
+const departmentList = computed(() => [{ id: '__all__', name: t('userDemo.all') }, ...departmentStore.list])
 const searchParams = ref<Recordable>({})
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
@@ -36,9 +34,10 @@ const treeEl = ref<InstanceType<typeof ElTree>>()
 const currentDepartment = ref('')
 
 const { tableRegister, tableState, tableMethods } = useTable<UserItem, string>({
+  immediate: false,
   fetchDataApi: async () => {
     const { pageSize, currentPage } = tableState
-    const departmentId = toUserListDepartmentId(unref(currentNodeKey))
+    const departmentId = unref(currentNodeKey) === '__all__' ? undefined : unref(currentNodeKey)
     const res = await getUserByDepartmentIdApi({
       ...(departmentId ? { id: departmentId } : {}),
       pageIndex: unref(currentPage),
@@ -110,13 +109,13 @@ const tableColumns = reactive<TableColumn[]>([
     minWidth: 160,
     slots: {
       default: (data: any) => {
-        const roles = (data.row as UserItem).roles || []
+        const roles = data?.row?.roles || []
         if (!roles.length) return null
         return (
           <>
-            {roles.map((roleId) => (
-              <ElTag key={roleId} class="mr-4px mb-4px">
-                {roleMap.value[roleId] || roleId}
+            {roles.map((role) => (
+              <ElTag key={role.id} class="mr-4px mb-4px">
+                {role.name}
               </ElTag>
             ))}
           </>
@@ -175,7 +174,7 @@ const setSearchParams = (params: Recordable) => {
 }
 
 const filterNode = (value: string, data: DepartmentItem) => {
-  if (!value || data.id === ALL_DEPARTMENT_NODE_ID) return true
+  if (!value || data.id === '__all__') return true
   return data.name.includes(value)
 }
 
@@ -186,10 +185,17 @@ const currentChange = (data?: DepartmentItem) => {
   getList()
 }
 
-const openDialog = (row: UserItem | undefined, type: 'add' | 'edit' | 'detail') => {
+const ensureRoleAndDepartmentList = async () => {
+  await roleStore.ensureList()
+  await departmentStore.ensureList()
+  return roleStore.list.length && departmentStore.list.length
+}
+// 打开面板前必须先确保角色和部门下拉列表数据存在,否则会卡死
+const openDialog = async (row: UserItem | undefined, type: 'add' | 'edit' | 'detail') => {
+  if (!(await ensureRoleAndDepartmentList())) return
   actionType.value = type
   currentRow.value = row
-  defaultDepartmentId.value = type === 'add' ? toUserListDepartmentId(currentNodeKey.value) || '' : ''
+  defaultDepartmentId.value = type === 'add' ? (currentNodeKey.value === '__all__' ? '' : currentNodeKey.value) : ''
   dialogTitle.value = t(
     type === 'add' ? 'exampleDemo.add' : type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail',
   )
@@ -215,11 +221,8 @@ const save = async () => {
 }
 
 const loadBaseData = async () => {
-  const [departmentRes, roleRes] = await Promise.all([getDepartmentListApi(), getRoleListApi()])
-  departmentList.value = withAllDepartmentNode(departmentRes.data.list || [], t('userDemo.all'))
-  roleMap.value = Object.fromEntries((roleRes.data?.list || []).map((role) => [role.id, role.name]))
-
-  currentNodeKey.value = ALL_DEPARTMENT_NODE_ID
+  await departmentStore.ensureList()
+  currentNodeKey.value = '__all__'
   await nextTick()
   treeEl.value?.setCurrentKey(currentNodeKey.value)
   getList()
@@ -291,7 +294,7 @@ onMounted(() => {
         :current-row="currentRow"
         :default-department-id="defaultDepartmentId"
       />
-      <Detail v-else-if="actionType === 'detail'" :current-row="currentRow" :role-map="roleMap" />
+      <Detail v-else-if="actionType === 'detail'" :current-row="currentRow" />
 
       <template #footer>
         <BaseButton

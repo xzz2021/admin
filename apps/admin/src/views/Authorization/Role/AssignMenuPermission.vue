@@ -2,6 +2,7 @@
 import { addRoleApi, editRoleApi, getRoleListApi, getRoleMenuAndPermissionApi } from '@/api/role'
 import { ContentWrap } from '@/components/ContentWrap'
 import { useI18n } from '@/hooks/web/useI18n'
+import { useRoleStore } from '@/store/modules/role'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -11,6 +12,7 @@ import type { RoleFormModel, RoleMenuTreeNode } from './utils/roleMenuTree'
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const roleStore = useRoleStore()
 
 const panelRef = ref<InstanceType<typeof AssignMenuPermissionPanel>>()
 const loading = ref(false)
@@ -22,7 +24,7 @@ const roleForm = reactive<RoleFormModel>({
   name: '',
   code: '',
   enabled: true,
-  description: ''
+  description: '',
 })
 
 const roleId = computed(() => route.params.id as string | undefined)
@@ -33,7 +35,7 @@ const fillRoleForm = (role: Partial<RoleFormModel>) => {
     name: role.name || '',
     code: role.code || '',
     enabled: role.enabled ?? true,
-    description: role.description || ''
+    description: role.description || '',
   })
 }
 
@@ -101,6 +103,8 @@ const handleSave = async () => {
       await addRoleApi(submitData)
       ElMessage.success(t('common.createSuccess'))
     }
+    // 待商定 是否需要更新角色信息
+    await roleStore.requestNewList({ pageIndex: 1, pageSize: 100 })
     router.push({ name: 'Role', state: { refresh: true } })
   } catch (error) {
     console.error(error)

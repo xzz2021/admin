@@ -12,11 +12,9 @@ export interface UserDepartment {
   name: string
 }
 
-export interface UserRoleRef {
-  role: {
-    id: string
-    name: string
-  }
+export interface UserRole {
+  id: string
+  name: string
 }
 
 export interface UserItem {
@@ -29,7 +27,7 @@ export interface UserItem {
   enabled?: boolean
   createdAt?: string
   department?: UserDepartment
-  roles?: string[] | UserRoleRef[]
+  roles?: string[] | UserRole[]
 }
 
 /** 个人中心详情（含角色、部门嵌套结构） */
@@ -42,7 +40,7 @@ export interface PersonalUserDetail {
   nickname?: string
   createdAt?: string
   department?: UserDepartment
-  roles?: UserRoleRef[]
+  roles?: UserRole[]
 }
 
 export interface UpdatePersonalInfoPayload {

@@ -121,7 +121,9 @@ export class RoleService {
         : {}),
       ...(enabled !== undefined ? { enabled } : {}),
     }
+
     const [list, total] = await this.roles.findPage(where, skip, take)
+    if (!list?.length) throw new BadRequestException('角色列表数据为空')
     return { list, total, message: '获取角色列表成功' }
   }
 

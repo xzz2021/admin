@@ -13,7 +13,7 @@ export const showAxiosError = (msg: string) => {
   ElMessage({
     message: msg.length > 150 ? msg.slice(0, 150) : msg,
     grouping: true,
-    type: 'error'
+    type: 'error',
   })
 }
 
@@ -42,7 +42,7 @@ export const getAxiosErrorMessage = (error: AxiosError<unknown>): string => {
     case 503:
       return '服务暂时不可用，请稍后重试'
     case 500:
-      return '网络异常，或后端服务进程出错'
+      return '请检查网络或后端服务是否开启'
     case 404:
       return '接口不存在，请联系后端管理员'
     case 403:
@@ -50,6 +50,6 @@ export const getAxiosErrorMessage = (error: AxiosError<unknown>): string => {
     case 401:
       return '登录过期，鉴权失败，请重新登录'
     default:
-      return error.message || '网络异常，或后端服务进程出错'
+      return error.message || '请检查网络或后端服务是否开启'
   }
 }
