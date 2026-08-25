@@ -10,8 +10,6 @@ import { useUserStore } from '@/store/modules/user'
 import { storeToRefs } from 'pinia'
 import { computed, reactive, ref, watch } from 'vue'
 
-import avatar from '@/assets/imgs/avatar.jpg'
-
 const { getPrefixCls } = useDesign()
 const prefixCls = getPrefixCls('lock-dialog')
 const userStore = useUserStore()
@@ -24,8 +22,8 @@ const lockStore = useLockStore()
 
 const props = defineProps({
   modelValue: {
-    type: Boolean
-  }
+    type: Boolean,
+  },
 })
 const { formRegister, formMethods } = useForm()
 
@@ -33,12 +31,14 @@ const { getFormData, getElFormExpose, getComponentExpose } = formMethods
 
 const emit = defineEmits(['update:modelValue'])
 
+const avatarUrl = computed(() => userStore.getUserAvatarUrl)
+
 const dialogVisible = computed({
   get: () => props.modelValue,
   set: (val) => {
     console.log('set: ', val)
     emit('update:modelValue', val)
-  }
+  },
 })
 
 //  自动聚焦输入框
@@ -52,13 +52,13 @@ watch(
       }, 10)
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const dialogTitle = ref(t('lock.lockScreen'))
 
 const rules = reactive({
-  password: [required()]
+  password: [required()],
 })
 
 const schema: FormSchema[] = reactive([
@@ -74,9 +74,9 @@ const schema: FormSchema[] = reactive([
         if (_e.key === 'Enter') {
           handleLock()
         }
-      }
-    }
-  }
+      },
+    },
+  },
 ])
 
 const handleLock = async () => {
@@ -87,7 +87,7 @@ const handleLock = async () => {
       const formData = await getFormData()
       await lockStore.setLockInfo({
         isLock: true,
-        ...formData
+        ...formData,
       })
     }
   })
@@ -97,7 +97,7 @@ const handleLock = async () => {
 <template>
   <Dialog v-model="dialogVisible" width="500px" max-height="170px" :class="prefixCls" :title="dialogTitle">
     <div class="flex flex-col items-center">
-      <img :src="userInfo?.avatar || avatar" alt="" class="w-70px h-70px rounded-[50%]" />
+      <img :src="avatarUrl" alt="" class="w-70px h-70px rounded-[50%]" />
       <span class="text-14px my-10px text-[var(--top-header-text-color)]">{{ userInfo?.username }}</span>
     </div>
     <Form :is-col="false" :schema="schema" :rules="rules" @register="formRegister" />

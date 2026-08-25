@@ -16,6 +16,58 @@ const _role = [
     description: '用户',
   },
 ]
+const _department = [
+  {
+    name: '总部',
+    description: '总部',
+    children: [
+      {
+        name: '研发部',
+        description: '研发部',
+      },
+      {
+        name: '市场部',
+        description: '市场部',
+      },
+      {
+        name: '销售部',
+        description: '销售部',
+      },
+      {
+        name: '财务部',
+        description: '财务部',
+      },
+      {
+        name: '人事部',
+        description: '人事部',
+      },
+      {
+        name: '行政部',
+        description: '行政部',
+      },
+      {
+        name: '法务部',
+        description: '法务部',
+      },
+      {
+        name: '技术部',
+        description: '技术部',
+      },
+      {
+        name: '产品部',
+        description: '产品部',
+      },
+      {
+        name: '运营部',
+        description: '运营部',
+      },
+      {
+        name: '客服部',
+        description: '客服部',
+      },
+    ],
+  },
+]
 const _menu = [
   {
     name: 'Dashboard',
@@ -413,7 +465,7 @@ const _menu = [
         sort: 1,
         enabled: true,
         title: 'router.auditLog',
-        icon: 'document',
+        icon: 'shield-cog-corner',
         hidden: false,
         affix: false,
         activeMenu: null,
@@ -700,4 +752,4 @@ const _permission = [
   },
 ]
 
-export { _menu, _permission, _role }
+export { _department, _menu, _permission, _role }

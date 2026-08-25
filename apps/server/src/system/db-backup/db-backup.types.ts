@@ -30,6 +30,7 @@ export interface BackupJobListItem extends DbBackupJob {
 
 export interface BackupConfigPayload extends DbBackupConfig {
   nextRunAt: string | null
+  message: string
 }
 
 export interface BackupJobQuery {

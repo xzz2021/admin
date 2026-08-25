@@ -10,7 +10,6 @@ import { resolve } from 'node:path'
 import { MessageDeliveryService } from '../message/message-delivery.service'
 import { DbBackupConfigService } from './db-backup-config.service'
 import { DbBackupLifecycleService } from './db-backup-lifecycle.service'
-import { DbBackupRepository } from './db-backup.repository'
 import {
   DB_BACKUP_ALERT_DEBOUNCE_SEC,
   DB_BACKUP_ALERT_KEY,
@@ -22,6 +21,7 @@ import {
   DB_BACKUP_QUEUE,
   DB_BACKUP_RELEASE_LOCK_LUA,
 } from './db-backup.constants'
+import { DbBackupRepository } from './db-backup.repository'
 import type { BackupConfigPayload, BackupJobListItem, BackupJobQuery, DbBackupQueueJob } from './db-backup.types'
 import { PgDumpRunner } from './pg-dump.runner'
 
@@ -53,6 +53,7 @@ export class DbBackupService implements OnModuleInit {
     return {
       ...config,
       nextRunAt,
+      message: '获取备份配置成功',
     }
   }
 

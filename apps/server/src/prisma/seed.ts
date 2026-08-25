@@ -5,7 +5,7 @@
 
 import { prisma, Prisma } from './lib/prisma'
 import { createSeedAdmin } from './seed-admin'
-import { _menu, _permission, _role } from './sql'
+import { _department, _menu, _permission, _role } from './sql'
 
 async function create_menus_batch(menu_data: any[], tx: Prisma.TransactionClient, parentId?: string) {
   for (const menu_item of menu_data) {
@@ -88,6 +88,25 @@ async function create_permissions(permission_data: any[], tx: Prisma.Transaction
     })
   }
 }
+
+async function create_departments_batch(department_data: any[], tx: Prisma.TransactionClient, parent?: any) {
+  for (const department_item of department_data) {
+    const { children, ...department_fields } = department_item
+    const department = await tx.department.create({
+      data: {
+        ...department_fields,
+        parent: parent ? { connect: { id: parent.id } } : undefined,
+        path: '',
+      },
+    })
+    const path = parent ? `${parent.path}/${department.id}` : ''
+    await tx.department.update({ where: { id: department.id }, data: { path } })
+    if (Array.isArray(children) && children.length > 0) {
+      await create_departments_batch(children, tx, department)
+    }
+  }
+}
+
 async function main() {
   await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
@@ -101,6 +120,8 @@ async function main() {
       console.log('🌱 Seeding menus data success...')
       await create_roles(_role, tx)
       console.log('🌱 Seeding roles data success...')
+      await create_departments_batch(_department, tx)
+      console.log('🌱 Seeding departments data success...')
       await create_permissions(_permission, tx)
       console.log('🌱 Seeding permissions data success...')
       const seedAdmin = await createSeedAdmin(process.env)

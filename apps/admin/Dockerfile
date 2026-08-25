@@ -17,7 +17,7 @@ RUN pnpm config set registry https://registry.npmmirror.com \
   && pnpm config set verify-deps-before-run false
 
 # 使用 BuildKit 缓存 pnpm store
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
   pnpm config set store-dir /pnpm/store && \
   pnpm install --frozen-lockfile --filter admin...
 

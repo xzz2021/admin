@@ -26,6 +26,8 @@ const { hour, month, minute, meridiem, year, day, week } = useNow(true)
 
 const { t } = useI18n()
 
+const avatarUrl = computed(() => userStore.getUserAvatarUrl)
+
 // 解锁
 async function unLock() {
   if (!password.value) {
@@ -90,7 +92,7 @@ const { userInfo } = storeToRefs(userStore)
       <div :class="`${prefixCls}-entry`" v-show="!showDate">
         <div :class="`${prefixCls}-entry-content`">
           <div class="flex flex-col items-center">
-            <img :src="userInfo?.avatar" alt="" class="w-70px h-70px rounded-[50%]" />
+            <img :src="avatarUrl" alt="" class="w-70px h-70px rounded-[50%]" />
             <span class="text-14px my-10px text-[var(--logo-title-text-color)]">{{ userInfo?.username }}</span>
           </div>
           <ElInput

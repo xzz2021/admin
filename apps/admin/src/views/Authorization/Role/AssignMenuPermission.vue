@@ -48,7 +48,7 @@ const loadRoleBasicInfo = async () => {
 
   if (!roleId.value) return
 
-  const res = await getRoleListApi({ pageIndex: 1, pageSize: 500 })
+  const res = await getRoleListApi({ pageIndex: 1, pageSize: 100 })
   const role = res.data.list?.find((item) => item.id === roleId.value)
   if (role) {
     fillRoleForm(role)

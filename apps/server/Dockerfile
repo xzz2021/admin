@@ -66,7 +66,6 @@ RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
   && chown -R node:node /app
 
 COPY --from=builder --chown=node:node /app/apps/server/dist apps/server/dist
-COPY --from=builder --chown=node:node /app/apps/server/public apps/server/public
 
 WORKDIR /app/apps/server
 
