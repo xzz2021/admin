@@ -1,5 +1,6 @@
 import type { RbacPermissionCacheService } from '@/processor/rbac'
 import type { PgService } from '@/prisma/pg.service'
+import { QueryRoleParams } from './dto/role.dto'
 import { RoleRepository } from './role.repository'
 import { RoleService } from './role.service'
 
@@ -139,7 +140,9 @@ describe('RoleService seed and queries', () => {
     roleFindMany.mockResolvedValue([])
     roleCount.mockResolvedValue(0)
 
-    await expect(service.getRoleList({ pageIndex: 1, pageSize: 10 })).rejects.toThrow('角色列表数据为空')
+    await expect(service.getRoleList(QueryRoleParams.schema.parse({ pageIndex: 1, pageSize: 10 }))).rejects.toThrow(
+      '角色列表数据为空',
+    )
   })
 
   it('reads creator name from the included user relation', async () => {
