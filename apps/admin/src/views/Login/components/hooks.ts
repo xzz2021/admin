@@ -5,13 +5,13 @@ export const useLogin = () => {
   const { getRole } = useRoleMenu()
 
   const userStore = useUserStore()
-  const successLogin = (userinfo: any, access_token: string) => {
+  const successLogin = async (userinfo: any, access_token: string) => {
     userStore.setUserInfo(userinfo)
     userStore.setToken(access_token) // 设置新token
-    getRole()
+    await getRole()
   }
 
   return {
-    successLogin
+    successLogin,
   }
 }

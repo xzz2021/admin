@@ -36,71 +36,71 @@ const rules = {
   // username: [required()],
   phone: [required()],
   password: [required()],
-  captchaText: [required()]
+  captchaText: [required()],
 }
 
 const schema = reactive<FormSchema[]>([
   {
     field: 'title',
     colProps: {
-      span: 24
+      span: 24,
     },
     formItemProps: {
       slots: {
         default: () => {
           return <h2 class="text-2xl font-bold text-center w-[100%]">{t('login.login')}</h2>
-        }
-      }
-    }
+        },
+      },
+    },
   },
   {
     field: 'phone',
     label: t('login.phone'),
     componentProps: {
       // 用于demo快速登录
-      placeholder: '13011112222'
+      placeholder: '13011112222',
     },
     component: 'Input',
     colProps: {
-      span: 24
-    }
+      span: 24,
+    },
   },
   {
     field: 'password',
     label: t('login.password'),
     component: 'InputPassword',
     colProps: {
-      span: 24
+      span: 24,
     },
     componentProps: {
-      placeholder: '123456'
-    }
+      placeholder: '123456',
+    },
   },
   {
     field: 'captchaText',
     label: t('login.code'),
     component: 'Input',
     colProps: {
-      span: 24
+      span: 24,
     },
     componentProps: {
       slots: {
         suffix: () => {
           return <div v-html={captchaSvg.value} class="cursor-pointer leading-0" onClick={updateCaptcha}></div>
-        }
+        },
       },
       // 按下enter键触发登录
       onKeydown: (_e: any) => {
         if (_e.key === 'Enter') {
           signIn()
         }
-      }
-    }
+      },
+    },
   },
   {
     field: 'tool',
     colProps: {
-      span: 24
+      span: 24,
     },
     formItemProps: {
       slots: {
@@ -115,14 +115,14 @@ const schema = reactive<FormSchema[]>([
               </div>
             </>
           )
-        }
-      }
-    }
+        },
+      },
+    },
   },
   {
     field: 'login',
     colProps: {
-      span: 24
+      span: 24,
     },
     formItemProps: {
       slots: {
@@ -141,22 +141,22 @@ const schema = reactive<FormSchema[]>([
               </div>
             </>
           )
-        }
-      }
-    }
+        },
+      },
+    },
   },
   {
     field: 'other',
     component: 'Divider',
     label: t('login.otherLogin'),
     componentProps: {
-      contentPosition: 'center'
-    }
+      contentPosition: 'center',
+    },
   },
   {
     field: 'otherIcon',
     colProps: {
-      span: 24
+      span: 24,
     },
     formItemProps: {
       slots: {
@@ -203,10 +203,10 @@ const schema = reactive<FormSchema[]>([
               </div>
             </>
           )
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 ])
 
 const { formRegister, formMethods } = useForm()
@@ -244,6 +244,12 @@ const toSms = () => {
 const signIn = async () => {
   const formRef = await getElFormExpose()
   await formRef?.validate(async (isValid) => {
+    //  开启全局加载蒙层
+    ElLoading.service({
+      lock: true,
+      text: 'Loading',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
     if (isValid) {
       loading.value = true
       const formData = await getFormData<UserLoginFormType>()
@@ -255,7 +261,7 @@ const signIn = async () => {
         // 是否记住我
         if (unref(remember)) {
           userStore.setLoginInfo({
-            phone: formData.phone
+            phone: formData.phone,
           })
         } else {
           userStore.setLoginInfo(undefined)
@@ -269,6 +275,7 @@ const signIn = async () => {
           updateCaptcha()
         }
       } finally {
+        // ElLoading.service().close()  改为进入的第一个组件里关闭
         loading.value = false
       }
     }

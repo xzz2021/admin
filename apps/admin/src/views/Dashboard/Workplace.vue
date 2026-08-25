@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { useTimeAgo } from '@/hooks/web/useTimeAgo'
-import { ElRow, ElCol, ElSkeleton, ElCard, ElDivider, ElLink } from 'element-plus'
-import { useI18n } from '@/hooks/web/useI18n'
-import { ref, reactive } from 'vue'
+import { getCountApi, getDynamicApi, getProjectApi, getRadarApi, getTeamApi } from '@/api/dashboard/workplace'
+import type { Dynamic, Project, Team, WorkplaceTotal } from '@/api/dashboard/workplace/types'
 import { CountTo } from '@/components/CountTo'
-import { formatTime } from '@/utils'
 import { Echart } from '@/components/Echart'
-import { EChartsOption } from 'echarts'
-import { radarOption } from './echarts-data'
 import { Highlight } from '@/components/Highlight'
-import { getCountApi, getProjectApi, getDynamicApi, getTeamApi, getRadarApi } from '@/api/dashboard/workplace'
-import type { WorkplaceTotal, Project, Dynamic, Team } from '@/api/dashboard/workplace/types'
+import { useI18n } from '@/hooks/web/useI18n'
+import { useTimeAgo } from '@/hooks/web/useTimeAgo'
+import { formatTime } from '@/utils'
+import { EChartsOption } from 'echarts'
+import { ElCard, ElCol, ElDivider, ElLink, ElRow, ElSkeleton } from 'element-plus'
 import { set } from 'lodash-es'
+import { reactive, ref } from 'vue'
+import { radarOption } from './echarts-data'
 
 const loading = ref(true)
 
@@ -19,7 +19,7 @@ const loading = ref(true)
 let totalSate = reactive<WorkplaceTotal>({
   project: 0,
   access: 0,
-  todo: 0
+  todo: 0,
 })
 
 const getCount = async () => {
@@ -71,9 +71,9 @@ const getRadar = async () => {
       res.data.map((v) => {
         return {
           name: t(v.name),
-          max: v.max
+          max: v.max,
         }
-      })
+      }),
     )
     set(radarOptionData, 'series', [
       {
@@ -82,19 +82,20 @@ const getRadar = async () => {
         data: [
           {
             value: res.data.map((v) => v.personal),
-            name: t('workplace.personal')
+            name: t('workplace.personal'),
           },
           {
             value: res.data.map((v) => v.team),
-            name: t('workplace.team')
-          }
-        ]
-      }
+            name: t('workplace.team'),
+          },
+        ],
+      },
     ])
   }
 }
 
 const getAllApi = async () => {
+  ElLoading.service().close()
   await Promise.all([getCount(), getProject(), getDynamic(), getTeam(), getRadar()])
   loading.value = false
 }

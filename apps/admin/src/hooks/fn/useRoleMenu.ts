@@ -42,11 +42,11 @@ export const useRoleMenu = () => {
       redirect.value = route?.query?.redirect as string
     },
     {
-      immediate: true
-    }
+      immediate: true,
+    },
   )
   return {
     redirect,
-    getRole
+    getRole,
   }
 }
