@@ -1,14 +1,9 @@
-
-# ==============================
-# 配置
-# chmod +x deploy.sh
-#./deploy.sh
-# ==============================
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
 # ============================================================
 # 配置
+# chmod +x deploy.sh && ./deploy.sh
 # ============================================================
 REPO="git@github.com:xzz2021/admin.git"
 BRANCH="main"
