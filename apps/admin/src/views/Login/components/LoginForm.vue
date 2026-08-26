@@ -247,7 +247,7 @@ const signIn = async () => {
     //  开启全局加载蒙层
     ElLoading.service({
       lock: true,
-      text: 'Loading',
+      text: '正在登录',
       background: 'rgba(0, 0, 0, 0.7)',
     })
     if (isValid) {
@@ -270,6 +270,7 @@ const signIn = async () => {
         await successLogin(userinfo, access_token)
       } catch (error) {
         // console.log('xzz2021: signIn -> error', error)
+        ElLoading.service().close()
         if (error instanceof AxiosError && error.response?.data?.message === '验证码已过期') {
           // 只有当后面的登录失败时，才更新验证码
           updateCaptcha()

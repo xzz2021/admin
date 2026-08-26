@@ -25,7 +25,7 @@ const ROUTE_MENU_META_KEYS = [
   'permissions',
   'permission',
   'external',
-  'link'
+  'link',
 ] as const
 
 /** activeMenu 仅接受完整路由 path，用于隐藏子页高亮父菜单；过滤种子/脏数据中的无效值 */
@@ -59,8 +59,8 @@ export const syncRouteMenuToMeta = (route: AppRouteRecordRaw): AppRouteRecordRaw
     meta: {
       ...(route.meta ?? {}),
       ...menuFields,
-      activeMenu: menuFields.activeMenu
-    }
+      activeMenu: menuFields.activeMenu,
+    },
   }
 
   if (!menuFields.activeMenu) {
@@ -86,7 +86,7 @@ export const getParentLayout = () => {
   return () =>
     new Promise((resolve) => {
       resolve({
-        name: 'ParentLayout'
+        name: 'ParentLayout',
       })
     })
 }
@@ -99,9 +99,9 @@ export const getRawRoute = (route: RouteLocationNormalized): RouteLocationNormal
     matched: (matched
       ? matched.map((item) => ({
           name: item.name,
-          path: item.path
+          path: item.path,
         }))
-      : undefined) as RouteRecordNormalized[]
+      : undefined) as RouteRecordNormalized[],
   }
 }
 
@@ -109,7 +109,7 @@ export const getRawRoute = (route: RouteLocationNormalized): RouteLocationNormal
 export const generateRoutesByFrontEnd = (
   routes: AppRouteRecordRaw[],
   keys: string[],
-  basePath = '/'
+  basePath = '/',
 ): AppRouteRecordRaw[] => {
   const res: AppRouteRecordRaw[] = []
 
@@ -154,7 +154,7 @@ export const generateRoutesByFrontEnd = (
   return res
 }
 
-//  新增菜单不用手动加/
+//  新增菜单不用手动加/  这里的处理会出现一个问题,如果当前项有pid但后端没有传递父级数据,那么就会导致路径错误,路由渲染时没有'/'
 const checkPath = (route: AppCustomRouteRecordRaw) => {
   return route?.parentId ? route.path : '/' + route.path
 }
@@ -167,7 +167,7 @@ export const generateRoutesByServer = (routes: AppCustomRouteRecordRaw[]): AppRo
     const { path, ...rest } = route
     const data = {
       path: checkPath(route),
-      ...rest
+      ...rest,
     } as AppRouteRecordRaw
     if (route.component) {
       const comModule = modules[`../${route.component}.vue`] || modules[`../${route.component}.tsx`]
@@ -248,7 +248,7 @@ const isMultipleRoute = (route: AppRouteRecordRaw) => {
 const promoteRouteLevel = (route: AppRouteRecordRaw) => {
   let router: Router | null = createRouter({
     routes: [route as RouteRecordRaw],
-    history: createWebHashHistory()
+    history: createWebHashHistory(),
   })
 
   const routes = router.getRoutes()
@@ -262,7 +262,7 @@ const promoteRouteLevel = (route: AppRouteRecordRaw) => {
 const addToChildren = (
   routes: RouteRecordNormalized[],
   children: AppRouteRecordRaw[],
-  routeModule: AppRouteRecordRaw
+  routeModule: AppRouteRecordRaw,
 ) => {
   for (let index = 0; index < children.length; index++) {
     const child = children[index]
