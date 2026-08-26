@@ -28,17 +28,41 @@ export class DepartmentRepository {
     })
   }
 
+  async lockById(id: string, tx: Db = this.db) {
+    const rows = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "Department"
+      WHERE "id" = ${id}
+      FOR UPDATE
+    `
+    return rows[0] ?? null
+  }
+
   findTreeLinks(tx: Db = this.db) {
     return tx.department.findMany({
       select: { id: true, parentId: true, path: true },
     })
   }
 
-  findFirstChildId(parentId: string) {
-    return this.db.department.findFirst({
+  findFirstChildId(parentId: string, tx: Db = this.db) {
+    return tx.department.findFirst({
       where: { parentId },
       select: { id: true },
     })
+  }
+
+  async findDeleteReferences(departmentId: string, tx: Db = this.db) {
+    const [customScope, customer] = await Promise.all([
+      tx.rolePermissionDepartment.findFirst({
+        where: { departmentId },
+        select: { id: true },
+      }),
+      tx.customer.findFirst({
+        where: { departmentId },
+        select: { id: true },
+      }),
+    ])
+    return { customScope: Boolean(customScope), customer: Boolean(customer) }
   }
 
   findRootTrees() {
@@ -59,6 +83,23 @@ export class DepartmentRepository {
     })
   }
 
+  async findSubtreeDepartmentIds(rootId: string): Promise<string[]> {
+    const rows = await this.db.$queryRaw<{ id: string }[]>`
+      WITH RECURSIVE dept_tree AS (
+        SELECT id, "parentId"
+        FROM "Department"
+        WHERE id = ${rootId} AND enabled = true
+        UNION ALL
+        SELECT d.id, d."parentId"
+        FROM "Department" d
+        INNER JOIN dept_tree dt ON d."parentId" = dt.id
+        WHERE d.enabled = true
+      )
+      SELECT id FROM dept_tree;
+    `
+    return rows.map(row => row.id)
+  }
+
   count() {
     return this.db.department.count()
   }
@@ -71,8 +112,8 @@ export class DepartmentRepository {
     })
   }
 
-  deleteById(id: string) {
-    return this.db.department.delete({ where: { id } })
+  deleteById(id: string, tx: Db = this.db) {
+    return tx.department.delete({ where: { id } })
   }
 
   replaceDescendantPaths(oldPath: string, nextPath: string, tx: Db = this.db) {

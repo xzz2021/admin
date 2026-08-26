@@ -1,6 +1,16 @@
 import { MenuModel, PermissionModel, RoleModel } from '@prisma/generated/zod'
+import { DataScope } from '@/prisma/generated/prisma/enums'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
+
+const PermissionScopeSchema = z.object({
+  permissionId: z.string().min(1),
+  dataScope: z.nativeEnum(DataScope),
+  departmentIds: z
+    .array(z.string().min(1))
+    .transform(ids => [...new Set(ids)])
+    .optional(),
+})
 
 const RoleMenuSchema = z.object({
   id: z.string().min(1),
@@ -12,6 +22,22 @@ const RoleMenuSchema = z.object({
     .default([])
     .transform(val => [...new Set(val)])
     .meta({ description: '权限ID', example: ['2', '3'] }),
+  permissionScopes: z
+    .array(PermissionScopeSchema)
+    .optional()
+    .superRefine((scopes, context) => {
+      if (!scopes) return
+      const seen = new Set<string>()
+      for (const scope of scopes) {
+        if (seen.has(scope.permissionId)) {
+          context.addIssue({
+            code: 'custom',
+            message: `权限 ${scope.permissionId} 存在重复数据范围配置`,
+          })
+        }
+        seen.add(scope.permissionId)
+      }
+    }),
 })
 const CreateRoleSchema = RoleModel.pick({
   name: true,
@@ -19,7 +45,21 @@ const CreateRoleSchema = RoleModel.pick({
   enabled: true,
   description: true,
 }).extend({
-  menus: z.array(RoleMenuSchema).default([]),
+  menus: z
+    .array(RoleMenuSchema)
+    .default([])
+    .superRefine((menus, context) => {
+      const seen = new Set<string>()
+      for (const menu of menus) {
+        if (seen.has(menu.id)) {
+          context.addIssue({
+            code: 'custom',
+            message: `菜单 ${menu.id} 重复`,
+          })
+        }
+        seen.add(menu.id)
+      }
+    }),
 })
 export class CreateRoleDto extends createZodDto(CreateRoleSchema) {}
 
@@ -138,3 +178,43 @@ const MenuPermissionListResSchema = z.object({
   list: z.array(MenuPermissionListSchema).meta({ description: '列表数据' }),
 })
 export class MenuPermissionListRes extends createZodDto(MenuPermissionListResSchema) {}
+
+const RoleAuthorizationPermissionSchema = PermissionModel.extend({
+  resource: z.string().nullable(),
+  action: z.string().nullable(),
+  sort: z.number().int(),
+  enabled: z.boolean(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  checked: z.boolean(),
+  dataScope: z.nativeEnum(DataScope).nullable(),
+  departmentIds: z.array(z.string()),
+  disabledDepartmentIds: z.array(z.string()),
+})
+
+const RoleAuthorizationMenuBaseSchema = MenuModel.extend({
+  sort: z.number().int(),
+  enabled: z.boolean(),
+  parentId: z.string().nullable(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  checked: z.boolean(),
+  permissions: z.array(RoleAuthorizationPermissionSchema),
+})
+
+type RoleAuthorizationMenu = z.infer<typeof RoleAuthorizationMenuBaseSchema> & {
+  children: RoleAuthorizationMenu[]
+}
+
+const RoleAuthorizationMenuSchema: z.ZodType<RoleAuthorizationMenu> = z.lazy(() =>
+  RoleAuthorizationMenuBaseSchema.extend({
+    children: z.array(RoleAuthorizationMenuSchema),
+  }),
+)
+
+const RoleAuthorizationTreeResSchema = z.object({
+  list: z.array(RoleAuthorizationMenuSchema),
+  message: z.string(),
+})
+
+export class RoleAuthorizationTreeRes extends createZodDto(RoleAuthorizationTreeResSchema) {}

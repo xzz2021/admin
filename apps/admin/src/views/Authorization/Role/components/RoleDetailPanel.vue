@@ -8,23 +8,23 @@ import { formatToDateTime } from '@/utils/dateUtil'
 import { ElMessage, ElTable, ElTableColumn, ElTag } from 'element-plus'
 import { computed, PropType } from 'vue'
 import { buildRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
-import type { RoleMenuPermissionItem, RoleMenuTreeNode } from '../utils/roleMenuTree'
+import { DATA_SCOPE_I18N, type RoleMenuPermissionItem, type RoleMenuTreeNode } from '../utils/roleMenuTree'
 
 type TagType = 'success' | 'warning' | 'info' | 'primary' | 'danger'
 
 const props = defineProps({
   roleDetail: {
     type: Object as PropType<RoleDetail | undefined>,
-    default: undefined
+    default: undefined,
   },
   menuTree: {
     type: Array as PropType<RoleMenuTreeNode[]>,
-    default: () => []
+    default: () => [],
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits<{
@@ -42,19 +42,19 @@ const roleInfoItems = computed<Array<{ label: string; value: string; tagType?: T
     {
       label: t('menu.status'),
       value: detail?.enabled ? t('userDemo.enable') : t('userDemo.disable'),
-      tagType: detail?.enabled ? 'success' : 'danger'
+      tagType: detail?.enabled ? 'success' : 'danger',
     },
     { label: t('userDemo.remark'), value: detail?.description || '-' },
     { label: t('exampleDemo.sort'), value: String(detail?.sort ?? '-') },
     {
       label: t('tableDemo.createdAt'),
-      value: detail?.createdAt ? formatToDateTime(detail.createdAt) : '-'
+      value: detail?.createdAt ? formatToDateTime(detail.createdAt) : '-',
     },
     {
       label: t('tableDemo.updatedAt'),
-      value: detail?.updatedAt ? formatToDateTime(detail.updatedAt) : '-'
+      value: detail?.updatedAt ? formatToDateTime(detail.updatedAt) : '-',
     },
-    { label: t('role.creator'), value: detail?.creatorName || '-' }
+    { label: t('role.creator'), value: detail?.creatorName || '-' },
   ]
 })
 
@@ -65,7 +65,7 @@ const overviewCards = computed(() => [
     value: props.roleDetail?.menuCount ?? 0,
     icon: 'layout-grid',
     color: '#409eff',
-    bg: 'rgba(64, 158, 255, 0.1)'
+    bg: 'rgba(64, 158, 255, 0.1)',
   },
   {
     key: 'permissionCount',
@@ -73,7 +73,7 @@ const overviewCards = computed(() => [
     value: props.roleDetail?.permissionCount ?? 0,
     icon: 'lock',
     color: '#67c23a',
-    bg: 'rgba(103, 194, 58, 0.1)'
+    bg: 'rgba(103, 194, 58, 0.1)',
   },
   {
     key: 'userCount',
@@ -81,12 +81,20 @@ const overviewCards = computed(() => [
     value: props.roleDetail?.userCount ?? 0,
     icon: 'user',
     color: '#9c27b0',
-    bg: 'rgba(156, 39, 176, 0.1)'
-  }
+    bg: 'rgba(156, 39, 176, 0.1)',
+  },
 ])
 
 const isPermissionOwned = (menu: RoleMenuTreeNode, permission: RoleMenuPermissionItem) => {
-  return !!menu.checked && !!permission.checked
+  return !!menu.checked && permission.enabled && !!permission.checked
+}
+
+const dataScopeLabel = (permission: RoleMenuPermissionItem) => {
+  if (!permission.dataScope) return t('role.dataScopePending')
+  const label = t(DATA_SCOPE_I18N[permission.dataScope])
+  return permission.dataScope === 'CUSTOM'
+    ? t('role.customDepartmentCountLabel', { scope: label, count: permission.departmentIds.length })
+    : label
 }
 
 const handleCopyMenuPermission = () => {
@@ -173,15 +181,27 @@ const handleCopyMenuPermission = () => {
         <ElTableColumn :label="t('role.ownedPermissions')" min-width="420">
           <template #default="{ row }">
             <div v-if="row.permissions?.length" class="permission-tags">
-              <ElTag
-                v-for="permission in row.permissions"
-                :key="permission.id"
-                :type="isPermissionOwned(row, permission) ? 'success' : 'info'"
-                :effect="isPermissionOwned(row, permission) ? 'light' : 'plain'"
-                class="permission-tag"
-              >
-                {{ permission.name }}
-              </ElTag>
+              <div v-for="permission in row.permissions" :key="permission.id" class="permission-display">
+                <ElTag
+                  :type="isPermissionOwned(row, permission) ? 'success' : 'info'"
+                  :effect="isPermissionOwned(row, permission) ? 'light' : 'plain'"
+                  class="permission-tag"
+                >
+                  {{ permission.name }}
+                </ElTag>
+                <template v-if="isPermissionOwned(row, permission) && permission.scopeEnabled">
+                  <ElTag :type="permission.dataScope ? 'primary' : 'warning'" effect="plain">
+                    {{ dataScopeLabel(permission) }}
+                  </ElTag>
+                  <ElTag v-if="permission.disabledDepartmentIds.length" type="danger" effect="plain">
+                    {{
+                      t('role.invalidDepartmentCount', {
+                        count: permission.disabledDepartmentIds.length,
+                      })
+                    }}
+                  </ElTag>
+                </template>
+              </div>
             </div>
             <span v-else class="text-gray-400">-</span>
           </template>
@@ -366,6 +386,22 @@ const handleCopyMenuPermission = () => {
     gap: 8px;
   }
 
+  .permission-display {
+    display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+
+    :deep(.el-tag) {
+      height: auto;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+
   .permission-tag {
     margin: 0;
   }
@@ -374,6 +410,38 @@ const handleCopyMenuPermission = () => {
     :deep(.el-table__body tr td:first-child .cell) {
       display: flex;
       align-items: center;
+    }
+  }
+}
+
+@media (width <= 900px) {
+  .role-detail {
+    .role-info-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .role-info-header,
+    .card-header,
+    .card-header-actions,
+    .legend {
+      flex-wrap: wrap;
+    }
+  }
+}
+
+@media (width <= 600px) {
+  .role-detail {
+    .role-info-grid,
+    .overview-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .card-header {
+      gap: 12px;
+    }
+
+    .card-header-actions {
+      width: 100%;
     }
   }
 }

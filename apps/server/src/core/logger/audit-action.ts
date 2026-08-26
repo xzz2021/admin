@@ -20,6 +20,10 @@ export const AuditAction = {
   DEPARTMENT_CREATE: 'department.create',
   DEPARTMENT_UPDATE: 'department.update',
   DEPARTMENT_DELETE: 'department.delete',
+  CUSTOMER_CREATE: 'customer.create',
+  CUSTOMER_UPDATE: 'customer.update',
+  CUSTOMER_DELETE: 'customer.delete',
+  CUSTOMER_EXPORT: 'customer.export',
 } as const
 
 export type AuditActionCode = (typeof AuditAction)[keyof typeof AuditAction]

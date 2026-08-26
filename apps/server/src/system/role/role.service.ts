@@ -1,13 +1,14 @@
 import { AuditAction } from '@/core/logger/audit-action'
 import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
+import { DataScope } from '@/prisma/generated/prisma/enums'
 import { RbacPermissionCacheService } from '@/processor/rbac'
 import { uniqueBy } from '@/processor/utils/array'
 import { listToTree } from '@/processor/utils/list2tree.util'
 import { sqlBatchUpdateRoles } from '@/processor/utils/sql-batch'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateRoleDto, QueryRoleParams, RoleSeedDto, UpdateRoleDto } from './dto/role.dto'
-import { RoleRepository } from './role.repository'
+import { RolePermissionSyncInput, RoleRepository } from './role.repository'
 
 @Injectable()
 export class RoleService {
@@ -19,31 +20,42 @@ export class RoleService {
 
   private buildMenuPermissionData(menus: CreateRoleDto['menus']) {
     const menuMap = new Map<string, Set<string>>()
+    const scopeMap = new Map<string, { menuId: string; dataScope: DataScope; departmentIds?: string[] }>()
     for (const item of menus) {
       const permissionSet = menuMap.get(item.id) ?? new Set<string>()
       for (const permissionId of item.permissionIds) {
         permissionSet.add(permissionId)
       }
+      for (const scope of item.permissionScopes ?? []) {
+        if (!permissionSet.has(scope.permissionId)) {
+          throw new BadRequestException(`权限 ${scope.permissionId} 必须先勾选（且位于同一菜单）`)
+        }
+        if (scopeMap.has(scope.permissionId)) {
+          throw new BadRequestException(`权限 ${scope.permissionId} 存在重复数据范围配置`)
+        }
+        scopeMap.set(scope.permissionId, { menuId: item.id, ...scope })
+      }
       menuMap.set(item.id, permissionSet)
     }
     const menuIds = [...menuMap.keys()]
     const permissionIds = [...new Set([...menuMap.values()].flatMap(item => [...item]))]
-    return { menuMap, menuIds, permissionIds }
+    return { menuMap, scopeMap, menuIds, permissionIds }
   }
 
   private async validateMenuPermissions(
     menuMap: Map<string, Set<string>>,
     menuIds: string[],
     permissionIds: string[],
+    scopeMap: Map<string, { menuId: string; dataScope: DataScope; departmentIds?: string[] }>,
     tx: Prisma.TransactionClient,
-  ) {
+  ): Promise<RolePermissionSyncInput[]> {
     const [menus, permissions] = await Promise.all([
       this.roles.findEnabledMenusByIds(menuIds, tx),
-      permissionIds.length ? this.roles.findEnabledPermissionsByIds(permissionIds, tx) : Promise.resolve([]),
+      this.roles.findEnabledPermissionsByIds(permissionIds, tx),
     ])
     if (menus.length !== menuIds.length) throw new BadRequestException('存在无效或被禁用的菜单')
 
-    if (!permissionIds.length) return
+    if (!permissionIds.length) return []
 
     if (permissions.length !== permissionIds.length) throw new BadRequestException('存在无效或被禁用的权限')
 
@@ -59,14 +71,47 @@ export class RoleService {
         }
       }
     }
+
+    const departmentIds = new Set<string>()
+    const normalized = permissions.map(permission => {
+      const scope = scopeMap.get(permission.id)
+      if (!permission.scopeEnabled) {
+        if (scope) throw new BadRequestException(`权限 ${permission.id} 未启用数据范围，不能提交 scope`)
+        return { permissionId: permission.id, dataScope: null, departmentIds: [] }
+      }
+      if (!scope) throw new BadRequestException(`权限 ${permission.id} 必须提交明确的数据范围`)
+      if (scope.menuId !== permission.menuId) {
+        throw new BadRequestException(`权限 ${permission.id} 的数据范围不属于菜单 ${scope.menuId}`)
+      }
+      const departments = scope.departmentIds ?? []
+      if (scope.dataScope === DataScope.CUSTOM) {
+        if (!departments.length) throw new BadRequestException(`权限 ${permission.id} 的 CUSTOM 范围至少选择一个部门`)
+        departments.forEach(departmentId => departmentIds.add(departmentId))
+      } else if (scope.departmentIds !== undefined) {
+        throw new BadRequestException(`仅 CUSTOM 数据范围允许提交 departmentIds`)
+      }
+      return {
+        permissionId: permission.id,
+        dataScope: scope.dataScope,
+        departmentIds: departments,
+      }
+    })
+
+    if (departmentIds.size) {
+      const departments = await this.roles.findEnabledDepartmentsByIds([...departmentIds], tx)
+      if (departments.length !== departmentIds.size) {
+        throw new BadRequestException('CUSTOM 数据范围包含不存在或已禁用的部门')
+      }
+    }
+    return normalized
   }
 
   async createRoleInfo(dto: CreateRoleDto, createdById?: string, ip?: string) {
-    const { menuMap, menuIds, permissionIds } = this.buildMenuPermissionData(dto.menus)
+    const { menuMap, scopeMap, menuIds, permissionIds } = this.buildMenuPermissionData(dto.menus)
     const res = await this.roles.transaction(async tx => {
       const existRole = await this.roles.findByCode(dto.code, tx)
       if (existRole) throw new BadRequestException('角色编码已存在')
-      await this.validateMenuPermissions(menuMap, menuIds, permissionIds, tx)
+      const permissionScopes = await this.validateMenuPermissions(menuMap, menuIds, permissionIds, scopeMap, tx)
       const role = await this.roles.create(
         {
           name: dto.name,
@@ -78,7 +123,7 @@ export class RoleService {
         tx,
       )
       await this.roles.createMenus(role.id, menuIds, tx)
-      await this.roles.createPermissions(role.id, permissionIds, tx)
+      await this.roles.syncRolePermissions(role.id, permissionScopes, tx)
       return role
     })
     await this.audit.record({
@@ -87,7 +132,12 @@ export class RoleService {
       resource: 'Role',
       resourceId: res.id,
       ip,
-      metadata: { name: dto.name, code: dto.code, enabled: dto.enabled ?? true },
+      metadata: {
+        name: dto.name,
+        code: dto.code,
+        enabled: dto.enabled ?? true,
+        scopes: this.scopeAuditSummary(dto.menus),
+      },
     })
     return { message: '创建角色成功', id: res.id }
   }
@@ -132,28 +182,50 @@ export class RoleService {
     // 如果id== "__new__" 说明是新增角色 则直接查出所有菜单和权限
     if (id === '__new__') {
       const list = await this.roles.findEnabledMenusWithPermissions()
-      return { list: listToTree(list), message: '获取角色菜单及权限列表成功' }
+      const nodes = list.map(menu => {
+        return {
+          ...menu,
+          checked: false,
+          permissions: menu.permissions.map(permission => {
+            return {
+              ...permission,
+              checked: false,
+              dataScope: null,
+              departmentIds: [],
+              disabledDepartmentIds: [],
+            }
+          }),
+          children: [],
+        }
+      })
+      return { list: listToTree(nodes), message: '获取角色菜单及权限列表成功' }
     }
     const [menus, roleMenus, rolePermissions] = await Promise.all([
       this.roles.findEnabledMenusWithPermissions(),
       this.roles.findRoleMenuIds(id),
-      this.roles.findRolePermissionIds(id),
+      this.roles.findRolePermissionScopes(id),
     ])
     const menuSet = new Set(roleMenus.map(i => i.menuId))
-    const permissionSet = new Set(rolePermissions.map(i => i.permissionId))
-    const nodes = menus.map(menu => ({
-      ...menu,
-
-      checked: menuSet.has(menu.id),
-
-      permissions: menu.permissions.map(permission => ({
-        ...permission,
-
-        checked: permissionSet.has(permission.id) && permission.enabled,
-      })),
-
-      children: [],
-    }))
+    const permissionMap = new Map(rolePermissions.map(item => [item.permissionId, item]))
+    const nodes = menus.map(menu => {
+      return {
+        ...menu,
+        checked: menuSet.has(menu.id),
+        permissions: menu.permissions.map(permission => {
+          const assignment = permissionMap.get(permission.id)
+          return {
+            ...permission,
+            checked: Boolean(assignment) && permission.enabled,
+            dataScope: assignment?.dataScope ?? null,
+            departmentIds: assignment?.customDepartments.map(item => item.department.id) ?? [],
+            disabledDepartmentIds:
+              assignment?.customDepartments.filter(item => !item.department.enabled).map(item => item.department.id) ??
+              [],
+          }
+        }),
+        children: [],
+      }
+    })
     return { list: listToTree(nodes), message: '获取角色菜单及权限列表成功' }
   }
 
@@ -220,7 +292,7 @@ export class RoleService {
 
   async update(dto: UpdateRoleDto, operatorId?: string, ip?: string) {
     const { id, menus, ...rest } = dto
-    const { menuMap, menuIds, permissionIds } = this.buildMenuPermissionData(menus)
+    const { menuMap, scopeMap, menuIds, permissionIds } = this.buildMenuPermissionData(menus)
     const res = await this.roles.transaction(async tx => {
       const existRole = await this.roles.findByIdCode(id, tx)
       if (!existRole) throw new BadRequestException('角色不存在')
@@ -230,9 +302,11 @@ export class RoleService {
         if (codeUsed) throw new BadRequestException('角色编码已存在')
       }
 
-      await this.validateMenuPermissions(menuMap, menuIds, permissionIds, tx)
-
-      return this.roles.updateWithMenus(id, rest, menuIds, permissionIds, tx)
+      const permissionScopes = await this.validateMenuPermissions(menuMap, menuIds, permissionIds, scopeMap, tx)
+      const role = await this.roles.updateById(id, rest, tx)
+      await this.roles.syncRoleMenus(id, menuIds, tx)
+      await this.roles.syncRolePermissions(id, permissionScopes, tx)
+      return role
     })
     const users = await this.roles.findUserIdsByRoleId(id)
     await this.rbacPermissionCache.invalidateUsers(users.map(item => item.userId))
@@ -242,7 +316,12 @@ export class RoleService {
       resource: 'Role',
       resourceId: res.id,
       ip,
-      metadata: { name: rest.name, code: rest.code, enabled: rest.enabled },
+      metadata: {
+        name: rest.name,
+        code: rest.code,
+        enabled: rest.enabled,
+        scopes: this.scopeAuditSummary(menus),
+      },
     })
     return { id: res.id, message: '更新角色成功' }
   }
@@ -307,5 +386,15 @@ export class RoleService {
       }
     })
     return { message: '生成角色种子数据成功', success: true }
+  }
+
+  private scopeAuditSummary(menus: CreateRoleDto['menus']) {
+    return menus.flatMap(menu =>
+      (menu.permissionScopes ?? []).map(scope => ({
+        permissionId: scope.permissionId,
+        dataScope: scope.dataScope,
+        departmentCount: scope.departmentIds?.length ?? 0,
+      })),
+    )
   }
 }

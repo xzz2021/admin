@@ -58,7 +58,9 @@ export const ModelName = {
   Permission: 'Permission',
   RoleMenu: 'RoleMenu',
   RolePermission: 'RolePermission',
+  RolePermissionDepartment: 'RolePermissionDepartment',
   Department: 'Department',
+  Customer: 'Customer',
   DictionaryType: 'DictionaryType',
   DictionaryItem: 'DictionaryItem',
   Notice: 'Notice',
@@ -170,6 +172,9 @@ export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
+  resource: 'resource',
+  action: 'action',
+  scopeEnabled: 'scopeEnabled',
   type: 'type',
   sort: 'sort',
   enabled: 'enabled',
@@ -190,11 +195,26 @@ export type RoleMenuScalarFieldEnum = (typeof RoleMenuScalarFieldEnum)[keyof typ
 
 
 export const RolePermissionScalarFieldEnum = {
+  id: 'id',
   roleId: 'roleId',
-  permissionId: 'permissionId'
+  permissionId: 'permissionId',
+  dataScope: 'dataScope',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type RolePermissionScalarFieldEnum = (typeof RolePermissionScalarFieldEnum)[keyof typeof RolePermissionScalarFieldEnum]
+
+
+export const RolePermissionDepartmentScalarFieldEnum = {
+  id: 'id',
+  rolePermissionId: 'rolePermissionId',
+  departmentId: 'departmentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RolePermissionDepartmentScalarFieldEnum = (typeof RolePermissionDepartmentScalarFieldEnum)[keyof typeof RolePermissionDepartmentScalarFieldEnum]
 
 
 export const DepartmentScalarFieldEnum = {
@@ -210,6 +230,26 @@ export const DepartmentScalarFieldEnum = {
 } as const
 
 export type DepartmentScalarFieldEnum = (typeof DepartmentScalarFieldEnum)[keyof typeof DepartmentScalarFieldEnum]
+
+
+export const CustomerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  phone: 'phone',
+  remark: 'remark',
+  status: 'status',
+  dealAmount: 'dealAmount',
+  internalCost: 'internalCost',
+  confidential: 'confidential',
+  ownerId: 'ownerId',
+  departmentId: 'departmentId',
+  createdById: 'createdById',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
 
 
 export const DictionaryTypeScalarFieldEnum = {

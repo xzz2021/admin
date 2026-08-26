@@ -1,85 +1,85 @@
+import { AuthorizationContext } from '@/processor/authorization/authorization-context'
+import type { AuthorizationService } from '@/processor/authorization/authorization.service'
 import { PERMISSION_KEY } from '@/processor/decorator/permission'
-import { ALL_PERMISSIONS } from '@/processor/rbac/rbac-permission'
-import type { RbacPermissionCacheService } from '@/processor/rbac/rbac-permission-cache.service'
-import type { UserRepository } from '@/system/user/user.repository'
-import type { ExecutionContext } from '@nestjs/common'
+import { Prisma } from '@/prisma/generated/prisma/client'
+import { ServiceUnavailableException, type ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { PermissionGuard } from './permission'
 
 describe('PermissionGuard', () => {
-  const findEnabledRolePermissionTree = jest.fn()
-  const getOrLoad = jest.fn()
+  const authCreateContext = jest.fn()
 
   const createGuard = () =>
-    new PermissionGuard(
-      { findEnabledRolePermissionTree } as unknown as UserRepository,
-      { getOrLoad } as unknown as RbacPermissionCacheService,
-      new Reflector(),
-    )
+    new PermissionGuard({ createContext: authCreateContext } as unknown as AuthorizationService, new Reflector())
 
-  const createContext = (permission?: string, userId?: string): ExecutionContext => {
+  const executionContext = (permission?: string, userId?: string) => {
     const handler = () => undefined
     class TestController {}
     if (permission) Reflect.defineMetadata(PERMISSION_KEY, permission, handler)
+    const request: {
+      user?: { id: string }
+      authorizationContext?: AuthorizationContext
+    } = { user: userId ? { id: userId } : undefined }
 
-    return {
+    const context = {
       getHandler: () => handler,
       getClass: () => TestController,
       switchToHttp: () => ({
-        getRequest: () => ({ user: userId ? { id: userId } : undefined }),
+        getRequest: () => request,
       }),
     } as unknown as ExecutionContext
+    return { context, request }
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
-    getOrLoad.mockImplementation(async (_userId: string, loader: () => Promise<string[]>) => loader())
   })
 
   it('allows routes without permission metadata', async () => {
-    await expect(createGuard().canActivate(createContext())).resolves.toBe(true)
-    expect(getOrLoad).not.toHaveBeenCalled()
+    await expect(createGuard().canActivate(executionContext().context)).resolves.toBe(true)
+    expect(authCreateContext).not.toHaveBeenCalled()
   })
 
   it('rejects protected routes without an authenticated user', async () => {
-    await expect(createGuard().canActivate(createContext('user:update'))).resolves.toBe(false)
-    expect(getOrLoad).not.toHaveBeenCalled()
+    await expect(createGuard().canActivate(executionContext('user:update').context)).resolves.toBe(false)
+    expect(authCreateContext).not.toHaveBeenCalled()
   })
 
-  it('uses cached permissions without querying the repository', async () => {
-    getOrLoad.mockResolvedValue(['user:update'])
-
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
-    expect(getOrLoad).toHaveBeenCalledWith('user-1', expect.any(Function))
-    expect(findEnabledRolePermissionTree).not.toHaveBeenCalled()
-  })
-
-  it('loads enabled role permissions from the user repository on cache miss', async () => {
-    findEnabledRolePermissionTree.mockResolvedValue({
-      roles: [
-        {
-          role: {
-            code: 'admin',
-            enabled: true,
-            permissions: [{ permission: { code: 'user:update', enabled: true } }],
-          },
-        },
-      ],
+  it('creates and attaches one authorization context for downstream reuse', async () => {
+    const authorizationContext = new AuthorizationContext('user-1', ['user:update'], {
+      'user:update': { scoped: false },
     })
+    authCreateContext.mockResolvedValue(authorizationContext)
+    const { context, request } = executionContext('user:update', 'user-1')
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
-    expect(findEnabledRolePermissionTree).toHaveBeenCalledWith('user-1')
-  })
-
-  it('grants all permissions to an enabled super admin role', async () => {
-    getOrLoad.mockResolvedValue([ALL_PERMISSIONS])
-
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(true)
+    await expect(createGuard().canActivate(context)).resolves.toBe(true)
+    expect(authCreateContext).toHaveBeenCalledWith('user-1', ['user:update'])
+    expect(request.authorizationContext).toBe(authorizationContext)
   })
 
   it('rejects a request when the required permission is missing', async () => {
-    getOrLoad.mockResolvedValue(['user:view'])
+    authCreateContext.mockResolvedValue(new AuthorizationContext('user-1', ['user:view'], {}))
 
-    await expect(createGuard().canActivate(createContext('user:update', 'user-1'))).resolves.toBe(false)
+    await expect(createGuard().canActivate(executionContext('user:update', 'user-1').context)).resolves.toBe(false)
+  })
+
+  it('maps transient database failures to 503', async () => {
+    authCreateContext.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('connection lost', {
+        code: 'P1001',
+        clientVersion: 'test',
+      }),
+    )
+
+    await expect(createGuard().canActivate(executionContext('user:update', 'user-1').context)).rejects.toThrow(
+      ServiceUnavailableException,
+    )
+  })
+
+  it('preserves typed service-unavailable errors from authorization services', async () => {
+    const error = new ServiceUnavailableException('授权缓存暂不可用')
+    authCreateContext.mockRejectedValue(error)
+
+    await expect(createGuard().canActivate(executionContext('user:update', 'user-1').context)).rejects.toBe(error)
   })
 })

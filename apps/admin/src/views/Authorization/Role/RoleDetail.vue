@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getRoleDetailApi, getRoleMenuAndPermissionApi } from '@/api/role'
-import type { RoleDetail } from '@/api/role/type'
+import type { RoleAuthorizationMenu, RoleDetail } from '@/api/role/type'
 import { ContentWrap } from '@/components/ContentWrap'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -11,7 +11,7 @@ const router = useRouter()
 
 const loading = ref(false)
 const roleDetail = ref<RoleDetail>()
-const menuTree = ref<any[]>([])
+const menuTree = ref<RoleAuthorizationMenu[]>([])
 
 const roleId = computed(() => route.params.id as string)
 
@@ -24,7 +24,7 @@ const loadRoleDetail = async () => {
       ...(roleFromState as RoleDetail),
       menuCount: roleFromState.menuCount ?? 0,
       permissionCount: roleFromState.permissionCount ?? 0,
-      userCount: roleFromState.userCount ?? 0
+      userCount: roleFromState.userCount ?? 0,
     }
   }
 
@@ -58,9 +58,9 @@ const handleEdit = () => {
         name: roleDetail.value.name,
         code: roleDetail.value.code,
         enabled: roleDetail.value.enabled,
-        description: roleDetail.value.description ?? ''
-      }
-    }
+        description: roleDetail.value.description ?? '',
+      },
+    },
   })
 }
 

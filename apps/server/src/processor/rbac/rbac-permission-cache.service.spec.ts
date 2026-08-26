@@ -7,14 +7,10 @@ describe('RbacPermissionCacheService', () => {
     mget: jest.fn(),
     set: jest.fn(),
     del: jest.fn(),
-    incr: jest.fn(),
-    expire: jest.fn(),
-    pipeline: jest.fn(),
+    eval: jest.fn(),
   }
 
   const createService = () => new RbacPermissionCacheService({ getOrThrow: () => redis } as unknown as RedisService)
-
-  const pipelineExec = jest.fn()
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -22,17 +18,7 @@ describe('RbacPermissionCacheService', () => {
     redis.mget.mockResolvedValue([null, null])
     redis.set.mockResolvedValue('OK')
     redis.del.mockResolvedValue(1)
-    pipelineExec.mockResolvedValue([
-      [null, 1],
-      [null, 1],
-      [null, 1],
-    ])
-    redis.pipeline.mockReturnValue({
-      incr: jest.fn().mockReturnThis(),
-      expire: jest.fn().mockReturnThis(),
-      del: jest.fn().mockReturnThis(),
-      exec: pipelineExec,
-    })
+    redis.eval.mockResolvedValue(1)
   })
 
   it('reads wrapped cache when generation matches', async () => {
@@ -40,6 +26,13 @@ describe('RbacPermissionCacheService', () => {
     redis.mget.mockResolvedValue([JSON.stringify({ v: 0, p: ['user:update'] }), null])
 
     await expect(service.get('user-1')).resolves.toEqual(['user:update'])
+  })
+
+  it('exposes the current user permission generation', async () => {
+    const service = createService()
+    redis.get.mockResolvedValue('3')
+
+    await expect(service.currentGeneration('user-1')).resolves.toBe(3)
   })
 
   it('treats leftover cache as miss when generation was bumped', async () => {
@@ -73,27 +66,56 @@ describe('RbacPermissionCacheService', () => {
     await expect(service.get('user-1')).resolves.toEqual([])
   })
 
-  it('invalidates by bumping generation then deleting cache keys', async () => {
+  it('atomically bumps generation, refreshes ttl, and deletes the old cache for each user', async () => {
     const service = createService()
-    const incr = jest.fn().mockReturnThis()
-    const expire = jest.fn().mockReturnThis()
-    const del = jest.fn().mockReturnThis()
-    redis.pipeline.mockReturnValue({ incr, expire, del, exec: pipelineExec })
 
     await service.invalidateUsers(['user-1', 'user-1', 'user-2'])
 
-    expect(incr).toHaveBeenCalledWith('rbac:perm-gen:user-1')
-    expect(incr).toHaveBeenCalledWith('rbac:perm-gen:user-2')
-    expect(del).toHaveBeenCalledWith('rbac:permissions:user-1')
-    expect(del).toHaveBeenCalledWith('rbac:permissions:user-2')
-    expect(pipelineExec).toHaveBeenCalled()
+    expect(redis.eval).toHaveBeenCalledTimes(2)
+    expect(redis.eval).toHaveBeenCalledWith(
+      expect.stringContaining("redis.call('INCR', KEYS[1])"),
+      2,
+      'rbac:perm-gen:user-1',
+      'rbac:permissions:user-1',
+      String(RbacPermissionCacheService.GEN_TTL_SECONDS),
+    )
+    expect(redis.eval.mock.calls[0]?.[0]).toEqual(expect.stringContaining("redis.call('EXPIRE', KEYS[1], ARGV[1])"))
+    expect(redis.eval.mock.calls[0]?.[0]).toEqual(expect.stringContaining("redis.call('DEL', KEYS[2])"))
   })
 
-  it('throws when invalidate pipeline fails so callers do not ignore Redis errors', async () => {
+  it('throws a typed 503 after atomic invalidation retries are exhausted', async () => {
     const service = createService()
-    pipelineExec.mockResolvedValue([[new Error('redis down'), null]])
+    redis.eval.mockRejectedValue(new Error('redis down'))
 
-    await expect(service.invalidateUsers(['user-1'])).rejects.toThrow('redis down')
+    await expect(service.invalidateUsers(['user-1'])).rejects.toMatchObject({
+      status: 503,
+      message: '授权缓存暂不可用，请稍后重试',
+    })
+    expect(redis.eval).toHaveBeenCalledTimes(3)
+  })
+
+  it('retries transient invalidate failures and succeeds', async () => {
+    const service = createService()
+    redis.eval.mockRejectedValueOnce(new Error('redis down')).mockResolvedValueOnce(1)
+
+    await expect(service.invalidateUsers(['user-1'])).resolves.toBeUndefined()
+    expect(redis.eval).toHaveBeenCalledTimes(2)
+  })
+
+  it('retries only the failed user when a multi-user invalidation partially fails', async () => {
+    const service = createService()
+    const attempts = new Map<string, number>()
+    redis.eval.mockImplementation((_script, _numberOfKeys, generationKey: string) => {
+      const attempt = (attempts.get(generationKey) ?? 0) + 1
+      attempts.set(generationKey, attempt)
+      if (generationKey.endsWith('user-2') && attempt === 1) return Promise.reject(new Error('transient'))
+      return Promise.resolve(1)
+    })
+
+    await service.invalidateUsers(['user-1', 'user-2'])
+
+    expect(attempts.get('rbac:perm-gen:user-1')).toBe(1)
+    expect(attempts.get('rbac:perm-gen:user-2')).toBe(2)
   })
 
   it('singleflight coalesces concurrent cache fills', async () => {

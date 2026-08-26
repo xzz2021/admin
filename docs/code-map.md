@@ -29,6 +29,7 @@
 | `system/menu/`                | 菜单                                |
 | `system/permission/`          | 权限 CRUD                           |
 | `system/department/`          | 部门                                |
+| `system/customer/`            | 客户 Demo（数据权限）               |
 | `system/dictionary/`          | 字典                                |
 | `system/captcha/`             | 验证码                              |
 | `system/staticfile/`          | 文件                                |
@@ -39,8 +40,10 @@
 | `processor/decorator/`        | Public、RequiredPermission          |
 | `processor/interceptor/`      | 响应转换、操作日志                  |
 | `processor/rbac/`             | 权限缓存                            |
+| `processor/authorization/`    | DataScope 解析、Grant、快照缓存     |
 | `prisma/schema/schema.prisma` | 数据模型                            |
 | `prisma/seed.ts`              | 种子入口                            |
+| `prisma/demo-seed.ts`         | 客户 Demo 幂等种子                  |
 
 ## Frontend `apps/admin/src`
 
@@ -52,6 +55,7 @@
 | `api/`                      | 分域 API                 |
 | `store/modules/`            | Pinia                    |
 | `views/Authorization/`      | 部门/用户/菜单/角色/字典 |
+| `views/Customer/`           | 客户权限演示             |
 | `views/System/`             | 文件/消息/在线/监控/日志 |
 | `views/Dashboard/`          | 分析/工作台              |
 | `directives/permission/`    | v-hasPermi               |

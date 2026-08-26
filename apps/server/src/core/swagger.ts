@@ -1,5 +1,6 @@
 import { INestApplication, Logger } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { cleanupOpenApiDoc } from 'nestjs-zod'
 
 import auth from 'basic-auth'
 import { timingSafeEqual } from 'crypto'
@@ -75,7 +76,7 @@ export function createSwagger(app: INestApplication, credentials: SwaggerCredent
     // .addServer(`http://127.0.0.1:3000`, 'Base URL')
     .build()
 
-  const document = SwaggerModule.createDocument(app, config)
+  const document = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config))
   document.security = [{ bearer: [] }] //  给api请求添加token
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {

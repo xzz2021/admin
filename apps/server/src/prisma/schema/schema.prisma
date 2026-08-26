@@ -55,6 +55,21 @@ enum BackupStatus {
   EXPIRED
 }
 
+enum DataScope {
+  ALL
+  SELF
+  DEPT
+  DEPT_TREE
+  CUSTOM
+}
+
+enum CustomerStatus {
+  LEAD
+  FOLLOWING
+  WON
+  FROZEN
+}
+
 model User {
   id       String @id @default(cuid())
   /// @z.string().min(2).max(50).meta({ description: '用户名', example: 'admin' })
@@ -93,6 +108,8 @@ model User {
   backupJobs       DbBackupJob[]
   createdRoles     Role[]    @relation("RoleCreator")
   assignedUserRoles UserRole[] @relation("UserRoleAssigner")
+  ownedCustomers   Customer[] @relation("CustomerOwner")
+  createdCustomers Customer[] @relation("CustomerCreator")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -209,6 +226,9 @@ model Permission {
   name String
   /// @z.string().min(1).max(100).meta({ description: '权限编码，唯一标识', example: 'system:user:list' })
   code String @unique
+  resource String? @db.VarChar(100)
+  action String? @db.VarChar(50)
+  scopeEnabled Boolean @default(false)
   /// @z.nativeEnum(PermissionType).meta({ description: '权限类型', example: 'BUTTON' })
   type PermissionType
   /// @z.number().int().min(0).optional().meta({ description: '排序', example: 0 })
@@ -223,6 +243,7 @@ model Permission {
 
   @@index([type])
   @@index([menuId])
+  @@index([resource, action])
 }
 
 model RoleMenu {
@@ -237,14 +258,33 @@ model RoleMenu {
 }
 
 model RolePermission {
+  id           String     @id @default(cuid())
   roleId       String
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  dataScope    DataScope?
+  customDepartments RolePermissionDepartment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  @@id([roleId, permissionId])
+  @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
+}
+
+model RolePermissionDepartment {
+  id               String         @id @default(cuid())
+  rolePermissionId String
+  rolePermission   RolePermission @relation(fields: [rolePermissionId], references: [id], onDelete: Cascade)
+  departmentId     String
+  department       Department     @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([rolePermissionId, departmentId])
+  @@index([rolePermissionId])
+  @@index([departmentId])
 }
 
 model Department {
@@ -262,14 +302,43 @@ model Department {
   enabled     Boolean @default(true)
   /// @z.string().max(200).optional().meta({ description: '部门描述', example: '负责产品研发' })
   description String?
-  users     User[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  users                     User[]
+  rolePermissionDepartments RolePermissionDepartment[]
+  customers                 Customer[]
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 
   /// 迁移用 UNIQUE NULLS NOT DISTINCT 重建同名索引，使 parentId = NULL 的根部门 name 也唯一
   @@unique([parentId, name])
   @@index([parentId])
   @@index([path])
+}
+
+model Customer {
+  id           String         @id @default(cuid())
+  name         String         @db.VarChar(100)
+  phone        String?        @db.VarChar(30)
+  remark       String?        @db.Text
+  status       CustomerStatus @default(LEAD)
+  dealAmount   Decimal        @default(0) @db.Decimal(18, 2)
+  internalCost Decimal        @default(0) @db.Decimal(18, 2)
+  confidential Boolean        @default(false)
+  ownerId      String
+  owner        User           @relation("CustomerOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  departmentId String
+  department   Department     @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  createdById  String
+  createdBy    User           @relation("CustomerCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  version      Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([ownerId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@index([departmentId, status, createdAt(sort: Desc)])
+  @@index([createdById])
 }
 
 model DictionaryType {

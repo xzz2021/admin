@@ -18,10 +18,12 @@ const TRANSIENT_CODES = new Set([
   'P1002', // Database timeout
   'P1008', // Operations timed out
   'P1017', // Server closed connection
+  'P2034', // Transaction write conflict or deadlock
   'ECONNREFUSED',
   'ECONNRESET',
   'ETIMEDOUT',
   '57P03', // PostgreSQL: cannot_connect_now / starting up
+  '40P01', // PostgreSQL: deadlock_detected
 ])
 
 const TRANSIENT_MSG_RE =
@@ -48,6 +50,7 @@ export const checkPrismaError = (exception: unknown): PrismaErrorResult | null =
     if (TRANSIENT_CODES.has(exception.code) || isTransientMessage(exception.message)) {
       return { msg: '数据库暂不可用，请稍后重试', meta: exception.message, transient: true }
     }
+    console.log('TCL: exception', exception)
     switch (exception.code) {
       case 'P2002':
         return { msg: '数据已存在或复合主键冲突', meta: exception.message }

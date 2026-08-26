@@ -3,6 +3,11 @@ import type { PgService } from '@/prisma/pg.service'
 import { DepartmentRepository } from './department.repository'
 import { DepartmentService } from './department.service'
 
+const organizationGenerationBump = jest.fn().mockResolvedValue(undefined)
+const organizationGeneration = {
+  bump: organizationGenerationBump,
+} as unknown as import('@/processor/authorization/organization-generation.service').OrganizationGenerationService
+
 describe('DepartmentService tree updates', () => {
   const findMany = jest.fn()
   const update = jest.fn()
@@ -19,6 +24,7 @@ describe('DepartmentService tree updates', () => {
   const service = new DepartmentService(
     new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
     { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    organizationGeneration,
   )
 
   beforeEach(() => {
@@ -98,6 +104,7 @@ describe('DepartmentService list queries', () => {
       department: { findMany, count },
     } as unknown as PgService),
     { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    organizationGeneration,
   )
 
   it('loads list and count in parallel', async () => {
@@ -140,16 +147,29 @@ describe('DepartmentService list queries', () => {
 describe('DepartmentService delete rules', () => {
   const findUnique = jest.fn()
   const findFirst = jest.fn()
+  const rolePermissionDepartmentFindFirst = jest.fn()
+  const customerFindFirst = jest.fn()
   const remove = jest.fn()
+  const queryRaw = jest.fn()
+  const deleteDb = {
+    department: { findUnique, findFirst, delete: remove },
+    rolePermissionDepartment: { findFirst: rolePermissionDepartmentFindFirst },
+    customer: { findFirst: customerFindFirst },
+    $queryRaw: queryRaw,
+    $transaction: jest.fn(),
+  }
+  deleteDb.$transaction.mockImplementation(callback => callback(deleteDb))
   const service = new DepartmentService(
-    new DepartmentRepository({
-      department: { findUnique, findFirst, delete: remove },
-    } as unknown as PgService),
+    new DepartmentRepository(deleteDb as unknown as PgService),
     { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    organizationGeneration,
   )
 
   beforeEach(() => {
     jest.clearAllMocks()
+    rolePermissionDepartmentFindFirst.mockResolvedValue(null)
+    customerFindFirst.mockResolvedValue(null)
+    queryRaw.mockResolvedValue([{ id: 'node' }])
   })
 
   it('refuses to delete a department that still has children', async () => {
@@ -159,6 +179,20 @@ describe('DepartmentService delete rules', () => {
     await expect(service.delete('node')).rejects.toThrow('当前项有子部门无法删除')
     expect(remove).not.toHaveBeenCalled()
   })
+
+  it.each(['CUSTOM 数据范围', '客户'])(
+    'refuses deletion when referenced by %s without bumping generation',
+    async label => {
+      const referenceQuery = label === 'CUSTOM 数据范围' ? rolePermissionDepartmentFindFirst : customerFindFirst
+      findUnique.mockResolvedValue({ path: '/node' })
+      findFirst.mockResolvedValue(null)
+      referenceQuery.mockResolvedValue({ id: 'reference-1' })
+
+      await expect(service.delete('node')).rejects.toThrow('部门仍被')
+      expect(remove).not.toHaveBeenCalled()
+      expect(organizationGenerationBump).not.toHaveBeenCalled()
+    },
+  )
 })
 
 describe('DepartmentService unique names', () => {
@@ -169,6 +203,7 @@ describe('DepartmentService unique names', () => {
   const service = new DepartmentService(
     new DepartmentRepository({ $transaction: transaction } as unknown as PgService),
     { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    organizationGeneration,
   )
 
   it('maps unique constraint failures to a sibling name conflict', async () => {

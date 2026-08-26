@@ -1,8 +1,8 @@
+import { AuthorizationContext } from '@/processor/authorization/authorization-context'
+import { AuthorizationService } from '@/processor/authorization/authorization.service'
 import { RequiredPermission } from '@/processor/decorator'
 import { JwtRefreshAuthGuard, PermissionGuard } from '@/processor/guard'
-import { RbacPermissionCacheService } from '@/processor/rbac'
 import { RtTokenService } from '@/system/auth/rt.token.service'
-import { UserRepository } from '@/system/user/user.repository'
 import { StaticfileController } from '@/system/staticfile/staticfile.controller'
 import { StaticfileService } from '@/system/staticfile/staticfile.service'
 import { Controller, Get, INestApplication, Post, UseGuards } from '@nestjs/common'
@@ -70,13 +70,11 @@ describe('Security boundaries (e2e)', () => {
           useValue: { getFileList, uploadFile, deleteFile },
         },
         {
-          provide: UserRepository,
-          useValue: { findEnabledRolePermissionTree: jest.fn() },
-        },
-        {
-          provide: RbacPermissionCacheService,
+          provide: AuthorizationService,
           useValue: {
-            getOrLoad: jest.fn(() => Promise.resolve(permissions)),
+            createContext: jest.fn((userId: string) =>
+              Promise.resolve(new AuthorizationContext(userId, permissions, {})),
+            ),
           },
         },
       ],

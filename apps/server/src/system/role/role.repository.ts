@@ -3,6 +3,11 @@ import { PgService } from '@/prisma/pg.service'
 import { Injectable } from '@nestjs/common'
 
 type Db = PgService | Prisma.TransactionClient
+export interface RolePermissionSyncInput {
+  permissionId: string
+  dataScope: Prisma.RolePermissionCreateInput['dataScope']
+  departmentIds: string[]
+}
 /*
 按DDD分层原则 应该属于领域层 但是为了方便 还是放在了仓储层
 引入Repository之后专注于数据库的可复用操作 而不用关心业务逻辑(Service负责)
@@ -66,8 +71,8 @@ export class RoleRepository {
   findEnabledMenusWithPermissions() {
     return this.db.menu.findMany({
       where: { enabled: true },
-      include: { permissions: { orderBy: { sort: 'asc' } } },
-      orderBy: { sort: 'asc' },
+      include: { permissions: { orderBy: [{ sort: 'asc' }, { id: 'asc' }] } },
+      orderBy: [{ sort: 'asc' }, { id: 'asc' }],
     })
   }
 
@@ -82,6 +87,24 @@ export class RoleRepository {
     return this.db.rolePermission.findMany({
       where: { roleId },
       select: { permissionId: true },
+    })
+  }
+
+  findRolePermissionScopes(roleId: string) {
+    return this.db.rolePermission.findMany({
+      where: { roleId },
+      select: {
+        permissionId: true,
+        dataScope: true,
+        customDepartments: {
+          select: {
+            department: {
+              select: { id: true, enabled: true },
+            },
+          },
+          orderBy: { departmentId: 'asc' },
+        },
+      },
     })
   }
 
@@ -127,7 +150,14 @@ export class RoleRepository {
   findEnabledPermissionsByIds(ids: string[], tx: Db = this.db) {
     return tx.permission.findMany({
       where: { id: { in: ids }, enabled: true },
-      select: { id: true, menuId: true },
+      select: { id: true, menuId: true, scopeEnabled: true },
+    })
+  }
+
+  findEnabledDepartmentsByIds(ids: string[], tx: Db = this.db) {
+    return tx.department.findMany({
+      where: { id: { in: ids }, enabled: true },
+      select: { id: true },
     })
   }
 
@@ -138,10 +168,10 @@ export class RoleRepository {
     })
   }
 
-  findUserIdsByPermissionIds(permissionIds: string[]): Promise<Array<{ userId: string }>> {
+  findUserIdsByPermissionIds(permissionIds: string[], tx: Db = this.db): Promise<Array<{ userId: string }>> {
     const uniqueIds = [...new Set(permissionIds.filter(Boolean))]
     if (!uniqueIds.length) return Promise.resolve([])
-    return this.db.userRole.findMany({
+    return tx.userRole.findMany({
       where: {
         role: {
           permissions: { some: { permissionId: { in: uniqueIds } } },
@@ -198,6 +228,82 @@ export class RoleRepository {
     return tx.rolePermission.createMany({
       data: permissionIds.map(permissionId => ({ roleId, permissionId })),
     })
+  }
+
+  updateById(id: string, data: Prisma.RoleUpdateInput, tx: Db = this.db) {
+    return tx.role.update({ where: { id }, data, select: { id: true } })
+  }
+
+  async syncRoleMenus(roleId: string, menuIds: string[], tx: Db = this.db) {
+    const current = await tx.roleMenu.findMany({ where: { roleId }, select: { menuId: true } })
+    const wanted = new Set(menuIds)
+    const currentIds = new Set(current.map(item => item.menuId))
+    const removed = current.filter(item => !wanted.has(item.menuId)).map(item => item.menuId)
+    const added = menuIds.filter(menuId => !currentIds.has(menuId))
+    if (removed.length) {
+      await tx.roleMenu.deleteMany({ where: { roleId, menuId: { in: removed } } })
+    }
+    if (added.length) await this.createMenus(roleId, added, tx)
+  }
+
+  async syncRolePermissions(roleId: string, inputs: RolePermissionSyncInput[], tx: Db = this.db) {
+    const current = await tx.rolePermission.findMany({
+      where: { roleId },
+      select: {
+        id: true,
+        permissionId: true,
+        dataScope: true,
+        customDepartments: { select: { departmentId: true } },
+      },
+    })
+    const wanted = new Map(inputs.map(input => [input.permissionId, input]))
+    const removedIds = current.filter(item => !wanted.has(item.permissionId)).map(item => item.id)
+    if (removedIds.length) {
+      await tx.rolePermission.deleteMany({ where: { id: { in: removedIds } } })
+    }
+
+    const currentByPermission = new Map(current.map(item => [item.permissionId, item]))
+    for (const input of inputs) {
+      const existing = currentByPermission.get(input.permissionId)
+      if (!existing) {
+        const created = await tx.rolePermission.create({
+          data: { roleId, permissionId: input.permissionId, dataScope: input.dataScope },
+          select: { id: true },
+        })
+        if (input.departmentIds.length) {
+          await tx.rolePermissionDepartment.createMany({
+            data: input.departmentIds.map(departmentId => ({
+              rolePermissionId: created.id,
+              departmentId,
+            })),
+          })
+        }
+        continue
+      }
+
+      const currentDepartments = existing.customDepartments.map(item => item.departmentId).sort()
+      const nextDepartments = [...input.departmentIds].sort()
+      const departmentsChanged =
+        currentDepartments.length !== nextDepartments.length ||
+        currentDepartments.some((departmentId, index) => departmentId !== nextDepartments[index])
+      if (existing.dataScope !== input.dataScope) {
+        await tx.rolePermission.update({
+          where: { id: existing.id },
+          data: { dataScope: input.dataScope },
+        })
+      }
+      if (departmentsChanged || input.dataScope !== 'CUSTOM') {
+        await tx.rolePermissionDepartment.deleteMany({ where: { rolePermissionId: existing.id } })
+        if (input.dataScope === 'CUSTOM' && input.departmentIds.length) {
+          await tx.rolePermissionDepartment.createMany({
+            data: input.departmentIds.map(departmentId => ({
+              rolePermissionId: existing.id,
+              departmentId,
+            })),
+          })
+        }
+      }
+    }
   }
 
   updateWithMenus(

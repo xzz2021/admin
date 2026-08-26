@@ -13,6 +13,7 @@ import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis'
 import { ThrottlerModule } from '@nestjs/throttler'
 
 import { AppRedisModule } from '@/core/cache/redis.module'
+import { AuthorizationModule } from '@/processor/authorization/authorization.module'
 import { RbacModule } from '@/processor/rbac'
 import { UserPersistenceModule } from '@/system/user/user-persistence.module'
 
@@ -24,6 +25,7 @@ export const CORE_MODULE = [
   // CACHE_MODULE,
   AppRedisModule,
   RbacModule,
+  AuthorizationModule,
   UserPersistenceModule,
   /*  @SkipThrottle()  跳过速率限制
     @Throttle({ default: { limit: 3, ttl: 60000 } }) 装饰器，可用于覆盖全局模块中设置的 limit 和 ttl

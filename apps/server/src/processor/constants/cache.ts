@@ -6,6 +6,8 @@ export enum RedisKeys {
   RBAC_PERMISSIONS_PREFIX = 'rbac:permissions:',
   RBAC_PERM_GEN_PREFIX = 'rbac:perm-gen:',
   RBAC_PERM_LOCK_PREFIX = 'rbac:perm-lock:',
+  AUTHORIZATION_SNAPSHOT_PREFIX = 'authorization:snapshot:',
+  ORGANIZATION_GENERATION = 'authorization:organization-generation',
   AUTH_PASSWORD_V_PREFIX = 'auth:passwordVersion:',
   AUTH_FAIL_ACCT_PREFIX = 'auth:fail:acct:',
   AUTH_LOCK_ACCT_PREFIX = 'auth:lock:acct:',

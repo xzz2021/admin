@@ -34,3 +34,18 @@ export enum BackupStatus {
   FAILED = "FAILED",
   EXPIRED = "EXPIRED"
 }
+
+export enum DataScope {
+  ALL = "ALL",
+  SELF = "SELF",
+  DEPT = "DEPT",
+  DEPT_TREE = "DEPT_TREE",
+  CUSTOM = "CUSTOM"
+}
+
+export enum CustomerStatus {
+  LEAD = "LEAD",
+  FOLLOWING = "FOLLOWING",
+  WON = "WON",
+  FROZEN = "FROZEN"
+}

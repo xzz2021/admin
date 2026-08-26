@@ -251,6 +251,8 @@ export type DepartmentWhereInput = {
   parent?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   children?: Prisma.DepartmentListRelationFilter
   users?: Prisma.UserListRelationFilter
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentListRelationFilter
+  customers?: Prisma.CustomerListRelationFilter
 }
 
 export type DepartmentOrderByWithRelationInput = {
@@ -266,6 +268,8 @@ export type DepartmentOrderByWithRelationInput = {
   parent?: Prisma.DepartmentOrderByWithRelationInput
   children?: Prisma.DepartmentOrderByRelationAggregateInput
   users?: Prisma.UserOrderByRelationAggregateInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentOrderByRelationAggregateInput
+  customers?: Prisma.CustomerOrderByRelationAggregateInput
 }
 
 export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
@@ -285,6 +289,8 @@ export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
   parent?: Prisma.XOR<Prisma.DepartmentNullableScalarRelationFilter, Prisma.DepartmentWhereInput> | null
   children?: Prisma.DepartmentListRelationFilter
   users?: Prisma.UserListRelationFilter
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentListRelationFilter
+  customers?: Prisma.CustomerListRelationFilter
 }, "id" | "parentId_name">
 
 export type DepartmentOrderByWithAggregationInput = {
@@ -331,6 +337,8 @@ export type DepartmentCreateInput = {
   parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput
   children?: Prisma.DepartmentCreateNestedManyWithoutParentInput
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentUncheckedCreateInput = {
@@ -345,6 +353,8 @@ export type DepartmentUncheckedCreateInput = {
   updatedAt?: Date | string
   children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentUpdateInput = {
@@ -359,6 +369,8 @@ export type DepartmentUpdateInput = {
   parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput
   children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateInput = {
@@ -373,6 +385,8 @@ export type DepartmentUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentCreateManyInput = {
@@ -413,6 +427,11 @@ export type DepartmentUncheckedUpdateManyInput = {
 export type DepartmentNullableScalarRelationFilter = {
   is?: Prisma.DepartmentWhereInput | null
   isNot?: Prisma.DepartmentWhereInput | null
+}
+
+export type DepartmentScalarRelationFilter = {
+  is?: Prisma.DepartmentWhereInput
+  isNot?: Prisma.DepartmentWhereInput
 }
 
 export type DepartmentListRelationFilter = {
@@ -490,6 +509,20 @@ export type DepartmentUpdateOneWithoutUsersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutUsersInput, Prisma.DepartmentUpdateWithoutUsersInput>, Prisma.DepartmentUncheckedUpdateWithoutUsersInput>
 }
 
+export type DepartmentCreateNestedOneWithoutRolePermissionDepartmentsInput = {
+  create?: Prisma.XOR<Prisma.DepartmentCreateWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUncheckedCreateWithoutRolePermissionDepartmentsInput>
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutRolePermissionDepartmentsInput
+  connect?: Prisma.DepartmentWhereUniqueInput
+}
+
+export type DepartmentUpdateOneRequiredWithoutRolePermissionDepartmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.DepartmentCreateWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUncheckedCreateWithoutRolePermissionDepartmentsInput>
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutRolePermissionDepartmentsInput
+  upsert?: Prisma.DepartmentUpsertWithoutRolePermissionDepartmentsInput
+  connect?: Prisma.DepartmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUpdateWithoutRolePermissionDepartmentsInput>, Prisma.DepartmentUncheckedUpdateWithoutRolePermissionDepartmentsInput>
+}
+
 export type DepartmentCreateNestedOneWithoutChildrenInput = {
   create?: Prisma.XOR<Prisma.DepartmentCreateWithoutChildrenInput, Prisma.DepartmentUncheckedCreateWithoutChildrenInput>
   connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutChildrenInput
@@ -548,6 +581,20 @@ export type DepartmentUncheckedUpdateManyWithoutParentNestedInput = {
   deleteMany?: Prisma.DepartmentScalarWhereInput | Prisma.DepartmentScalarWhereInput[]
 }
 
+export type DepartmentCreateNestedOneWithoutCustomersInput = {
+  create?: Prisma.XOR<Prisma.DepartmentCreateWithoutCustomersInput, Prisma.DepartmentUncheckedCreateWithoutCustomersInput>
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutCustomersInput
+  connect?: Prisma.DepartmentWhereUniqueInput
+}
+
+export type DepartmentUpdateOneRequiredWithoutCustomersNestedInput = {
+  create?: Prisma.XOR<Prisma.DepartmentCreateWithoutCustomersInput, Prisma.DepartmentUncheckedCreateWithoutCustomersInput>
+  connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutCustomersInput
+  upsert?: Prisma.DepartmentUpsertWithoutCustomersInput
+  connect?: Prisma.DepartmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutCustomersInput, Prisma.DepartmentUpdateWithoutCustomersInput>, Prisma.DepartmentUncheckedUpdateWithoutCustomersInput>
+}
+
 export type DepartmentCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -559,6 +606,8 @@ export type DepartmentCreateWithoutUsersInput = {
   updatedAt?: Date | string
   parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput
   children?: Prisma.DepartmentCreateNestedManyWithoutParentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutUsersInput = {
@@ -572,6 +621,8 @@ export type DepartmentUncheckedCreateWithoutUsersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutUsersInput = {
@@ -601,6 +652,8 @@ export type DepartmentUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput
   children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutUsersInput = {
@@ -614,6 +667,84 @@ export type DepartmentUncheckedUpdateWithoutUsersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutDepartmentNestedInput
+}
+
+export type DepartmentCreateWithoutRolePermissionDepartmentsInput = {
+  id?: string
+  name: string
+  path: string
+  sort?: number
+  enabled?: boolean
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput
+  children?: Prisma.DepartmentCreateNestedManyWithoutParentInput
+  users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutDepartmentInput
+}
+
+export type DepartmentUncheckedCreateWithoutRolePermissionDepartmentsInput = {
+  id?: string
+  parentId?: string | null
+  name: string
+  path: string
+  sort?: number
+  enabled?: boolean
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutDepartmentInput
+}
+
+export type DepartmentCreateOrConnectWithoutRolePermissionDepartmentsInput = {
+  where: Prisma.DepartmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.DepartmentCreateWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUncheckedCreateWithoutRolePermissionDepartmentsInput>
+}
+
+export type DepartmentUpsertWithoutRolePermissionDepartmentsInput = {
+  update: Prisma.XOR<Prisma.DepartmentUpdateWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUncheckedUpdateWithoutRolePermissionDepartmentsInput>
+  create: Prisma.XOR<Prisma.DepartmentCreateWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUncheckedCreateWithoutRolePermissionDepartmentsInput>
+  where?: Prisma.DepartmentWhereInput
+}
+
+export type DepartmentUpdateToOneWithWhereWithoutRolePermissionDepartmentsInput = {
+  where?: Prisma.DepartmentWhereInput
+  data: Prisma.XOR<Prisma.DepartmentUpdateWithoutRolePermissionDepartmentsInput, Prisma.DepartmentUncheckedUpdateWithoutRolePermissionDepartmentsInput>
+}
+
+export type DepartmentUpdateWithoutRolePermissionDepartmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  sort?: Prisma.IntFieldUpdateOperationsInput | number
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput
+  users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutDepartmentNestedInput
+}
+
+export type DepartmentUncheckedUpdateWithoutRolePermissionDepartmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  sort?: Prisma.IntFieldUpdateOperationsInput | number
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentCreateWithoutChildrenInput = {
@@ -627,6 +758,8 @@ export type DepartmentCreateWithoutChildrenInput = {
   updatedAt?: Date | string
   parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutChildrenInput = {
@@ -640,6 +773,8 @@ export type DepartmentUncheckedCreateWithoutChildrenInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutChildrenInput = {
@@ -658,6 +793,8 @@ export type DepartmentCreateWithoutParentInput = {
   updatedAt?: Date | string
   children?: Prisma.DepartmentCreateNestedManyWithoutParentInput
   users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentUncheckedCreateWithoutParentInput = {
@@ -671,6 +808,8 @@ export type DepartmentUncheckedCreateWithoutParentInput = {
   updatedAt?: Date | string
   children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput
   users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedCreateNestedManyWithoutDepartmentInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutDepartmentInput
 }
 
 export type DepartmentCreateOrConnectWithoutParentInput = {
@@ -705,6 +844,8 @@ export type DepartmentUpdateWithoutChildrenInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutChildrenInput = {
@@ -718,6 +859,8 @@ export type DepartmentUncheckedUpdateWithoutChildrenInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentUpsertWithWhereUniqueWithoutParentInput = {
@@ -751,6 +894,82 @@ export type DepartmentScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Department"> | Date | string
 }
 
+export type DepartmentCreateWithoutCustomersInput = {
+  id?: string
+  name: string
+  path: string
+  sort?: number
+  enabled?: boolean
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  parent?: Prisma.DepartmentCreateNestedOneWithoutChildrenInput
+  children?: Prisma.DepartmentCreateNestedManyWithoutParentInput
+  users?: Prisma.UserCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentCreateNestedManyWithoutDepartmentInput
+}
+
+export type DepartmentUncheckedCreateWithoutCustomersInput = {
+  id?: string
+  parentId?: string | null
+  name: string
+  path: string
+  sort?: number
+  enabled?: boolean
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  children?: Prisma.DepartmentUncheckedCreateNestedManyWithoutParentInput
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutDepartmentInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedCreateNestedManyWithoutDepartmentInput
+}
+
+export type DepartmentCreateOrConnectWithoutCustomersInput = {
+  where: Prisma.DepartmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.DepartmentCreateWithoutCustomersInput, Prisma.DepartmentUncheckedCreateWithoutCustomersInput>
+}
+
+export type DepartmentUpsertWithoutCustomersInput = {
+  update: Prisma.XOR<Prisma.DepartmentUpdateWithoutCustomersInput, Prisma.DepartmentUncheckedUpdateWithoutCustomersInput>
+  create: Prisma.XOR<Prisma.DepartmentCreateWithoutCustomersInput, Prisma.DepartmentUncheckedCreateWithoutCustomersInput>
+  where?: Prisma.DepartmentWhereInput
+}
+
+export type DepartmentUpdateToOneWithWhereWithoutCustomersInput = {
+  where?: Prisma.DepartmentWhereInput
+  data: Prisma.XOR<Prisma.DepartmentUpdateWithoutCustomersInput, Prisma.DepartmentUncheckedUpdateWithoutCustomersInput>
+}
+
+export type DepartmentUpdateWithoutCustomersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  sort?: Prisma.IntFieldUpdateOperationsInput | number
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  parent?: Prisma.DepartmentUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput
+  users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUpdateManyWithoutDepartmentNestedInput
+}
+
+export type DepartmentUncheckedUpdateWithoutCustomersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  path?: Prisma.StringFieldUpdateOperationsInput | string
+  sort?: Prisma.IntFieldUpdateOperationsInput | number
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput
+  users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput
+}
+
 export type DepartmentCreateManyParentInput = {
   id?: string
   name: string
@@ -773,6 +992,8 @@ export type DepartmentUpdateWithoutParentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.DepartmentUpdateManyWithoutParentNestedInput
   users?: Prisma.UserUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateWithoutParentInput = {
@@ -786,6 +1007,8 @@ export type DepartmentUncheckedUpdateWithoutParentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.DepartmentUncheckedUpdateManyWithoutParentNestedInput
   users?: Prisma.UserUncheckedUpdateManyWithoutDepartmentNestedInput
+  rolePermissionDepartments?: Prisma.RolePermissionDepartmentUncheckedUpdateManyWithoutDepartmentNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutDepartmentNestedInput
 }
 
 export type DepartmentUncheckedUpdateManyWithoutParentInput = {
@@ -807,11 +1030,15 @@ export type DepartmentUncheckedUpdateManyWithoutParentInput = {
 export type DepartmentCountOutputType = {
   children: number
   users: number
+  rolePermissionDepartments: number
+  customers: number
 }
 
 export type DepartmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   children?: boolean | DepartmentCountOutputTypeCountChildrenArgs
   users?: boolean | DepartmentCountOutputTypeCountUsersArgs
+  rolePermissionDepartments?: boolean | DepartmentCountOutputTypeCountRolePermissionDepartmentsArgs
+  customers?: boolean | DepartmentCountOutputTypeCountCustomersArgs
 }
 
 /**
@@ -838,6 +1065,20 @@ export type DepartmentCountOutputTypeCountUsersArgs<ExtArgs extends runtime.Type
   where?: Prisma.UserWhereInput
 }
 
+/**
+ * DepartmentCountOutputType without action
+ */
+export type DepartmentCountOutputTypeCountRolePermissionDepartmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RolePermissionDepartmentWhereInput
+}
+
+/**
+ * DepartmentCountOutputType without action
+ */
+export type DepartmentCountOutputTypeCountCustomersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CustomerWhereInput
+}
+
 
 export type DepartmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -852,6 +1093,8 @@ export type DepartmentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   parent?: boolean | Prisma.Department$parentArgs<ExtArgs>
   children?: boolean | Prisma.Department$childrenArgs<ExtArgs>
   users?: boolean | Prisma.Department$usersArgs<ExtArgs>
+  rolePermissionDepartments?: boolean | Prisma.Department$rolePermissionDepartmentsArgs<ExtArgs>
+  customers?: boolean | Prisma.Department$customersArgs<ExtArgs>
   _count?: boolean | Prisma.DepartmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["department"]>
 
@@ -898,6 +1141,8 @@ export type DepartmentInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   parent?: boolean | Prisma.Department$parentArgs<ExtArgs>
   children?: boolean | Prisma.Department$childrenArgs<ExtArgs>
   users?: boolean | Prisma.Department$usersArgs<ExtArgs>
+  rolePermissionDepartments?: boolean | Prisma.Department$rolePermissionDepartmentsArgs<ExtArgs>
+  customers?: boolean | Prisma.Department$customersArgs<ExtArgs>
   _count?: boolean | Prisma.DepartmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DepartmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -913,6 +1158,8 @@ export type $DepartmentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     parent: Prisma.$DepartmentPayload<ExtArgs> | null
     children: Prisma.$DepartmentPayload<ExtArgs>[]
     users: Prisma.$UserPayload<ExtArgs>[]
+    rolePermissionDepartments: Prisma.$RolePermissionDepartmentPayload<ExtArgs>[]
+    customers: Prisma.$CustomerPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1336,6 +1583,8 @@ export interface Prisma__DepartmentClient<T, Null = never, ExtArgs extends runti
   parent<T extends Prisma.Department$parentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$parentArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   children<T extends Prisma.Department$childrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   users<T extends Prisma.Department$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  rolePermissionDepartments<T extends Prisma.Department$rolePermissionDepartmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$rolePermissionDepartmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RolePermissionDepartmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  customers<T extends Prisma.Department$customersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$customersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1839,6 +2088,54 @@ export type Department$usersArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
+}
+
+/**
+ * Department.rolePermissionDepartments
+ */
+export type Department$rolePermissionDepartmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RolePermissionDepartment
+   */
+  select?: Prisma.RolePermissionDepartmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RolePermissionDepartment
+   */
+  omit?: Prisma.RolePermissionDepartmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RolePermissionDepartmentInclude<ExtArgs> | null
+  where?: Prisma.RolePermissionDepartmentWhereInput
+  orderBy?: Prisma.RolePermissionDepartmentOrderByWithRelationInput | Prisma.RolePermissionDepartmentOrderByWithRelationInput[]
+  cursor?: Prisma.RolePermissionDepartmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RolePermissionDepartmentScalarFieldEnum | Prisma.RolePermissionDepartmentScalarFieldEnum[]
+}
+
+/**
+ * Department.customers
+ */
+export type Department$customersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Customer
+   */
+  select?: Prisma.CustomerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Customer
+   */
+  omit?: Prisma.CustomerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CustomerInclude<ExtArgs> | null
+  where?: Prisma.CustomerWhereInput
+  orderBy?: Prisma.CustomerOrderByWithRelationInput | Prisma.CustomerOrderByWithRelationInput[]
+  cursor?: Prisma.CustomerWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CustomerScalarFieldEnum | Prisma.CustomerScalarFieldEnum[]
 }
 
 /**

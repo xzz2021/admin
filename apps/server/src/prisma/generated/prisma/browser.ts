@@ -53,10 +53,20 @@ export type RoleMenu = Prisma.RoleMenuModel
  */
 export type RolePermission = Prisma.RolePermissionModel
 /**
+ * Model RolePermissionDepartment
+ * 
+ */
+export type RolePermissionDepartment = Prisma.RolePermissionDepartmentModel
+/**
  * Model Department
  * 
  */
 export type Department = Prisma.DepartmentModel
+/**
+ * Model Customer
+ * 
+ */
+export type Customer = Prisma.CustomerModel
 /**
  * Model DictionaryType
  * 

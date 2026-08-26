@@ -270,6 +270,7 @@ const signIn = async () => {
         await successLogin(userinfo, access_token)
       } catch (error) {
         // console.log('xzz2021: signIn -> error', error)
+        ElLoading.service().close()
         if (error instanceof AxiosError && error.response?.data?.message === '验证码已过期') {
           // 只有当后面的登录失败时，才更新验证码
           updateCaptcha()

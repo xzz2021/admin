@@ -7,6 +7,7 @@ import {
   CreateRoleDto,
   MenuPermissionListRes,
   QueryRoleParams,
+  RoleAuthorizationTreeRes,
   RoleListRes,
   RoleSeedArrayDto,
   UpdateRoleDto,
@@ -43,7 +44,7 @@ export class RoleController {
   @Get('getRoleMenuAndPer/:id')
   @RequiredPermission('role:view')
   @ApiOperation({ summary: '获取角色菜单及权限列表,用于展示' })
-  @ApiResponse({ type: MenuPermissionListRes })
+  @ApiResponse({ type: RoleAuthorizationTreeRes })
   getRoleMenuAndPermission(@Param('id') id: string) {
     return this.roleService.getRoleMenuAndPerList(id)
   }

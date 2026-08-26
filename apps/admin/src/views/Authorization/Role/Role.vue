@@ -81,7 +81,7 @@ const tableColumns = reactive<TableColumn[]>([
     width: 260,
     slots: {
       default: (data: any) => {
-        const row = data.row as RoleItem & { isSystem?: boolean }
+        const row = data.row as RoleItem
         return (
           <>
             <BaseButton type="success" onClick={() => handleDetail(row)}>

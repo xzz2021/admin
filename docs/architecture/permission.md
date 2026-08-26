@@ -32,7 +32,7 @@ Seed 中权限编码规则：`code = \`${resource}:${action}\``，`resource`对�
 4. 含 `*` 或精确匹配所需 code → 通过
 5. 角色/权限变更由仓储查出 userId，缓存只 INCR 版本并删 Redis；DEL 失败时旧条目因版本不匹配也会失效
 
-注释中提及 CASL 细粒度字段权限为后续设想；`PoliciesGuard` 当前未注册。
+数据范围（DataScope）由 `AuthorizationService` 解析，再由资源 Policy（如 `CustomerPolicy`）生成 Prisma WHERE。CASL（`@casl/ability`）只用于 Customer 的字段/属性规则，不使用 `@casl/prisma`。详见 [customer.md](../modules/customer.md)。
 
 ## 前端校验
 
@@ -49,6 +49,7 @@ Seed 中权限编码规则：`code = \`${resource}:${action}\``，`resource`对�
 | 权限码示例                                                             | 使用位置                                    |
 | ---------------------------------------------------------------------- | ------------------------------------------- |
 | `user:view` / `user:add` / `user:update` / `user:delete`               | UserController                              |
+| `customer:view` / `detail` / `add` / `update` / `delete` / `export`    | CustomerController；范围由 DataScope 约束   |
 | `role:view` / `role:add` / `role:update` / `role:delete` / `role:seed` | RoleController                              |
 | `menu:view` / `menu:add` / `menu:update` / `menu:delete`               | MenuController；Permission CRUD 复用 menu:* |
 | `department:*` / `dictionary:*`                                        | 对应模块                                    |

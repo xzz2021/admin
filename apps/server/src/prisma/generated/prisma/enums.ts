@@ -62,3 +62,24 @@ export const BackupStatus = {
 } as const
 
 export type BackupStatus = (typeof BackupStatus)[keyof typeof BackupStatus]
+
+
+export const DataScope = {
+  ALL: 'ALL',
+  SELF: 'SELF',
+  DEPT: 'DEPT',
+  DEPT_TREE: 'DEPT_TREE',
+  CUSTOM: 'CUSTOM'
+} as const
+
+export type DataScope = (typeof DataScope)[keyof typeof DataScope]
+
+
+export const CustomerStatus = {
+  LEAD: 'LEAD',
+  FOLLOWING: 'FOLLOWING',
+  WON: 'WON',
+  FROZEN: 'FROZEN'
+} as const
+
+export type CustomerStatus = (typeof CustomerStatus)[keyof typeof CustomerStatus]

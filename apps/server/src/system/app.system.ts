@@ -1,5 +1,6 @@
 import { AuthModule } from '@/system/auth/auth.module'
 import { CaptchaModule } from '@/system/captcha/captcha.module'
+import { CustomerModule } from '@/system/customer/customer.module'
 import { DepartmentModule } from '@/system/department/department.module'
 import { DictionaryModule } from '@/system/dictionary/dictionary.module'
 import { DbBackupModule } from '@/system/db-backup/db-backup.module'
@@ -13,6 +14,7 @@ import { SessionModule } from '@/system/session/session.module'
 import { UserModule } from '@/system/user/user.module'
 export const CORE_SYSTEM_MODULE = [
   SessionModule,
+  CustomerModule,
   DepartmentModule,
   MenuModule,
   PermissionModule,

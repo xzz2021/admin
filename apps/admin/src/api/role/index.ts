@@ -1,7 +1,14 @@
 import request from '@/axios'
-import { RoleDetail, RoleItem, RoleSubmitPayload, RoleUpdatePayload } from './type'
+import type {
+  RoleAuthorizationMenu,
+  RoleDetail,
+  RoleItem,
+  RoleListParams,
+  RoleSubmitPayload,
+  RoleUpdatePayload,
+} from './type'
 
-export const getRoleListApi = (params?: any): Promise<IResponse<{ list: RoleItem[]; total: number }>> => {
+export const getRoleListApi = (params?: RoleListParams): Promise<IResponse<{ list: RoleItem[]; total: number }>> => {
   return request.get({ url: 'role/getRoleList', params })
 }
 
@@ -13,11 +20,11 @@ export const editRoleApi = (data: RoleUpdatePayload) => {
   return request.post({ url: 'role/update', data })
 }
 
-export const delRoleApi = (id) => {
+export const delRoleApi = (id: string) => {
   return request.delete({ url: 'role/' + id })
 }
 
-export const getRoleMenuAndPermissionApi = (id: string): Promise<IResponse<{ list: any[] }>> => {
+export const getRoleMenuAndPermissionApi = (id: string): Promise<IResponse<{ list: RoleAuthorizationMenu[] }>> => {
   return request.get({ url: 'role/getRoleMenuAndPer/' + id })
 }
 

@@ -13,7 +13,7 @@
 |          | [data-flow](./architecture/data-flow.md)                                                                                                                            | 关键数据流      |
 | 数据库   | [database-design](./database/database-design.md)                                                                                                                    | 表结构与关系    |
 |          | [prisma-guide](./database/prisma-guide.md)                                                                                                                          | Prisma 使用说明 |
-| 业务模块 | [auth](./modules/auth.md) / [user](./modules/user.md) / [role](./modules/role.md) / [permission](./modules/permission.md)                                           | 核心业务        |
+| 业务模块 | [auth](./modules/auth.md) / [user](./modules/user.md) / [role](./modules/role.md) / [permission](./modules/permission.md) / [customer](./modules/customer.md)       | 核心业务        |
 | API      | [api-overview](./api/api-overview.md) / [authentication](./api/authentication.md)                                                                                   | 接口与鉴权      |
 | 部署     | [docker](./deployment/docker.md) / [environment](./deployment/environment.md) / [production](./deployment/production.md)                                            | Docker 与生产   |
 | 开发     | [local-development](./development/local-development.md) / [coding-standard](./development/coding-standard.md) / [extension-guide](./development/extension-guide.md) | 本地开发与扩展  |

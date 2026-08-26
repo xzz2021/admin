@@ -1,10 +1,15 @@
 import * as z from "zod"
 import { createZodDto } from "nestjs-zod/dto"
-import { CompleteRole, RelatedRoleModel, CompletePermission, RelatedPermissionModel } from "./index"
+import { DataScope } from "./enums"
+import { CompleteRole, RelatedRoleModel, CompletePermission, RelatedPermissionModel, CompleteRolePermissionDepartment, RelatedRolePermissionDepartmentModel } from "./index"
 
 export const RolePermissionModel = z.object({
+  id: z.string(),
   roleId: z.string(),
   permissionId: z.string(),
+  dataScope: z.enum(DataScope).nullish(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 })
 
 export class RolePermissionDto extends createZodDto(RolePermissionModel) {
@@ -13,6 +18,7 @@ export class RolePermissionDto extends createZodDto(RolePermissionModel) {
 export interface CompleteRolePermission extends z.infer<typeof RolePermissionModel> {
   role: CompleteRole
   permission: CompletePermission
+  customDepartments: CompleteRolePermissionDepartment[]
 }
 
 /**
@@ -23,4 +29,5 @@ export interface CompleteRolePermission extends z.infer<typeof RolePermissionMod
 export const RelatedRolePermissionModel: z.ZodType<CompleteRolePermission> = z.lazy(() => RolePermissionModel.extend({
   role: RelatedRoleModel,
   permission: RelatedPermissionModel,
+  customDepartments: RelatedRolePermissionDepartmentModel.array(),
 }))

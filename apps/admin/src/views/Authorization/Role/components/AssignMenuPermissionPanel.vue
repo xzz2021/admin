@@ -3,20 +3,35 @@ import { BaseButton } from '@/components/Button'
 import { Icon } from '@/components/Icon'
 import { useClipboard } from '@/hooks/web/useClipboard'
 import { useI18n } from '@/hooks/web/useI18n'
+import { useDepartmentStore } from '@/store/modules/department'
 import { eachTree } from '@/utils/tree'
-import { ElCheckbox, ElForm, ElFormItem, ElInput, ElMessage, ElMessageBox, ElSwitch, ElTag, ElTree } from 'element-plus'
+import {
+  ElCheckbox,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElMessage,
+  ElMessageBox,
+  ElSwitch,
+  ElTag,
+  ElTooltip,
+  ElTree,
+} from 'element-plus'
 import { computed, nextTick, PropType, ref, watch } from 'vue'
+import DataScopeEditor from './DataScopeEditor.vue'
 import { applyRoleMenuPermissionSnapshot, parseRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
 import {
+  clearPermissionSelection,
   collectRoleSubmitData,
   filterRoleMenuNode,
   findFirstMenuNode,
+  findFirstRoleScopeIssue,
   getMenuPermissionCount,
   groupPermissionsByType,
   ROLE_PERMISSION_TYPE_I18N,
   type RoleFormModel,
   type RoleMenuPermissionItem,
-  type RoleMenuTreeNode
+  type RoleMenuTreeNode,
 } from '../utils/roleMenuTree'
 
 const emit = defineEmits<{
@@ -29,23 +44,25 @@ const menuSearch = ref('')
 const currentMenu = ref<RoleMenuTreeNode>()
 const isExpandAll = ref(true)
 const permissionChangeTick = ref(0)
+const syncingTreeCheckedState = ref(false)
 
 const { t } = useI18n()
 const { getText } = useClipboard()
+const departmentStore = useDepartmentStore()
 
 const props = defineProps({
   menuTree: {
     type: Array as PropType<RoleMenuTreeNode[]>,
-    default: () => []
+    default: () => [],
   },
   loading: {
     type: Boolean,
-    default: false
+    default: false,
   },
   saveLoading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const roleFormModel = defineModel<RoleFormModel>('roleForm', { required: true })
@@ -59,30 +76,48 @@ const bumpPermissionChange = () => {
 }
 
 const clearMenuPermissions = (node: RoleMenuTreeNode) => {
-  node.permissions?.forEach((permission) => {
-    permission.checked = false
-  })
+  node.permissions.forEach(clearPermissionSelection)
 }
 
 const syncMenuCheckedState = () => {
   const checkedKeys = new Set(treeRef.value?.getCheckedKeys(false) || [])
+  let changed = false
   eachTree(props.menuTree, (node) => {
     const checked = checkedKeys.has(node.id)
-    if (!checked) {
-      clearMenuPermissions(node)
-    }
+    if (node.checked === checked) return
+    if (!checked) clearMenuPermissions(node)
     node.checked = checked
+    changed = true
   })
-  bumpPermissionChange()
+  if (changed) bumpPermissionChange()
+}
+
+const runWithTreeSync = (fn: () => void) => {
+  syncingTreeCheckedState.value = true
+  try {
+    fn()
+  } finally {
+    syncingTreeCheckedState.value = false
+  }
+}
+
+const applyTreeCheckedKeys = (checkedIds: string[]) => {
+  runWithTreeSync(() => {
+    treeRef.value?.setCheckedKeys(checkedIds, false)
+    syncMenuCheckedState()
+  })
 }
 
 const checkMenuNode = (node: RoleMenuTreeNode) => {
   if (node.checked) return
-  treeRef.value?.setChecked(node.id, true, false)
-  syncMenuCheckedState()
+  runWithTreeSync(() => {
+    treeRef.value?.setChecked(node.id, true, false)
+    syncMenuCheckedState()
+  })
 }
 
 const handleCheckChange = () => {
+  if (syncingTreeCheckedState.value) return
   syncMenuCheckedState()
 }
 
@@ -98,13 +133,12 @@ watch(
     eachTree(tree, (node) => {
       if (node.checked) checkedIds.push(node.id)
     })
-    treeRef.value?.setCheckedKeys(checkedIds, false)
-    syncMenuCheckedState()
+    applyTreeCheckedKeys(checkedIds)
     if (!currentMenu.value) {
       currentMenu.value = findFirstMenuNode(tree)
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true },
 )
 
 const handleNodeClick = (node: RoleMenuTreeNode) => {
@@ -123,8 +157,8 @@ const selectedPermissionCount = computed(() => {
   permissionChangeTick.value
   let count = 0
   eachTree(props.menuTree, (node) => {
-    node.permissions?.forEach((permission) => {
-      if (permission.checked) count++
+    node.permissions.forEach((permission) => {
+      if (permission.enabled && permission.checked) count++
     })
   })
   return count
@@ -137,7 +171,7 @@ const menuPermissionCountMap = computed(() => {
     const { selected, total } = getMenuPermissionCount(node)
     map[node.id] = {
       selected,
-      text: total > 0 ? `${selected}/${total}` : '0'
+      text: total > 0 ? `${selected}/${total}` : '0',
     }
   })
   return map
@@ -148,18 +182,23 @@ const currentMenuPermissions = computed(() => currentMenu.value?.permissions || 
 const permissionGroups = computed(() =>
   groupPermissionsByType(currentMenuPermissions.value).map((group) => ({
     ...group,
-    label: t(ROLE_PERMISSION_TYPE_I18N[group.type] || ROLE_PERMISSION_TYPE_I18N.OTHER)
-  }))
+    label: t(ROLE_PERMISSION_TYPE_I18N[group.type] || ROLE_PERMISSION_TYPE_I18N.OTHER),
+  })),
 )
 
 const isCurrentMenuAllChecked = computed(() => {
-  const permissions = currentMenuPermissions.value
+  const permissions = currentMenuPermissions.value.filter((permission) => permission.enabled)
   return permissions.length > 0 && permissions.every((item) => item.checked)
 })
 
 const toggleCurrentMenuPermissions = (checked: boolean) => {
   currentMenuPermissions.value.forEach((permission) => {
-    permission.checked = checked
+    if (!permission.enabled) return
+    if (checked) {
+      permission.checked = true
+    } else {
+      clearPermissionSelection(permission)
+    }
   })
   bumpPermissionChange()
   if (checked && currentMenu.value) {
@@ -168,7 +207,12 @@ const toggleCurrentMenuPermissions = (checked: boolean) => {
 }
 
 const togglePermission = (permission: RoleMenuPermissionItem, checked: boolean) => {
-  permission.checked = checked
+  if (!permission.enabled) return
+  if (checked) {
+    permission.checked = true
+  } else {
+    clearPermissionSelection(permission)
+  }
   bumpPermissionChange()
   if (checked && currentMenu.value) {
     checkMenuNode(currentMenu.value)
@@ -189,8 +233,7 @@ const syncTreeCheckedKeys = () => {
   eachTree(props.menuTree, (node) => {
     if (node.checked) checkedIds.push(node.id)
   })
-  treeRef.value?.setCheckedKeys(checkedIds, false)
-  bumpPermissionChange()
+  applyTreeCheckedKeys(checkedIds)
 }
 
 const isAllMenuPermissionChecked = computed(() => {
@@ -199,7 +242,7 @@ const isAllMenuPermissionChecked = computed(() => {
   let allChecked = true
   eachTree(props.menuTree, (node: RoleMenuTreeNode) => {
     hasMenu = true
-    if (!node.checked || node.permissions?.some((permission) => !permission.checked)) {
+    if (!node.checked || node.permissions.some((permission) => permission.enabled && !permission.checked)) {
       allChecked = false
     }
   })
@@ -210,8 +253,13 @@ const toggleAllMenuPermissions = () => {
   const checked = !isAllMenuPermissionChecked.value
   eachTree(props.menuTree, (node: RoleMenuTreeNode) => {
     node.checked = checked
-    node.permissions?.forEach((permission) => {
-      permission.checked = checked
+    node.permissions.forEach((permission) => {
+      if (!permission.enabled) return
+      if (checked) {
+        permission.checked = true
+      } else {
+        clearPermissionSelection(permission)
+      }
     })
   })
   syncTreeCheckedKeys()
@@ -234,32 +282,65 @@ const handleImportPermissions = async () => {
     await ElMessageBox.confirm(t('role.importPermissionConfirm'), t('common.reminder'), {
       confirmButtonText: t('common.ok'),
       cancelButtonText: t('common.cancel'),
-      type: 'warning'
+      type: 'warning',
     })
   } catch {
     return
   }
 
   const { matchedMenuCount, matchedPermissionCount } = applyRoleMenuPermissionSnapshot(props.menuTree, snapshot)
-  await nextTick()
-  syncTreeCheckedKeys()
-
   if (!matchedMenuCount && !matchedPermissionCount) {
     ElMessage.warning(t('role.importPermissionNoMatch'))
     return
   }
 
+  await nextTick()
+  syncTreeCheckedKeys()
+
+  if (snapshot.version === 1) {
+    ElMessage.warning(t('role.legacySnapshotScopeWarning'))
+  }
+
   ElMessage.success(
     t('role.importPermissionSuccess', {
       menuCount: matchedMenuCount,
-      permissionCount: matchedPermissionCount
-    })
+      permissionCount: matchedPermissionCount,
+    }),
   )
 }
 
-defineExpose({
-  collectSubmitData: () => collectRoleSubmitData(roleFormModel.value, props.menuTree)
-})
+const scopeValidationMessageKey = {
+  required: 'role.dataScopeSaveRequired',
+  customRequired: 'role.customDepartmentSaveRequired',
+  invalidDepartments: 'role.invalidDepartmentSaveBlocked',
+  departmentUnavailable: 'role.departmentUnavailableSaveBlocked',
+  nonCustomDepartments: 'role.nonCustomDepartmentSaveBlocked',
+} as const
+
+const collectSubmitData = async () => {
+  await departmentStore.ensureList()
+  const issue = findFirstRoleScopeIssue(props.menuTree, {
+    departments: departmentStore.list,
+    departmentLoaded: departmentStore.loaded,
+    departmentLoadError: departmentStore.loadError,
+  })
+  if (issue) {
+    currentMenu.value = issue.menu
+    treeRef.value?.setCurrentKey(issue.menu.id)
+    ElMessage.warning(t(scopeValidationMessageKey[issue.reason], { permission: issue.permission.name }))
+    await nextTick()
+    const permissionElement = document.getElementById(`role-permission-${issue.permission.id}`)
+    permissionElement?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+    permissionElement?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.focus()
+    return null
+  }
+  return collectRoleSubmitData(roleFormModel.value, props.menuTree)
+}
+
+defineExpose({ collectSubmitData })
 </script>
 
 <template>
@@ -348,7 +429,11 @@ defineExpose({
           <div class="flex items-center gap-2">
             <ElTag> {{ currentMenu?.title ? t(currentMenu.title) : t('role.permissionConfig') }}</ElTag>
             <span>
-              {{ currentMenu?.title ? t('role.menuPermissionTitle') : t('role.permissionConfig') }}
+              {{
+                currentMenu?.title
+                  ? t('role.menuPermissionTitle', { name: t(currentMenu.title) })
+                  : t('role.permissionConfig')
+              }}
             </span>
           </div>
           <BaseButton
@@ -376,19 +461,39 @@ defineExpose({
               {{ group.label }}
             </div>
             <div class="permission-grid">
-              <label
+              <div
                 v-for="permission in group.permissions"
                 :key="permission.id"
+                :id="`role-permission-${permission.id}`"
                 class="permission-item"
-                :class="{ 'is-checked': permission.checked }"
+                :class="{ 'is-checked': permission.enabled && permission.checked, 'is-disabled': !permission.enabled }"
               >
-                <ElCheckbox
-                  :model-value="permission.checked"
-                  @update:model-value="(val) => togglePermission(permission, !!val)"
-                  @click.stop
+                <div class="permission-item-header">
+                  <ElTooltip :disabled="permission.enabled" :content="t('role.disabledPermissionTip')" placement="top">
+                    <span>
+                      <ElCheckbox
+                        :model-value="permission.enabled && permission.checked"
+                        :disabled="!permission.enabled"
+                        @update:model-value="(val) => togglePermission(permission, !!val)"
+                        @click.stop
+                      >
+                        {{ permission.name }}
+                      </ElCheckbox>
+                    </span>
+                  </ElTooltip>
+                  <ElTag
+                    v-if="permission.enabled && permission.checked && permission.scopeEnabled && !permission.dataScope"
+                    type="warning"
+                    size="small"
+                  >
+                    {{ t('role.dataScopePending') }}
+                  </ElTag>
+                </div>
+                <DataScopeEditor
+                  v-if="permission.enabled && permission.checked && permission.scopeEnabled"
+                  :model-value="permission"
                 />
-                <span>{{ permission.name }}</span>
-              </label>
+              </div>
             </div>
           </div>
         </template>
@@ -540,12 +645,8 @@ defineExpose({
   }
 
   .permission-item {
-    display: flex;
-    gap: 8px;
-    align-items: center;
     min-height: 30px;
-    padding: 4px 8px;
-    cursor: pointer;
+    padding: 8px;
     border: 1px solid var(--el-border-color);
     border-radius: 6px;
     transition: all 0.2s;
@@ -554,6 +655,14 @@ defineExpose({
       background: var(--el-color-primary-light-9);
       border-color: var(--el-color-primary-light-5);
     }
+  }
+
+  .permission-item-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
   }
 
   .empty-permission {
@@ -571,6 +680,24 @@ defineExpose({
     justify-content: flex-end;
     padding-top: 20px;
     margin-top: 20px;
+  }
+}
+
+@media (width <= 1400px) {
+  .assign-menu-permission .permission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width <= 900px) {
+  .assign-menu-permission {
+    .permission-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .permission-grid {
+      grid-template-columns: 1fr;
+    }
   }
 }
 </style>

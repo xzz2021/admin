@@ -1,18 +1,22 @@
 import { AuditAction } from '@/core/logger/audit-action'
 import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
+import { RbacPermissionCacheService } from '@/processor/rbac'
 import { uniqueBy } from '@/processor/utils/array'
 import { listToTree } from '@/processor/utils/list2tree.util'
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { CreateMenuDto, MenuSortDto, UpdateMenuDto } from './dto/menu.dto'
 import { MenuRepository } from './menu.repository'
+import { RoleRepository } from '@/system/role/role.repository'
 
 @Injectable()
 export class MenuService {
   constructor(
     private readonly menus: MenuRepository,
     private readonly audit: AuditLogService,
+    private readonly roles: RoleRepository,
+    private readonly rbacPermissionCache: RbacPermissionCacheService,
   ) {}
 
   async create(createMenuDto: CreateMenuDto, operatorId?: string, ip?: string) {
@@ -82,7 +86,16 @@ export class MenuService {
       throw new BadRequestException('该菜单存在子菜单，请先删除子菜单')
     }
 
-    await this.menus.deleteById(id)
+    const result = await this.menus.transaction(async tx => {
+      const permissions = await this.menus.findPermissionIds(id, tx)
+      const users = await this.roles.findUserIdsByPermissionIds(
+        permissions.map(permission => permission.id),
+        tx,
+      )
+      await this.menus.deleteById(id, tx)
+      return { userIds: users.map(user => user.userId) }
+    })
+    await this.rbacPermissionCache.invalidateUsers(result.userIds)
     await this.audit.record({
       actorId: operatorId,
       action: AuditAction.MENU_DELETE,

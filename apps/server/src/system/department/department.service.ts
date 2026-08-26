@@ -1,6 +1,7 @@
 import { AuditAction } from '@/core/logger/audit-action'
 import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
+import { OrganizationGenerationService } from '@/processor/authorization/organization-generation.service'
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { DepartmentRepository } from './department.repository'
@@ -11,6 +12,7 @@ export class DepartmentService {
   constructor(
     private readonly departments: DepartmentRepository,
     private readonly audit: AuditLogService,
+    private readonly organizationGeneration: OrganizationGenerationService,
   ) {}
 
   async add(createDepartmentDto: CreateDepartmentDto, operatorId?: string, ip?: string) {
@@ -28,6 +30,7 @@ export class DepartmentService {
         ip,
         metadata: { name: createDepartmentDto.name, parentId: createDepartmentDto.parentId },
       })
+      await this.organizationGeneration.bump()
       return { id: res.id, message: '添加部门成功' }
     } catch (error) {
       this.rethrowDuplicateName(error)
@@ -78,6 +81,7 @@ export class DepartmentService {
         ip,
         metadata: { name: rest.name, parentId },
       })
+      await this.organizationGeneration.bump()
       return { id: res.id, message: '更新部门成功' }
     } catch (error) {
       this.rethrowDuplicateName(error)
@@ -85,11 +89,30 @@ export class DepartmentService {
   }
 
   async delete(id: string, operatorId?: string, ip?: string) {
-    const me = await this.departments.findPathById(id)
-    if (!me) return
-    const child = await this.departments.findFirstChildId(id)
-    if (child) throw new BadRequestException('当前项有子部门无法删除')
-    await this.departments.deleteById(id)
+    try {
+      const deleted = await this.departments.transaction(async tx => {
+        const department = await this.departments.lockById(id, tx)
+        if (!department) return false
+        const child = await this.departments.findFirstChildId(id, tx)
+        if (child) throw new BadRequestException('当前项有子部门无法删除')
+        const references = await this.departments.findDeleteReferences(id, tx)
+        if (references.customScope || references.customer) {
+          const sources = [
+            references.customScope ? 'CUSTOM 数据范围' : null,
+            references.customer ? '客户' : null,
+          ].filter(Boolean)
+          throw new BadRequestException(`部门仍被${sources.join('、')}引用，无法删除`)
+        }
+        await this.departments.deleteById(id, tx)
+        return true
+      })
+      if (!deleted) return
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new BadRequestException('部门仍被引用，无法删除')
+      }
+      throw error
+    }
     await this.audit.record({
       actorId: operatorId,
       action: AuditAction.DEPARTMENT_DELETE,
@@ -97,6 +120,7 @@ export class DepartmentService {
       resourceId: id,
       ip,
     })
+    await this.organizationGeneration.bump()
     return { message: '删除部门成功' }
   }
 
@@ -107,6 +131,7 @@ export class DepartmentService {
           await this.upsertNode(tx, dept, null)
         }
       })
+      await this.organizationGeneration.bump()
       return { message: '批量插入部门成功' }
     } catch (error) {
       this.rethrowDuplicateName(error)

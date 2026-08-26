@@ -37,6 +37,13 @@ export class MenuRepository {
     return this.db.menu.count({ where: { parentId } })
   }
 
+  findPermissionIds(menuId: string, tx: Db = this.db) {
+    return tx.permission.findMany({
+      where: { menuId },
+      select: { id: true },
+    })
+  }
+
   findAllWithPermissions() {
     return this.db.menu.findMany({
       orderBy: [{ sort: 'asc' }],
@@ -54,8 +61,8 @@ export class MenuRepository {
     })
   }
 
-  deleteById(id: string) {
-    return this.db.menu.delete({
+  deleteById(id: string, tx: Db = this.db) {
+    return tx.menu.delete({
       where: { id },
       select: { id: true },
     })

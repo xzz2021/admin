@@ -1,10 +1,10 @@
+import type { AuthorizationContext } from '@/processor/authorization/authorization-context'
+import { AuthorizationService } from '@/processor/authorization/authorization.service'
 import { PERMISSION_KEY } from '@/processor/decorator/permission'
 import { isTransientDbError } from '@/processor/filter/prisma.exception'
-import { ALL_PERMISSIONS, resolvePermissionCodes } from '@/processor/rbac/rbac-permission'
-import { RbacPermissionCacheService } from '@/processor/rbac/rbac-permission-cache.service'
-import { UserRepository } from '@/system/user/user.repository'
 import { CanActivate, ExecutionContext, Injectable, ServiceUnavailableException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
+import type { Request } from 'express'
 /*
 
 此guard 通过rbac定义 控制了 所有 路由 调用 和 按钮操作 的权限
@@ -12,17 +12,20 @@ import { Reflector } from '@nestjs/core'
 还需要casl 控制 更 细颗粒度 的 表格 及 字段 操作 的权限
 
 */
-interface AuthenticatedRequest {
+export interface AuthorizedJwtRequest extends Request {
   user?: {
     id?: string
   }
+  authorizationContext?: AuthorizationContext
 }
+
+/** @deprecated 使用 AuthorizedJwtRequest。 */
+export type AuthorizedRequest = AuthorizedJwtRequest
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
-    private readonly users: UserRepository,
-    private readonly rbacPermissionCache: RbacPermissionCacheService,
+    private readonly authorization: AuthorizationService,
     private readonly reflector: Reflector,
   ) {}
 
@@ -33,17 +36,16 @@ export class PermissionGuard implements CanActivate {
     ])
     if (!requiredPermission) return true
 
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>()
+    const request = context.switchToHttp().getRequest<AuthorizedJwtRequest>()
     const userId = request.user?.id
     if (!userId) return false
 
-    let permissions: string[]
     try {
-      permissions = await this.rbacPermissionCache.getOrLoad(userId, async () => {
-        const user = await this.users.findEnabledRolePermissionTree(userId)
-        return resolvePermissionCodes(user)
-      })
+      const authorizationContext = await this.authorization.createContext(userId, [requiredPermission])
+      request.authorizationContext = authorizationContext
+      return authorizationContext.hasPermission(requiredPermission)
     } catch (error) {
+      if (error instanceof ServiceUnavailableException) throw error
       if (isTransientDbError(error)) {
         throw new ServiceUnavailableException('数据库暂不可用，请稍后重试')
       }
@@ -54,7 +56,6 @@ export class PermissionGuard implements CanActivate {
       }
       throw error
     }
-
-    return permissions.includes(ALL_PERMISSIONS) || permissions.includes(requiredPermission)
+    // return permissions.includes(ALL_PERMISSIONS) || permissions.includes(requiredPermission)
   }
 }

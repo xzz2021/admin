@@ -5,6 +5,8 @@ import { defineStore } from 'pinia'
 interface DepartmentState {
   list: DepartmentItem[]
   loaded: boolean
+  loading: boolean
+  loadError: boolean
 }
 
 let ensurePromise: Promise<DepartmentItem[]> | null = null
@@ -13,27 +15,37 @@ export const useDepartmentStore = defineStore('department', {
   state: (): DepartmentState => ({
     list: [],
     loaded: false,
+    loading: false,
+    loadError: false,
   }),
   actions: {
     async requestNewList() {
-      const res = await getDepartmentListApi()
-      const { list = [], total = 0 } = res.data
-      this.list = list
-      // this.loaded = true
-      return { list, total }
+      this.loading = true
+      this.loadError = false
+      try {
+        const res = await getDepartmentListApi()
+        const { list = [], total = 0 } = res.data
+        this.list = list
+        this.loaded = true
+        return { list, total }
+      } catch (error) {
+        this.loadError = true
+        this.loaded = false
+        throw error
+      } finally {
+        this.loading = false
+      }
     },
     async ensureList() {
-      // if (this.loaded) return this.list
+      if (this.loaded) return this.list
       if (ensurePromise) return ensurePromise
 
       ensurePromise = this.requestNewList()
         .then(() => this.list)
         .catch(() => {
-          this.list.length || setTimeout(() => ElMessage.error('部门下拉列表数据请求失败'), 3000)
           return this.list
         })
         .finally(() => {
-          // this.loaded = true
           ensurePromise = null
         })
 

@@ -16,9 +16,16 @@ describe('MenuService tree updates', () => {
     ) => callback({ menu: { findMany, update }, $executeRaw: executeRaw }),
   )
 
-  const service = new MenuService(new MenuRepository({ $transaction: transaction } as unknown as PgService), {
-    record: jest.fn(),
-  } as unknown as import('@/core/logger/audit-log.service').AuditLogService)
+  const service = new MenuService(
+    new MenuRepository({ $transaction: transaction } as unknown as PgService),
+    {
+      record: jest.fn(),
+    } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    {} as import('@/system/role/role.repository').RoleRepository,
+    {
+      invalidateUsers: jest.fn(),
+    } as unknown as import('@/processor/rbac').RbacPermissionCacheService,
+  )
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -84,12 +91,31 @@ describe('MenuService delete rules', () => {
   const findUnique = jest.fn()
   const count = jest.fn()
   const remove = jest.fn()
+  const permissionFindMany = jest.fn()
+  const findUserIdsByPermissionIds = jest.fn()
+  const invalidateUsers = jest.fn()
+  const transaction = jest.fn(callback =>
+    callback({
+      menu: { delete: remove },
+      permission: { findMany: permissionFindMany },
+    }),
+  )
   const service = new MenuService(
     new MenuRepository({
+      $transaction: transaction,
       menu: { findUnique, count, delete: remove },
     } as unknown as PgService),
     { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    { findUserIdsByPermissionIds } as unknown as import('@/system/role/role.repository').RoleRepository,
+    { invalidateUsers } as unknown as import('@/processor/rbac').RbacPermissionCacheService,
   )
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    permissionFindMany.mockResolvedValue([{ id: 'permission-1' }])
+    findUserIdsByPermissionIds.mockResolvedValue([{ userId: 'user-1' }])
+    remove.mockResolvedValue({ id: 'menu-1' })
+  })
 
   it('refuses to delete a menu that still has children', async () => {
     findUnique.mockResolvedValue({ id: 'menu-1' })
@@ -97,5 +123,33 @@ describe('MenuService delete rules', () => {
 
     await expect(service.remove('menu-1')).rejects.toThrow('该菜单存在子菜单，请先删除子菜单')
     expect(remove).not.toHaveBeenCalled()
+  })
+
+  it('invalidates affected users only after a successful cascading delete', async () => {
+    findUnique.mockResolvedValue({ id: 'menu-1', name: '菜单', path: '/menu' })
+    count.mockResolvedValue(0)
+    const order: string[] = []
+    remove.mockImplementation(() => {
+      order.push('delete')
+      return Promise.resolve({ id: 'menu-1' })
+    })
+    invalidateUsers.mockImplementation(() => {
+      order.push('invalidate')
+      return Promise.resolve()
+    })
+
+    await service.remove('menu-1')
+
+    expect(findUserIdsByPermissionIds).toHaveBeenCalledWith(['permission-1'], expect.anything())
+    expect(order).toEqual(['delete', 'invalidate'])
+  })
+
+  it('does not invalidate users when menu deletion fails', async () => {
+    findUnique.mockResolvedValue({ id: 'menu-1', name: '菜单', path: '/menu' })
+    count.mockResolvedValue(0)
+    remove.mockRejectedValueOnce(new Error('db failed'))
+
+    await expect(service.remove('menu-1')).rejects.toThrow('db failed')
+    expect(invalidateUsers).not.toHaveBeenCalled()
   })
 })

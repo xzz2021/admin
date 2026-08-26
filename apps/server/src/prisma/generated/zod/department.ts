@@ -1,6 +1,6 @@
 import * as z from "zod"
 import { createZodDto } from "nestjs-zod/dto"
-import { CompleteUser, RelatedUserModel } from "./index"
+import { CompleteUser, RelatedUserModel, CompleteRolePermissionDepartment, RelatedRolePermissionDepartmentModel, CompleteCustomer, RelatedCustomerModel } from "./index"
 
 export const DepartmentModel = z.object({
   id: z.string(),
@@ -21,6 +21,8 @@ export interface CompleteDepartment extends z.infer<typeof DepartmentModel> {
   parent?: CompleteDepartment | null
   children: CompleteDepartment[]
   users: CompleteUser[]
+  rolePermissionDepartments: CompleteRolePermissionDepartment[]
+  customers: CompleteCustomer[]
 }
 
 /**
@@ -32,4 +34,6 @@ export const RelatedDepartmentModel: z.ZodType<CompleteDepartment> = z.lazy(() =
   parent: RelatedDepartmentModel.nullish(),
   children: RelatedDepartmentModel.array(),
   users: RelatedUserModel.array(),
+  rolePermissionDepartments: RelatedRolePermissionDepartmentModel.array(),
+  customers: RelatedCustomerModel.array(),
 }))

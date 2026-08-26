@@ -25,6 +25,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@casl/ability": "^7.0.1",
     "@hatkom/nestjs-zod-prisma": "^1.0.2",
     "@liaoliaots/nestjs-redis": "^10.0.0",
     "@nest-lab/throttler-storage-redis": "^1.2.0",

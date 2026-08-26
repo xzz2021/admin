@@ -1,4 +1,5 @@
 import { RedisKeys } from '@/processor/constants/cache'
+import { AuthorizationCacheUnavailableException } from '@/processor/authorization/authorization.errors'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
@@ -7,6 +8,13 @@ interface PermissionCachePayload {
   v: number
   p: string[]
 }
+
+const INVALIDATE_USER_SCRIPT = `
+local generation = redis.call('INCR', KEYS[1])
+redis.call('EXPIRE', KEYS[1], ARGV[1])
+redis.call('DEL', KEYS[2])
+return generation
+`
 
 @Injectable()
 export class RbacPermissionCacheService {
@@ -17,6 +25,8 @@ export class RbacPermissionCacheService {
   static readonly LOCK_TTL_SECONDS = 10
   static readonly LOCK_WAIT_ATTEMPTS = 5
   static readonly LOCK_WAIT_MS = 20
+  static readonly INVALIDATE_ATTEMPTS = 3
+  static readonly INVALIDATE_RETRY_MS = 20
 
   private readonly redis: Redis
   private readonly inflight = new Map<string, Promise<string[]>>()
@@ -35,6 +45,12 @@ export class RbacPermissionCacheService {
 
   lockKey(userId: string) {
     return `${RedisKeys.RBAC_PERM_LOCK_PREFIX}${userId}`
+  }
+
+  async currentGeneration(userId: string): Promise<number> {
+    const raw = await this.redis.get(this.genKey(userId))
+    const generation = Number(raw ?? 0)
+    return Number.isFinite(generation) ? generation : 0
   }
 
   async get(userId: string): Promise<string[] | null> {
@@ -78,18 +94,33 @@ export class RbacPermissionCacheService {
     const uniqueIds = [...new Set(userIds.filter(Boolean))]
     if (!uniqueIds.length) return
 
-    const pipeline = this.redis.pipeline()
-    for (const id of uniqueIds) {
-      pipeline.incr(this.genKey(id))
-      pipeline.expire(this.genKey(id), RbacPermissionCacheService.GEN_TTL_SECONDS)
-      pipeline.del(this.key(id))
+    try {
+      await Promise.all(uniqueIds.map(userId => this.invalidateUser(userId)))
+    } catch (error) {
+      throw new AuthorizationCacheUnavailableException(error)
     }
-    const results = await pipeline.exec()
-    if (!results) {
-      throw new Error('RBAC cache invalidate failed')
+  }
+
+  private async invalidateUser(userId: string) {
+    let cause: unknown
+    for (let attempt = 0; attempt < RbacPermissionCacheService.INVALIDATE_ATTEMPTS; attempt++) {
+      try {
+        await this.redis.eval(
+          INVALIDATE_USER_SCRIPT,
+          2,
+          this.genKey(userId),
+          this.key(userId),
+          String(RbacPermissionCacheService.GEN_TTL_SECONDS),
+        )
+        return
+      } catch (error) {
+        cause = error
+        if (attempt + 1 < RbacPermissionCacheService.INVALIDATE_ATTEMPTS) {
+          await this.sleep(RbacPermissionCacheService.INVALIDATE_RETRY_MS)
+        }
+      }
     }
-    const failed = results.find(([error]) => error)
-    if (failed?.[0]) throw failed[0]
+    throw cause
   }
 
   private async fill(userId: string, loader: () => Promise<string[]>): Promise<string[]> {

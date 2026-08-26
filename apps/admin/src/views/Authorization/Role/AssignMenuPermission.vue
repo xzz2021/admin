@@ -86,7 +86,7 @@ const handleSave = async () => {
     return
   }
 
-  const submitData = panelRef.value?.collectSubmitData()
+  const submitData = await panelRef.value?.collectSubmitData()
   if (!submitData) return
 
   if (!submitData.menus.length) {

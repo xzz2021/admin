@@ -38,6 +38,9 @@ export type PermissionMinAggregateOutputType = {
   id: string | null
   name: string | null
   code: string | null
+  resource: string | null
+  action: string | null
+  scopeEnabled: boolean | null
   type: $Enums.PermissionType | null
   sort: number | null
   enabled: boolean | null
@@ -50,6 +53,9 @@ export type PermissionMaxAggregateOutputType = {
   id: string | null
   name: string | null
   code: string | null
+  resource: string | null
+  action: string | null
+  scopeEnabled: boolean | null
   type: $Enums.PermissionType | null
   sort: number | null
   enabled: boolean | null
@@ -62,6 +68,9 @@ export type PermissionCountAggregateOutputType = {
   id: number
   name: number
   code: number
+  resource: number
+  action: number
+  scopeEnabled: number
   type: number
   sort: number
   enabled: number
@@ -84,6 +93,9 @@ export type PermissionMinAggregateInputType = {
   id?: true
   name?: true
   code?: true
+  resource?: true
+  action?: true
+  scopeEnabled?: true
   type?: true
   sort?: true
   enabled?: true
@@ -96,6 +108,9 @@ export type PermissionMaxAggregateInputType = {
   id?: true
   name?: true
   code?: true
+  resource?: true
+  action?: true
+  scopeEnabled?: true
   type?: true
   sort?: true
   enabled?: true
@@ -108,6 +123,9 @@ export type PermissionCountAggregateInputType = {
   id?: true
   name?: true
   code?: true
+  resource?: true
+  action?: true
+  scopeEnabled?: true
   type?: true
   sort?: true
   enabled?: true
@@ -207,6 +225,9 @@ export type PermissionGroupByOutputType = {
   id: string
   name: string
   code: string
+  resource: string | null
+  action: string | null
+  scopeEnabled: boolean
   type: $Enums.PermissionType
   sort: number
   enabled: boolean
@@ -242,6 +263,9 @@ export type PermissionWhereInput = {
   id?: Prisma.StringFilter<"Permission"> | string
   name?: Prisma.StringFilter<"Permission"> | string
   code?: Prisma.StringFilter<"Permission"> | string
+  resource?: Prisma.StringNullableFilter<"Permission"> | string | null
+  action?: Prisma.StringNullableFilter<"Permission"> | string | null
+  scopeEnabled?: Prisma.BoolFilter<"Permission"> | boolean
   type?: Prisma.EnumPermissionTypeFilter<"Permission"> | $Enums.PermissionType
   sort?: Prisma.IntFilter<"Permission"> | number
   enabled?: Prisma.BoolFilter<"Permission"> | boolean
@@ -256,6 +280,9 @@ export type PermissionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  resource?: Prisma.SortOrderInput | Prisma.SortOrder
+  action?: Prisma.SortOrderInput | Prisma.SortOrder
+  scopeEnabled?: Prisma.SortOrder
   type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -273,6 +300,9 @@ export type PermissionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PermissionWhereInput[]
   NOT?: Prisma.PermissionWhereInput | Prisma.PermissionWhereInput[]
   name?: Prisma.StringFilter<"Permission"> | string
+  resource?: Prisma.StringNullableFilter<"Permission"> | string | null
+  action?: Prisma.StringNullableFilter<"Permission"> | string | null
+  scopeEnabled?: Prisma.BoolFilter<"Permission"> | boolean
   type?: Prisma.EnumPermissionTypeFilter<"Permission"> | $Enums.PermissionType
   sort?: Prisma.IntFilter<"Permission"> | number
   enabled?: Prisma.BoolFilter<"Permission"> | boolean
@@ -287,6 +317,9 @@ export type PermissionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  resource?: Prisma.SortOrderInput | Prisma.SortOrder
+  action?: Prisma.SortOrderInput | Prisma.SortOrder
+  scopeEnabled?: Prisma.SortOrder
   type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -307,6 +340,9 @@ export type PermissionScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Permission"> | string
   name?: Prisma.StringWithAggregatesFilter<"Permission"> | string
   code?: Prisma.StringWithAggregatesFilter<"Permission"> | string
+  resource?: Prisma.StringNullableWithAggregatesFilter<"Permission"> | string | null
+  action?: Prisma.StringNullableWithAggregatesFilter<"Permission"> | string | null
+  scopeEnabled?: Prisma.BoolWithAggregatesFilter<"Permission"> | boolean
   type?: Prisma.EnumPermissionTypeWithAggregatesFilter<"Permission"> | $Enums.PermissionType
   sort?: Prisma.IntWithAggregatesFilter<"Permission"> | number
   enabled?: Prisma.BoolWithAggregatesFilter<"Permission"> | boolean
@@ -319,6 +355,9 @@ export type PermissionCreateInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -332,6 +371,9 @@ export type PermissionUncheckedCreateInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -345,6 +387,9 @@ export type PermissionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -358,6 +403,9 @@ export type PermissionUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -371,6 +419,9 @@ export type PermissionCreateManyInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -383,6 +434,9 @@ export type PermissionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -394,6 +448,9 @@ export type PermissionUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -416,6 +473,9 @@ export type PermissionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  resource?: Prisma.SortOrder
+  action?: Prisma.SortOrder
+  scopeEnabled?: Prisma.SortOrder
   type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -432,6 +492,9 @@ export type PermissionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  resource?: Prisma.SortOrder
+  action?: Prisma.SortOrder
+  scopeEnabled?: Prisma.SortOrder
   type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -444,6 +507,9 @@ export type PermissionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  resource?: Prisma.SortOrder
+  action?: Prisma.SortOrder
+  scopeEnabled?: Prisma.SortOrder
   type?: Prisma.SortOrder
   sort?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -525,6 +591,9 @@ export type PermissionCreateWithoutMenuInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -537,6 +606,9 @@ export type PermissionUncheckedCreateWithoutMenuInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -578,6 +650,9 @@ export type PermissionScalarWhereInput = {
   id?: Prisma.StringFilter<"Permission"> | string
   name?: Prisma.StringFilter<"Permission"> | string
   code?: Prisma.StringFilter<"Permission"> | string
+  resource?: Prisma.StringNullableFilter<"Permission"> | string | null
+  action?: Prisma.StringNullableFilter<"Permission"> | string | null
+  scopeEnabled?: Prisma.BoolFilter<"Permission"> | boolean
   type?: Prisma.EnumPermissionTypeFilter<"Permission"> | $Enums.PermissionType
   sort?: Prisma.IntFilter<"Permission"> | number
   enabled?: Prisma.BoolFilter<"Permission"> | boolean
@@ -590,6 +665,9 @@ export type PermissionCreateWithoutRolesInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -602,6 +680,9 @@ export type PermissionUncheckedCreateWithoutRolesInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -630,6 +711,9 @@ export type PermissionUpdateWithoutRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -642,6 +726,9 @@ export type PermissionUncheckedUpdateWithoutRolesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -654,6 +741,9 @@ export type PermissionCreateManyMenuInput = {
   id?: string
   name: string
   code: string
+  resource?: string | null
+  action?: string | null
+  scopeEnabled?: boolean
   type: $Enums.PermissionType
   sort?: number
   enabled?: boolean
@@ -665,6 +755,9 @@ export type PermissionUpdateWithoutMenuInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -677,6 +770,9 @@ export type PermissionUncheckedUpdateWithoutMenuInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -689,6 +785,9 @@ export type PermissionUncheckedUpdateManyWithoutMenuInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  resource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  action?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  scopeEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   type?: Prisma.EnumPermissionTypeFieldUpdateOperationsInput | $Enums.PermissionType
   sort?: Prisma.IntFieldUpdateOperationsInput | number
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -731,6 +830,9 @@ export type PermissionSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   name?: boolean
   code?: boolean
+  resource?: boolean
+  action?: boolean
+  scopeEnabled?: boolean
   type?: boolean
   sort?: boolean
   enabled?: boolean
@@ -746,6 +848,9 @@ export type PermissionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   name?: boolean
   code?: boolean
+  resource?: boolean
+  action?: boolean
+  scopeEnabled?: boolean
   type?: boolean
   sort?: boolean
   enabled?: boolean
@@ -759,6 +864,9 @@ export type PermissionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   name?: boolean
   code?: boolean
+  resource?: boolean
+  action?: boolean
+  scopeEnabled?: boolean
   type?: boolean
   sort?: boolean
   enabled?: boolean
@@ -772,6 +880,9 @@ export type PermissionSelectScalar = {
   id?: boolean
   name?: boolean
   code?: boolean
+  resource?: boolean
+  action?: boolean
+  scopeEnabled?: boolean
   type?: boolean
   sort?: boolean
   enabled?: boolean
@@ -780,7 +891,7 @@ export type PermissionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PermissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "type" | "sort" | "enabled" | "menuId" | "createdAt" | "updatedAt", ExtArgs["result"]["permission"]>
+export type PermissionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "resource" | "action" | "scopeEnabled" | "type" | "sort" | "enabled" | "menuId" | "createdAt" | "updatedAt", ExtArgs["result"]["permission"]>
 export type PermissionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   menu?: boolean | Prisma.MenuDefaultArgs<ExtArgs>
   roles?: boolean | Prisma.Permission$rolesArgs<ExtArgs>
@@ -812,6 +923,9 @@ export type $PermissionPayload<ExtArgs extends runtime.Types.Extensions.Internal
      * @z.string().min(1).max(100).meta({ description: '权限编码，唯一标识', example: 'system:user:list' })
      */
     code: string
+    resource: string | null
+    action: string | null
+    scopeEnabled: boolean
     /**
      * @z.nativeEnum(PermissionType).meta({ description: '权限类型', example: 'BUTTON' })
      */
@@ -1255,6 +1369,9 @@ export interface PermissionFieldRefs {
   readonly id: Prisma.FieldRef<"Permission", 'String'>
   readonly name: Prisma.FieldRef<"Permission", 'String'>
   readonly code: Prisma.FieldRef<"Permission", 'String'>
+  readonly resource: Prisma.FieldRef<"Permission", 'String'>
+  readonly action: Prisma.FieldRef<"Permission", 'String'>
+  readonly scopeEnabled: Prisma.FieldRef<"Permission", 'Boolean'>
   readonly type: Prisma.FieldRef<"Permission", 'PermissionType'>
   readonly sort: Prisma.FieldRef<"Permission", 'Int'>
   readonly enabled: Prisma.FieldRef<"Permission", 'Boolean'>
