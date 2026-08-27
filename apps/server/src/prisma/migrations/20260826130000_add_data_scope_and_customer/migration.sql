@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "DataScope" AS ENUM ('ALL', 'SELF', 'DEPT', 'DEPT_TREE', 'CUSTOM');
+CREATE TYPE "DataScope" AS ENUM ('ALL', 'SELF', 'DEPT', 'DEPT_TREE', 'CUSTOM_DEFINE');
 
 -- CreateEnum
 CREATE TYPE "CustomerStatus" AS ENUM ('LEAD', 'FOLLOWING', 'WON', 'FROZEN');

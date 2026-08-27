@@ -16,7 +16,7 @@ import {
   CUSTOMER_EXPORT_MAX_ROWS,
   serializeCustomerCsvRow,
 } from './customer.csv'
-import { CustomerPolicy, type CustomerPolicyRecord } from './customer.policy'
+import { CustomerPolicy } from './customer.policy'
 import { CustomerRepository, type CustomerRow } from './customer.repository'
 import type { CreateCustomerDto, ExportCustomerDto, QueryCustomerDto, UpdateCustomerDto } from './dto/customer.dto'
 
@@ -43,6 +43,7 @@ export class CustomerService {
     const policy = this.policy(context)
     const pageIndex = query.pageIndex ?? 1
     const pageSize = query.pageSize ?? 20
+    // 合并权限过滤的where 和补充的 一般where条件
     const where = policy.queryWhere('customer:view', this.businessWhere(query))
     const [rows, total] = await this.customers.findPage(where, (pageIndex - 1) * pageSize, pageSize)
     return {

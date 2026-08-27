@@ -34,6 +34,8 @@ export class PermissionGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ])
+
+    // 没挂permission装饰器 直接放行 因为还有很多公开接口, 如果没挂, 后续细颗粒度权限读取时会抛出异常,不用担心泄漏
     if (!requiredPermission) return true
 
     const request = context.switchToHttp().getRequest<AuthorizedJwtRequest>()
@@ -43,6 +45,7 @@ export class PermissionGuard implements CanActivate {
     try {
       const authorizationContext = await this.authorization.createContext(userId, [requiredPermission])
       request.authorizationContext = authorizationContext
+      // 上面是接口放行了, 这里开始细颗粒度权限判断
       return authorizationContext.hasPermission(requiredPermission)
     } catch (error) {
       if (error instanceof ServiceUnavailableException) throw error

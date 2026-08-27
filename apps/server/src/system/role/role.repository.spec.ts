@@ -27,7 +27,7 @@ describe('RoleRepository permission synchronization', () => {
       {
         id: 'legacy_rp_read',
         permissionId: 'permission-read',
-        dataScope: DataScope.CUSTOM,
+        dataScope: DataScope.CUSTOM_DEFINE,
         customDepartments: [{ departmentId: 'dept-1' }],
       },
       {
@@ -43,7 +43,7 @@ describe('RoleRepository permission synchronization', () => {
       [
         {
           permissionId: 'permission-read',
-          dataScope: DataScope.CUSTOM,
+          dataScope: DataScope.CUSTOM_DEFINE,
           departmentIds: ['dept-1'],
         },
         {
@@ -72,7 +72,7 @@ describe('RoleRepository permission synchronization', () => {
       {
         id: 'legacy_rp_removed',
         permissionId: 'permission-removed',
-        dataScope: DataScope.CUSTOM,
+        dataScope: DataScope.CUSTOM_DEFINE,
         customDepartments: [{ departmentId: 'dept-1' }],
       },
     ])

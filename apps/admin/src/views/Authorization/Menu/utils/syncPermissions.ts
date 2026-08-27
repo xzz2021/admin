@@ -23,7 +23,8 @@ export const syncPermissions = async (
       code: permission.code,
       type: permission.type,
       sort: permission.sort ?? 0,
-      enabled: permission.enabled ?? true
+      enabled: permission.enabled ?? true,
+      scopeEnabled: permission.scopeEnabled ?? false
     }
 
     if (permission.id && !isTempPermissionId(permission.id)) {
@@ -34,7 +35,8 @@ export const syncPermissions = async (
         prev.code !== permission.code ||
         prev.type !== permission.type ||
         prev.sort !== permission.sort ||
-        prev.enabled !== permission.enabled
+        prev.enabled !== permission.enabled ||
+        (prev.scopeEnabled ?? false) !== payload.scopeEnabled
 
       if (changed) {
         await updatePermissionApi({ id: permission.id, ...payload })

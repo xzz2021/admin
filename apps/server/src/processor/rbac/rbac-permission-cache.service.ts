@@ -1,5 +1,5 @@
-import { RedisKeys } from '@/processor/constants/cache'
 import { AuthorizationCacheUnavailableException } from '@/processor/authorization/authorization.errors'
+import { RedisKeys } from '@/processor/constants/cache'
 import { RedisService } from '@liaoliaots/nestjs-redis'
 import { Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
@@ -70,9 +70,9 @@ export class RbacPermissionCacheService {
 
   async set(userId: string, permissions: string[]) {
     const genRaw = await this.redis.get(this.genKey(userId))
-    const gen = Number(genRaw ?? 0)
+    const gen = Number(genRaw ?? 0) // 生成版本号, 用于判断缓存是否过期
     const payload: PermissionCachePayload = {
-      v: Number.isFinite(gen) ? gen : 0,
+      v: Number.isFinite(gen) ? gen : 0, // 当前版本号 isFinite 判断是否为数字
       p: permissions,
     }
     await this.redis.set(this.key(userId), JSON.stringify(payload), 'EX', this.ttlSeconds())

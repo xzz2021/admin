@@ -68,6 +68,7 @@ export class AuthorizationRepository {
           },
         },
       }),
+      //  这里是查出所有权限码 为什么???---> 后续给超级管理员放行所有细颗粒度权限 无范围限制
       this.db.permission.findMany({
         where: { enabled: true },
         select: { code: true, scopeEnabled: true },
@@ -79,7 +80,7 @@ export class AuthorizationRepository {
     return {
       userId: user.id,
       departmentId: user.department?.enabled ? user.department.id : null,
-      permissionCatalog,
+      permissionCatalog, //汇总多个角色 以及权限码
       roles: user.roles.map(({ role }) => ({
         code: role.code,
         permissions: role.permissions.map(item => ({

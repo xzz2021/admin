@@ -1,8 +1,8 @@
 import { DataScope } from '@/prisma/generated/prisma/enums'
 import { AuthorizationContext } from './authorization-context'
 import { mergeGrants } from './grant-merger'
-import { ScopeResolverRegistry } from './scope-resolver.registry'
 import type { ScopeResolutionInput } from './scope-resolver.interface'
+import { ScopeResolverRegistry } from './scope-resolver.registry'
 
 describe('authorization core', () => {
   describe('mergeGrants', () => {
@@ -72,19 +72,19 @@ describe('authorization core', () => {
     beforeEach(() => jest.clearAllMocks())
 
     it('resolves ALL and SELF', async () => {
-      await expect(registry.resolve(DataScope.ALL, input)).resolves.toEqual({ all: true, scopes: [] })
-      await expect(registry.resolve(DataScope.SELF, input)).resolves.toEqual({
+      await expect(registry.resolveGrant(DataScope.ALL, input)).resolves.toEqual({ all: true, scopes: [] })
+      await expect(registry.resolveGrant(DataScope.SELF, input)).resolves.toEqual({
         all: false,
         scopes: [{ type: 'SELF' }],
       })
     })
 
     it('resolves DEPT and fails closed without an enabled department', async () => {
-      await expect(registry.resolve(DataScope.DEPT, input)).resolves.toEqual({
+      await expect(registry.resolveGrant(DataScope.DEPT, input)).resolves.toEqual({
         all: false,
         scopes: [{ type: 'DEPARTMENT', ids: ['dept-1'] }],
       })
-      await expect(registry.resolve(DataScope.DEPT, { ...input, departmentId: null })).resolves.toEqual({
+      await expect(registry.resolveGrant(DataScope.DEPT, { ...input, departmentId: null })).resolves.toEqual({
         all: false,
         scopes: [],
       })
@@ -93,15 +93,15 @@ describe('authorization core', () => {
     it('expands DEPT_TREE through DepartmentRepository', async () => {
       departments.findSubtreeDepartmentIds.mockResolvedValue(['dept-b', 'dept-1'])
 
-      await expect(registry.resolve(DataScope.DEPT_TREE, input)).resolves.toEqual({
+      await expect(registry.resolveGrant(DataScope.DEPT_TREE, input)).resolves.toEqual({
         all: false,
         scopes: [{ type: 'DEPARTMENT', ids: ['dept-1', 'dept-b'] }],
       })
     })
 
-    it('filters disabled CUSTOM departments and fails closed when all are disabled', async () => {
+    it('filters disabled CUSTOM_DEFINE departments and fails closed when all are disabled', async () => {
       await expect(
-        registry.resolve(DataScope.CUSTOM, {
+        registry.resolveGrant(DataScope.CUSTOM_DEFINE, {
           ...input,
           customDepartments: [
             { id: 'dept-b', enabled: false },
@@ -113,7 +113,7 @@ describe('authorization core', () => {
         scopes: [{ type: 'DEPARTMENT', ids: ['dept-a'] }],
       })
       await expect(
-        registry.resolve(DataScope.CUSTOM, {
+        registry.resolveGrant(DataScope.CUSTOM_DEFINE, {
           ...input,
           customDepartments: [{ id: 'dept-b', enabled: false }],
         }),

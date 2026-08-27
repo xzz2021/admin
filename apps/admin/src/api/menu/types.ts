@@ -21,6 +21,8 @@ export interface MenuPermission {
   type: PermissionType
   sort?: number
   enabled?: boolean
+  /** 是否允许在角色授权中配置 DataScope，默认 false */
+  scopeEnabled?: boolean
   menuId?: string
 }
 
@@ -64,6 +66,7 @@ export interface CreatePermissionDto {
   menuId: string
   sort?: number
   enabled?: boolean
+  scopeEnabled?: boolean
 }
 
 export interface UpdatePermissionDto {
@@ -73,4 +76,5 @@ export interface UpdatePermissionDto {
   type: PermissionType
   sort?: number
   enabled?: boolean
+  scopeEnabled?: boolean
 }

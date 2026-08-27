@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { DataScope, RoleAuthorizationPermission } from '@/api/role/type'
 import type { DepartmentItem } from '@/api/department/types'
+import type { DataScope, RoleAuthorizationPermission } from '@/api/role/type'
 import { BaseButton } from '@/components/Button'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useDepartmentStore } from '@/store/modules/department'
-import { computed, onMounted, watch } from 'vue'
 import { ElOption, ElSelect, ElTag, ElTreeSelect } from 'element-plus'
+import { computed, onMounted, watch } from 'vue'
 import { DATA_SCOPE_I18N } from '../utils/roleMenuTree'
 
 interface DepartmentTreeOption {
@@ -19,13 +19,13 @@ const permission = defineModel<RoleAuthorizationPermission>({ required: true })
 const departmentStore = useDepartmentStore()
 const { t } = useI18n()
 
-const scopeValues: DataScope[] = ['ALL', 'SELF', 'DEPT', 'DEPT_TREE', 'CUSTOM']
+const scopeValues: DataScope[] = ['ALL', 'SELF', 'DEPT', 'DEPT_TREE', 'CUSTOM_DEFINE']
 const scopeDescriptionKeys: Record<DataScope, string> = {
   ALL: 'role.dataScopeAllDescription',
   SELF: 'role.dataScopeSelfDescription',
   DEPT: 'role.dataScopeDepartmentDescription',
   DEPT_TREE: 'role.dataScopeDepartmentTreeDescription',
-  CUSTOM: 'role.dataScopeCustomDescription',
+  CUSTOM_DEFINE: 'role.dataScopeCustomDescription'
 }
 
 const flattenDepartments = (nodes: DepartmentItem[], result: DepartmentItem[] = []): DepartmentItem[] => {
@@ -37,7 +37,7 @@ const flattenDepartments = (nodes: DepartmentItem[], result: DepartmentItem[] = 
 }
 
 const departmentMap = computed(
-  () => new Map(flattenDepartments(departmentStore.list).map((department) => [department.id, department])),
+  () => new Map(flattenDepartments(departmentStore.list).map((department) => [department.id, department]))
 )
 
 const invalidDepartmentIds = computed(() => {
@@ -55,7 +55,7 @@ const toOptions = (nodes: DepartmentItem[]): DepartmentTreeOption[] =>
     value: node.id,
     label: node.name,
     disabled: node.enabled === false,
-    ...(node.children?.length ? { children: toOptions(node.children) } : {}),
+    ...(node.children?.length ? { children: toOptions(node.children) } : {})
   }))
 
 const departmentOptions = computed(() => {
@@ -65,27 +65,27 @@ const departmentOptions = computed(() => {
     .map((id) => ({
       value: id,
       label: t('role.missingDepartmentOption', { id }),
-      disabled: true,
+      disabled: true
     }))
   return [...options, ...missing]
 })
 
 const customDepartmentIds = computed<string[]>({
-  get: () => (permission.value.dataScope === 'CUSTOM' ? permission.value.departmentIds : []),
+  get: () => (permission.value.dataScope === 'CUSTOM_DEFINE' ? permission.value.departmentIds : []),
   set: (ids) => {
-    permission.value.departmentIds = permission.value.dataScope === 'CUSTOM' ? [...new Set(ids)] : []
-  },
+    permission.value.departmentIds = permission.value.dataScope === 'CUSTOM_DEFINE' ? [...new Set(ids)] : []
+  }
 })
 
 const selectedDataScope = computed<DataScope | ''>({
   get: () => permission.value.dataScope || '',
   set: (scope) => {
     permission.value.dataScope = scope || null
-  },
+  }
 })
 
 const selectedScopeDescription = computed(() =>
-  permission.value.dataScope ? t(scopeDescriptionKeys[permission.value.dataScope]) : t('role.dataScopeRequiredTip'),
+  permission.value.dataScope ? t(scopeDescriptionKeys[permission.value.dataScope]) : t('role.dataScopeRequiredTip')
 )
 
 const invalidDepartmentLabel = (id: string) => departmentMap.value.get(id)?.name || id
@@ -99,11 +99,11 @@ const removeInvalidDepartments = () => {
 watch(
   () => permission.value.dataScope,
   (scope) => {
-    if (scope !== 'CUSTOM') {
+    if (scope !== 'CUSTOM_DEFINE') {
       permission.value.departmentIds = []
       permission.value.disabledDepartmentIds = []
     }
-  },
+  }
 )
 
 onMounted(() => {
@@ -126,7 +126,7 @@ onMounted(() => {
     </div>
     <div class="data-scope-description">{{ selectedScopeDescription }}</div>
 
-    <template v-if="permission.dataScope === 'CUSTOM'">
+    <template v-if="permission.dataScope === 'CUSTOM_DEFINE'">
       <ElTreeSelect
         v-model="customDepartmentIds"
         class="department-select"

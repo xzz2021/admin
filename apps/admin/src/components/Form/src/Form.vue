@@ -153,6 +153,8 @@ export default defineComponent({
     }
 
     const optionApiLoadingFields = ref(new Set<string>())
+    // 失败或空结果也要记一次，否则 render 时 hasOptionData 仍为 false，会把 optionApi 打成死循环
+    const optionApiSettledFields = ref(new Set<string>())
 
     const hasOptionData = (item: FormSchema) => {
       if (item.component === ComponentNameEnum.TREE_SELECT || item.component === ComponentNameEnum.TRANSFER) {
@@ -175,8 +177,11 @@ export default defineComponent({
             value: options
           }
         ])
+      } catch {
+        // axios 拦截器已提示；此处只阻断后续重试  不然后端出错后 会一直请求接口
       } finally {
         optionApiLoadingFields.value.delete(item.field)
+        optionApiSettledFields.value.add(item.field)
       }
     }
 
@@ -259,7 +264,12 @@ export default defineComponent({
     // 渲染formItem
     const renderFormItem = (item: FormSchema) => {
       // 如果有 optionApi，优先使用 optionApi；TreeSelect / Transfer 使用 data，其余使用 options
-      if (item.optionApi && !hasOptionData(item) && !optionApiLoadingFields.value.has(item.field)) {
+      if (
+        item.optionApi &&
+        !hasOptionData(item) &&
+        !optionApiLoadingFields.value.has(item.field) &&
+        !optionApiSettledFields.value.has(item.field)
+      ) {
         optionApiLoadingFields.value.add(item.field)
         getOptions(item.optionApi, item)
       }

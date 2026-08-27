@@ -84,11 +84,12 @@ export class RoleService {
         throw new BadRequestException(`权限 ${permission.id} 的数据范围不属于菜单 ${scope.menuId}`)
       }
       const departments = scope.departmentIds ?? []
-      if (scope.dataScope === DataScope.CUSTOM) {
-        if (!departments.length) throw new BadRequestException(`权限 ${permission.id} 的 CUSTOM 范围至少选择一个部门`)
+      if (scope.dataScope === DataScope.CUSTOM_DEFINE) {
+        if (!departments.length)
+          throw new BadRequestException(`权限 ${permission.id} 的 CUSTOM_DEFINE 范围至少选择一个部门`)
         departments.forEach(departmentId => departmentIds.add(departmentId))
       } else if (scope.departmentIds !== undefined) {
-        throw new BadRequestException(`仅 CUSTOM 数据范围允许提交 departmentIds`)
+        throw new BadRequestException(`仅 CUSTOM_DEFINE 数据范围允许提交 departmentIds`)
       }
       return {
         permissionId: permission.id,
@@ -100,7 +101,7 @@ export class RoleService {
     if (departmentIds.size) {
       const departments = await this.roles.findEnabledDepartmentsByIds([...departmentIds], tx)
       if (departments.length !== departmentIds.size) {
-        throw new BadRequestException('CUSTOM 数据范围包含不存在或已禁用的部门')
+        throw new BadRequestException('CUSTOM_DEFINE 数据范围包含不存在或已禁用的部门')
       }
     }
     return normalized

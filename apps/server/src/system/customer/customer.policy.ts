@@ -48,15 +48,18 @@ export class CustomerPolicy {
     this.ability = this.buildAbility()
   }
 
+  // 负责行过滤条件
   whereFor(permissionCode: string): Prisma.CustomerWhereInput {
     if (this.superAdmin) return {}
     const decision = this.context.decisionFor(permissionCode)
+    // 如果
     if (!decision?.scoped) return DENY_ALL_WHERE
     if (decision.grant.all) return {}
     if (decision.grant.scopes.length === 0) return DENY_ALL_WHERE
     return { OR: decision.grant.scopes.map(scope => this.scopeWhere(scope)) }
   }
 
+  // 合并查询条件
   queryWhere(permissionCode: string, businessWhere: Prisma.CustomerWhereInput): Prisma.CustomerWhereInput {
     return {
       AND: [this.whereFor(permissionCode), this.canReadSensitive() ? {} : { confidential: false }, businessWhere],
@@ -109,6 +112,7 @@ export class CustomerPolicy {
     return this.can('update-sensitive', record, field)
   }
 
+  // 构建ability数组
   capabilities(record: CustomerPolicyRecord): CustomerCapability[] {
     const result: CustomerCapability[] = []
     if (this.can('update', record)) result.push('update')
@@ -117,6 +121,7 @@ export class CustomerPolicy {
     return result
   }
 
+  // 用于响应数据脱敏和 ability 计算 返回最终数据 以及 行数据的操作权限
   project<T extends CustomerPolicyRecord>(record: T, capabilities = this.capabilities(record)): CustomerProjection {
     const { internalCost, dealAmount, ...rest } = record
     return {

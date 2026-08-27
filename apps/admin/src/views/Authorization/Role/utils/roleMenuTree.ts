@@ -1,5 +1,5 @@
-import type { DataScope, RoleAuthorizationMenu, RoleAuthorizationPermission, RoleSubmitPayload } from '@/api/role/type'
 import type { DepartmentItem } from '@/api/department/types'
+import type { DataScope, RoleAuthorizationMenu, RoleAuthorizationPermission, RoleSubmitPayload } from '@/api/role/type'
 
 export interface RoleFormModel {
   id?: string
@@ -17,7 +17,7 @@ export const ROLE_PERMISSION_TYPE_I18N: Record<string, string> = {
   BUTTON: 'role.permissionTypeButton',
   DATA: 'role.permissionTypeData',
   API: 'role.permissionTypeApi',
-  OTHER: 'role.permissionTypeOther',
+  OTHER: 'role.permissionTypeOther'
 }
 
 export const DATA_SCOPE_I18N: Record<DataScope, string> = {
@@ -25,7 +25,7 @@ export const DATA_SCOPE_I18N: Record<DataScope, string> = {
   SELF: 'role.dataScopeSelf',
   DEPT: 'role.dataScopeDepartment',
   DEPT_TREE: 'role.dataScopeDepartmentTree',
-  CUSTOM: 'role.dataScopeCustom',
+  CUSTOM_DEFINE: 'role.dataScopeCustom'
 }
 
 export const filterRoleMenuNode = (value: string, data: RoleMenuTreeNode) => {
@@ -98,11 +98,11 @@ const flattenDepartments = (departments: DepartmentItem[], result: DepartmentIte
 
 export const findFirstRoleScopeIssue = (
   tree: RoleMenuTreeNode[],
-  context: RoleScopeValidationContext,
+  context: RoleScopeValidationContext
 ): RoleScopeValidationIssue | null => {
   const departments = flattenDepartments(context.departments)
   const enabledDepartmentIds = new Set(
-    departments.filter((department) => department.enabled !== false).map((department) => department.id),
+    departments.filter((department) => department.enabled !== false).map((department) => department.id)
   )
   let issue: RoleScopeValidationIssue | null = null
 
@@ -114,7 +114,7 @@ export const findFirstRoleScopeIssue = (
           issue = { menu, permission, reason: 'required' }
           return
         }
-        if (permission.dataScope !== 'CUSTOM') {
+        if (permission.dataScope !== 'CUSTOM_DEFINE') {
           if (permission.departmentIds.length || permission.disabledDepartmentIds.length) {
             issue = { menu, permission, reason: 'nonCustomDepartments' }
             return
@@ -167,13 +167,13 @@ export const buildAssignedMenus = (tree: RoleMenuTreeNode[]): RoleSubmitData['me
       permissionScopes: checkedPermissions
         .filter(
           (permission): permission is RoleMenuPermissionItem & { dataScope: DataScope } =>
-            permission.scopeEnabled && permission.dataScope !== null,
+            permission.scopeEnabled && permission.dataScope !== null
         )
         .map((permission) => ({
           permissionId: permission.id,
           dataScope: permission.dataScope,
-          ...(permission.dataScope === 'CUSTOM' ? { departmentIds: [...new Set(permission.departmentIds)] } : {}),
-        })),
+          ...(permission.dataScope === 'CUSTOM_DEFINE' ? { departmentIds: [...new Set(permission.departmentIds)] } : {})
+        }))
     })
   }
 
@@ -206,6 +206,6 @@ export const collectRoleSubmitData = (form: RoleFormModel, tree: RoleMenuTreeNod
     name: form.name,
     enabled: form.enabled,
     description: form.description || '',
-    menus: buildAssignedMenus(tree),
+    menus: buildAssignedMenus(tree)
   }
 }

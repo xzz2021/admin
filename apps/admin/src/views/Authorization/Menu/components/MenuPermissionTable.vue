@@ -69,6 +69,13 @@ const permissionTypeLabel = (type: PermissionType) => {
           </ElTag>
         </template>
       </ElTableColumn>
+      <ElTableColumn prop="scopeEnabled" :label="t('menu.scopeEnabled')" width="100">
+        <template #default="{ row }">
+          <ElTag :type="row.scopeEnabled ? 'success' : 'info'" size="small">
+            {{ row.scopeEnabled ? t('menu.scopeEnabledOn') : t('menu.scopeEnabledOff') }}
+          </ElTag>
+        </template>
+      </ElTableColumn>
       <ElTableColumn :label="t('userDemo.action')" width="140">
         <template #default="{ row }">
           <ElButton size="small" type="primary" @click="emit('edit', row)">

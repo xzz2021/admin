@@ -1,16 +1,16 @@
 import { DataScope } from '@/prisma/generated/prisma/enums'
+import type { AuthorizationSnapshotCacheService } from './authorization-snapshot-cache.service'
 import type { AuthorizationRepository, AuthorizationSource } from './authorization.repository'
 import { AuthorizationService } from './authorization.service'
-import type { AuthorizationSnapshotCacheService } from './authorization-snapshot-cache.service'
 import { ScopeResolverRegistry } from './scope-resolver.registry'
 
 describe('AuthorizationService', () => {
   const loadUserAuthorization = jest.fn()
-  const resolve = jest.fn()
+  const resolveGrant = jest.fn()
   const getOrLoad = jest.fn((_userId: string, loader: () => Promise<unknown>) => loader())
   const service = new AuthorizationService(
     { loadUserAuthorization } as unknown as AuthorizationRepository,
-    { resolve } as unknown as ScopeResolverRegistry,
+    { resolveGrant } as unknown as ScopeResolverRegistry,
     { getOrLoad } as unknown as AuthorizationSnapshotCacheService,
   )
 
@@ -28,7 +28,7 @@ describe('AuthorizationService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     getOrLoad.mockImplementation((_userId: string, loader: () => Promise<unknown>) => loader())
-    resolve.mockImplementation((scope: DataScope) => {
+    resolveGrant.mockImplementation((scope: DataScope) => {
       if (scope === DataScope.ALL) return { all: true, scopes: [] }
       if (scope === DataScope.SELF) return { all: false, scopes: [{ type: 'SELF' }] }
       return { all: false, scopes: [{ type: 'DEPARTMENT', ids: ['dept-1'] }] }
@@ -65,7 +65,7 @@ describe('AuthorizationService', () => {
 
     expect(context.hasPermission('customer:list')).toBe(true)
     expect(context.decisionFor('customer:list')).toEqual({ scoped: false })
-    expect(resolve).not.toHaveBeenCalled()
+    expect(resolveGrant).not.toHaveBeenCalled()
   })
 
   it('treats a newly scope-enabled permission with null dataScope as scoped deny all', async () => {
@@ -92,7 +92,7 @@ describe('AuthorizationService', () => {
       scoped: true,
       grant: { all: false, scopes: [] },
     })
-    expect(resolve).not.toHaveBeenCalled()
+    expect(resolveGrant).not.toHaveBeenCalled()
   })
 
   it('unions multiple role grants and preserves SELF', async () => {
@@ -148,7 +148,7 @@ describe('AuthorizationService', () => {
     })
   })
 
-  it('keeps CUSTOM with only disabled departments as scoped deny all', async () => {
+  it('keeps CUSTOM_DEFINE with only disabled departments as scoped deny all', async () => {
     loadUserAuthorization.mockResolvedValue(
       source([
         {
@@ -157,14 +157,14 @@ describe('AuthorizationService', () => {
             {
               code: 'customer:list',
               scopeEnabled: true,
-              dataScope: DataScope.CUSTOM,
+              dataScope: DataScope.CUSTOM_DEFINE,
               customDepartments: [{ id: 'disabled', enabled: false }],
             },
           ],
         },
       ]),
     )
-    resolve.mockResolvedValue({ all: false, scopes: [] })
+    resolveGrant.mockResolvedValue({ all: false, scopes: [] })
 
     const context = await service.createContext('user-1', ['customer:list'])
 
@@ -219,7 +219,7 @@ describe('AuthorizationService', () => {
       grant: { all: false, scopes: [{ type: 'DEPARTMENT', ids: ['dept-1', 'dept-2'] }] },
     })
     expect(loadUserAuthorization).not.toHaveBeenCalled()
-    expect(resolve).not.toHaveBeenCalled()
+    expect(resolveGrant).not.toHaveBeenCalled()
   })
 
   it('expands the same DEPT_TREE only once across permissions and roles in one snapshot build', async () => {

@@ -66,7 +66,7 @@ export default {
     type: '类型',
     sort: '排序',
     phone: '手机号',
-    edit: '编辑',
+    edit: '编辑'
   },
   lock: {
     lockScreen: '锁定屏幕',
@@ -76,13 +76,13 @@ export default {
     backToLogin: '返回登录',
     entrySystem: '进入系统',
     placeholder: '请输入锁屏密码',
-    message: '锁屏密码错误',
+    message: '锁屏密码错误'
   },
   error: {
     noPermission: `抱歉，您无权访问此页面。`,
     pageError: '抱歉，您访问的页面不存在。',
     networkError: '抱歉，服务器报告错误。',
-    returnToHome: '返回首页',
+    returnToHome: '返回首页'
   },
   setting: {
     projectSetting: '项目配置',
@@ -114,12 +114,12 @@ export default {
     dynamicRouter: '开启动态路由',
     serverDynamicRouter: '服务端动态路由',
     reExperienced: '请重新退出登录体验',
-    fixedMenu: '固定菜单',
+    fixedMenu: '固定菜单'
   },
   size: {
     default: '默认',
     large: '大',
-    small: '小',
+    small: '小'
   },
   login: {
     welcome: '欢迎使用本系统',
@@ -138,7 +138,7 @@ export default {
     code: '验证码',
     codePlaceholder: '请输入验证码',
     getCode: '获取验证码',
-    phone: '手机号',
+    phone: '手机号'
   },
   router: {
     login: '登录',
@@ -222,7 +222,7 @@ export default {
     personal: '个人',
     avatars: '头像列表',
     iAgree: '我同意',
-    tree: 'Tree 树形控件',
+    tree: 'Tree 树形控件'
   },
   permission: {
     name: '权限名称',
@@ -231,7 +231,7 @@ export default {
     hasPermission: '请设置操作权限值',
     addPermission: '添加权限',
     updatePermission: '修改权限',
-    addCurd: '快速生成增删改查',
+    addCurd: '快速生成增删改查'
   },
   onlineUser: {
     username: '用户名',
@@ -258,7 +258,7 @@ export default {
     kickSuccess: '操作成功',
     cannotKickSelf: '当前账号',
     cannotKickAdmin: '超级管理员',
-    cannotKick: '不可下线',
+    cannotKick: '不可下线'
   },
   message: {
     inbox: '我的消息',
@@ -293,7 +293,7 @@ export default {
     untitled: '未填写标题',
     emptyContent: '暂无内容',
     contentPlaceholder: '请输入消息内容',
-    contentTooLong: '消息内容不能超过 5000 个字符',
+    contentTooLong: '消息内容不能超过 5000 个字符'
   },
   monitor: {
     refreshHint: '后端每 10 秒采集并写入 Redis 滑动窗口，前端经 WebSocket 每 15 秒拉取近 1 小时数据',
@@ -320,7 +320,7 @@ export default {
     time: '时间',
     path: '路径',
     message: '信息',
-    noError: '暂无异常',
+    noError: '暂无异常'
   },
   analysis: {
     newUser: '新增用户',
@@ -356,7 +356,7 @@ export default {
     thursday: '周四',
     friday: '周五',
     saturday: '周六',
-    sunday: '周日',
+    sunday: '周日'
   },
   workplace: {
     goodMorning: '早安',
@@ -379,7 +379,7 @@ export default {
     dynamic: '动态',
     push: '推送',
     pushCode: 'Archer 推送 代码到 Github',
-    follow: '关注',
+    follow: '关注'
   },
   formDemo: {
     input: '输入框',
@@ -464,7 +464,7 @@ export default {
     download: '下载',
     userAvatar: '用户头像',
     iconPicker: '图标选择器',
-    iAgree: '我同意',
+    iAgree: '我同意'
   },
   iconDemo: {
     icon: '图标',
@@ -472,11 +472,11 @@ export default {
     iconify: 'Iconify组件',
     recommendedUse: '推荐使用',
     recommendeDes: 'Iconify组件基本包含所有的图标，你可以查询到你想要的任何图标。并且打包只会打包所用到的图标。',
-    accessAddress: '访问地址',
+    accessAddress: '访问地址'
   },
   echartDemo: {
     echart: '图表',
-    echartDes: '基于 echarts 二次封装组件，自适应宽度，只需传入 options 与 height 属性即可展示对应的图表。',
+    echartDes: '基于 echarts 二次封装组件，自适应宽度，只需传入 options 与 height 属性即可展示对应的图表。'
   },
   countToDemo: {
     countTo: '数字动画',
@@ -489,13 +489,13 @@ export default {
     startVal: '开始值',
     start: '开始',
     pause: '暂停',
-    resume: '继续',
+    resume: '继续'
   },
   watermarkDemo: {
     watermark: '水印',
     createdWatermark: '创建水印',
     clearWatermark: '清除水印',
-    resetWatermark: '重置水印',
+    resetWatermark: '重置水印'
   },
   qrcodeDemo: {
     qrcode: '二维码',
@@ -508,25 +508,25 @@ export default {
     invalid: '失效',
     logoConfig: 'logo配置',
     logoStyle: 'logo样式',
-    size: '大小配置',
+    size: '大小配置'
   },
   treeDemo: {
     treeTitle: '树形控件（节点右键可自定义菜单选项）',
-    message: '基于 ElementPlus 的 Tree 组件二次封装',
+    message: '基于 ElementPlus 的 Tree 组件二次封装'
   },
   highlightDemo: {
     highlight: '高亮',
     message: '种一棵树最好的时间是十年前，其次就是现在。',
     keys1: '十年前',
-    keys2: '现在',
+    keys2: '现在'
   },
   infotipDemo: {
     infotip: '信息提示',
     infotipDes: '基于 Highlight 组件二次封装',
-    title: '注意事项',
+    title: '注意事项'
   },
   levelDemo: {
-    menu: '多级菜单缓存',
+    menu: '多级菜单缓存'
   },
   searchDemo: {
     search: '查询',
@@ -548,10 +548,10 @@ export default {
     // 还原单选框
     restoreRadio: '还原单选框',
     loading: '加载中',
-    reset: '重置',
+    reset: '重置'
   },
   stickyDemo: {
-    sticky: '黏性',
+    sticky: '黏性'
   },
   tableDemo: {
     table: '表格',
@@ -595,13 +595,13 @@ export default {
     createdAt: '创建时间',
     updatedAt: '更新时间',
     operator: '操作人',
-    keyword: '关键词',
+    keyword: '关键词'
   },
   richText: {
     richText: '富文本',
     richTextDes: '基于 wangeditor 二次封装',
     jsonEditor: 'JSON编辑器',
-    jsonEditorDes: '基于 vue-json-pretty 二次封装',
+    jsonEditorDes: '基于 vue-json-pretty 二次封装'
   },
   dialogDemo: {
     dialog: '弹窗',
@@ -610,12 +610,12 @@ export default {
     open: '打开',
     close: '关闭',
     combineWithForm: '与表单结合',
-    submit: '提交',
+    submit: '提交'
   },
   imageViewerDemo: {
     open: '打开',
     imageViewer: '图片预览',
-    imageViewerDes: '基于 ElementPlus 的 ImageViewer 组件二次封装',
+    imageViewerDes: '基于 ElementPlus 的 ImageViewer 组件二次封装'
   },
   descriptionsDemo: {
     descriptions: '描述',
@@ -625,7 +625,7 @@ export default {
     phone: '联系电话',
     email: '邮箱',
     addr: '地址',
-    form: '与 Form 组件组合',
+    form: '与 Form 组件组合'
   },
   exampleDemo: {
     title: '标题',
@@ -641,7 +641,7 @@ export default {
     content: '内容',
     save: '保存',
     detail: '详情',
-    sort: '排序',
+    sort: '排序'
   },
   userDemo: {
     title: '用户管理',
@@ -677,7 +677,7 @@ export default {
     confirmNewPassword: '确认新密码',
     //  个人信息  修改密码  基本资料
     personalInfo: '个人信息',
-    basicInfo: '基本资料',
+    basicInfo: '基本资料'
   },
   personal: {
     personalInfo: '个人信息',
@@ -704,7 +704,7 @@ export default {
     confirmModifyBtn: '确认修改',
     selectAvatarFirst: '请先选择并裁剪头像',
     avatarUpdateSuccess: '头像修改成功',
-    userInfoError: '用户信息异常，请重新登录',
+    userInfoError: '用户信息异常，请重新登录'
   },
   file: {
     preview: '文件预览',
@@ -723,7 +723,7 @@ export default {
     probing: '检测中...',
     previewUnsupported: '暂不支持预览该文件类型：{type}',
     previewUrlFailed: '获取文件预览链接失败',
-    previewFailed: '文件预览失败，请稍后重试',
+    previewFailed: '文件预览失败，请稍后重试'
   },
   dbBackup: {
     configTitle: '备份配置',
@@ -762,7 +762,7 @@ export default {
     startedAt: '开始时间',
     finishedAt: '完成时间',
     statusPlaceholder: '筛选状态',
-    triggerPlaceholder: '筛选触发方式',
+    triggerPlaceholder: '筛选触发方式'
   },
   dict: {
     searchTypePlaceholder: '搜索字典类型',
@@ -772,11 +772,11 @@ export default {
     typeDisabled: '字典类型已禁用',
     deleteTypeHasEntries: '该字典类型下存在字典项，请先删除字典项',
     confirmDeleteType: '确认删除字典「{name}」？',
-    confirmDeleteEntry: '确认删除字典项「{name}」？',
+    confirmDeleteEntry: '确认删除字典项「{name}」？'
   },
   department: {
     deleteHasChildren: '该部门存在子部门，请先删除子部门',
-    confirmDelete: '确认删除部门「{name}」？',
+    confirmDelete: '确认删除部门「{name}」？'
   },
   userLog: {
     operator: '操作人',
@@ -790,7 +790,7 @@ export default {
     location: '地理位置',
     operateTime: '操作时间',
     detailInfo: '详细信息',
-    selectToDelete: '请选择要删除的日志',
+    selectToDelete: '请选择要删除的日志'
   },
   auditLog: {
     operator: '操作人',
@@ -809,7 +809,7 @@ export default {
         lockout: '账号锁定',
         logout: '退出登录',
         force_logout: '强制下线',
-        register: '用户注册',
+        register: '用户注册'
       },
       user: {
         create: '新增用户',
@@ -817,24 +817,24 @@ export default {
         delete: '删除用户',
         reset_password: '重置密码',
         update_password: '修改密码',
-        update_profile: '更新个人信息',
+        update_profile: '更新个人信息'
       },
       role: {
         create: '新增角色',
         update: '更新角色',
-        delete: '删除角色',
+        delete: '删除角色'
       },
       menu: {
         create: '新增菜单',
         update: '更新菜单',
-        delete: '删除菜单',
+        delete: '删除菜单'
       },
       department: {
         create: '新增部门',
         update: '更新部门',
-        delete: '删除部门',
-      },
-    },
+        delete: '删除部门'
+      }
+    }
   },
   menu: {
     name: '名称',
@@ -921,6 +921,10 @@ export default {
     permissionTypeData: '数据权限',
     permissionTypeApi: '接口权限',
     permissionTypeOther: '其他',
+    scopeEnabled: '数据范围',
+    scopeEnabledOn: '开启',
+    scopeEnabledOff: '关闭',
+    scopeEnabledTip: '开启后可在角色授权中为该权限配置数据范围'
   },
   role: {
     roleName: '名称',
@@ -1005,7 +1009,7 @@ export default {
     nonCustomDepartmentSaveBlocked: '权限“{permission}”的非自定义范围不能包含部门',
     legacySnapshotScopeWarning: '旧版快照仅恢复勾选状态；数据范围权限仍需逐项配置',
     customDepartmentCountLabel: '{scope}（{count} 个部门）',
-    invalidDepartmentCount: '{count} 个无效部门',
+    invalidDepartmentCount: '{count} 个无效部门'
   },
   customer: {
     keyword: '关键词',
@@ -1033,14 +1037,14 @@ export default {
       LEAD: '线索',
       FOLLOWING: '跟进中',
       WON: '已成交',
-      FROZEN: '已冻结',
-    },
+      FROZEN: '已冻结'
+    }
   },
   inputPasswordDemo: {
     title: '密码输入框',
-    inputPasswordDes: '基于 ElementPlus 的 Input 组件二次封装',
+    inputPasswordDes: '基于 ElementPlus 的 Input 组件二次封装'
   },
   avatarsDemo: {
-    title: '头像列表组件，基于element-plus的Avatar组件二次封装',
-  },
+    title: '头像列表组件，基于element-plus的Avatar组件二次封装'
+  }
 }

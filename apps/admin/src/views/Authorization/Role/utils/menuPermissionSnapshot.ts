@@ -4,7 +4,7 @@ import { buildAssignedMenus, type RoleMenuTreeNode } from './roleMenuTree'
 
 export const ROLE_MENU_PERMISSION_SNAPSHOT_TYPE = 'role-menu-permission' as const
 export const ROLE_MENU_PERMISSION_SNAPSHOT_VERSION = 2 as const
-const DATA_SCOPES: readonly DataScope[] = ['ALL', 'SELF', 'DEPT', 'DEPT_TREE', 'CUSTOM']
+const DATA_SCOPES: readonly DataScope[] = ['ALL', 'SELF', 'DEPT', 'DEPT_TREE', 'CUSTOM_DEFINE']
 
 export interface RoleMenuPermissionSnapshotItem {
   id: string
@@ -46,15 +46,15 @@ export const buildRoleMenuPermissionSnapshot = (menuTree: RoleMenuTreeNode[]): R
     permissionScopes: menu.permissionScopes
       ? menu.permissionScopes.filter(
           (scope): scope is RolePermissionScopePayload =>
-            scope.dataScope !== 'CUSTOM' || (scope.departmentIds?.length ?? 0) > 0,
+            scope.dataScope !== 'CUSTOM_DEFINE' || (scope.departmentIds?.length ?? 0) > 0
         )
-      : [],
+      : []
   }))
 
   return {
     type: ROLE_MENU_PERMISSION_SNAPSHOT_TYPE,
     version: ROLE_MENU_PERMISSION_SNAPSHOT_VERSION,
-    menus,
+    menus
   }
 }
 
@@ -76,7 +76,7 @@ const parseV1Menus = (value: unknown): RoleMenuPermissionSnapshotV1Item[] | null
 
 const parsePermissionScopes = (
   value: unknown,
-  permissionIds: ReadonlySet<string>,
+  permissionIds: ReadonlySet<string>
 ): RolePermissionScopePayload[] | null => {
   if (!Array.isArray(value)) return null
   const scopes: RolePermissionScopePayload[] = []
@@ -95,18 +95,18 @@ const parsePermissionScopes = (
     }
     const departmentIds = record.departmentIds === undefined ? undefined : uniqueStrings(record.departmentIds)
     if (record.departmentIds !== undefined && !departmentIds) return null
-    if (record.dataScope === 'CUSTOM' && !departmentIds?.length) return null
-    if (record.dataScope !== 'CUSTOM' && record.departmentIds !== undefined) return null
-    if (record.dataScope === 'CUSTOM') {
+    if (record.dataScope === 'CUSTOM_DEFINE' && !departmentIds?.length) return null
+    if (record.dataScope !== 'CUSTOM_DEFINE' && record.departmentIds !== undefined) return null
+    if (record.dataScope === 'CUSTOM_DEFINE') {
       scopes.push({
         permissionId: record.permissionId,
         dataScope: record.dataScope,
-        departmentIds: departmentIds as string[],
+        departmentIds: departmentIds as string[]
       })
     } else {
       scopes.push({
         permissionId: record.permissionId,
-        dataScope: record.dataScope,
+        dataScope: record.dataScope
       })
     }
     seen.add(record.permissionId)
@@ -159,7 +159,7 @@ export interface ApplySnapshotResult {
 
 export const applyRoleMenuPermissionSnapshot = (
   menuTree: RoleMenuTreeNode[],
-  snapshot: RoleMenuPermissionSnapshot,
+  snapshot: RoleMenuPermissionSnapshot
 ): ApplySnapshotResult => {
   const permissionMapByMenu = new Map<string, Set<string>>()
   const scopeMapByMenu = new Map<string, Map<string, RolePermissionScopePayload>>()
@@ -170,9 +170,7 @@ export const applyRoleMenuPermissionSnapshot = (
     for (const menu of snapshot.menus) {
       scopeMapByMenu.set(
         menu.id,
-        new Map(
-          menu.permissionScopes.map((scope): [string, RolePermissionScopePayload] => [scope.permissionId, scope]),
-        ),
+        new Map(menu.permissionScopes.map((scope): [string, RolePermissionScopePayload] => [scope.permissionId, scope]))
       )
     }
   }
@@ -184,7 +182,7 @@ export const applyRoleMenuPermissionSnapshot = (
     if (!permissionIds) return
     matchedMenuCount++
     matchedPermissionCount += node.permissions.filter(
-      (permission) => permission.enabled && permissionIds.has(permission.id),
+      (permission) => permission.enabled && permissionIds.has(permission.id)
     ).length
   })
 
@@ -207,7 +205,7 @@ export const applyRoleMenuPermissionSnapshot = (
       const scope = permissionChecked ? scopeMap?.get(permission.id) : undefined
       if (scope && permission.scopeEnabled) {
         permission.dataScope = scope.dataScope
-        permission.departmentIds = scope.dataScope === 'CUSTOM' ? [...(scope.departmentIds || [])] : []
+        permission.departmentIds = scope.dataScope === 'CUSTOM_DEFINE' ? [...(scope.departmentIds || [])] : []
       }
     })
   })

@@ -98,7 +98,7 @@ export class DepartmentService {
         const references = await this.departments.findDeleteReferences(id, tx)
         if (references.customScope || references.customer) {
           const sources = [
-            references.customScope ? 'CUSTOM 数据范围' : null,
+            references.customScope ? 'CUSTOM_DEFINE 数据范围' : null,
             references.customer ? '客户' : null,
           ].filter(Boolean)
           throw new BadRequestException(`部门仍被${sources.join('、')}引用，无法删除`)

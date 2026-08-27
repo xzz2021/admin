@@ -292,9 +292,9 @@ export class RoleRepository {
           data: { dataScope: input.dataScope },
         })
       }
-      if (departmentsChanged || input.dataScope !== 'CUSTOM') {
+      if (departmentsChanged || input.dataScope !== 'CUSTOM_DEFINE') {
         await tx.rolePermissionDepartment.deleteMany({ where: { rolePermissionId: existing.id } })
-        if (input.dataScope === 'CUSTOM' && input.departmentIds.length) {
+        if (input.dataScope === 'CUSTOM_DEFINE' && input.departmentIds.length) {
           await tx.rolePermissionDepartment.createMany({
             data: input.departmentIds.map(departmentId => ({
               rolePermissionId: existing.id,

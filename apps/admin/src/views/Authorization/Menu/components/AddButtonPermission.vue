@@ -73,6 +73,18 @@ const formSchema = reactive<FormSchema[]>([
       activeText: t('userDemo.enable'),
       inactiveText: t('userDemo.disable')
     }
+  },
+  {
+    field: 'scopeEnabled',
+    label: t('menu.scopeEnabled'),
+    component: 'Switch',
+    value: false,
+    colProps: { span: 24 },
+    componentProps: {
+      inlinePrompt: true,
+      activeText: t('menu.scopeEnabledOn'),
+      inactiveText: t('menu.scopeEnabledOff')
+    }
   }
 ])
 
@@ -94,7 +106,8 @@ const resetForm = () => {
     name: '',
     type: 'BUTTON' as PermissionType,
     sort: 0,
-    enabled: true
+    enabled: true,
+    scopeEnabled: false
   })
 }
 
@@ -104,7 +117,8 @@ const fillForm = (data: MenuPermission) => {
     name: data.name,
     type: data.type,
     sort: data.sort ?? 0,
-    enabled: data.enabled ?? true
+    enabled: data.enabled ?? true,
+    scopeEnabled: data.scopeEnabled ?? false
   })
 }
 
@@ -150,7 +164,8 @@ const confirm = async () => {
       code,
       type: formData.type,
       sort: formData.sort ?? 0,
-      enabled: formData.enabled ?? true
+      enabled: formData.enabled ?? true,
+      scopeEnabled: formData.scopeEnabled ?? false
     })
   } catch (error) {
     ElMessage.warning(error instanceof Error ? error.message : t('menu.permissionCodeInvalid'))

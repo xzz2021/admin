@@ -15,16 +15,16 @@ type TagType = 'success' | 'warning' | 'info' | 'primary' | 'danger'
 const props = defineProps({
   roleDetail: {
     type: Object as PropType<RoleDetail | undefined>,
-    default: undefined,
+    default: undefined
   },
   menuTree: {
     type: Array as PropType<RoleMenuTreeNode[]>,
-    default: () => [],
+    default: () => []
   },
   loading: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 })
 
 const emit = defineEmits<{
@@ -42,19 +42,19 @@ const roleInfoItems = computed<Array<{ label: string; value: string; tagType?: T
     {
       label: t('menu.status'),
       value: detail?.enabled ? t('userDemo.enable') : t('userDemo.disable'),
-      tagType: detail?.enabled ? 'success' : 'danger',
+      tagType: detail?.enabled ? 'success' : 'danger'
     },
     { label: t('userDemo.remark'), value: detail?.description || '-' },
     { label: t('exampleDemo.sort'), value: String(detail?.sort ?? '-') },
     {
       label: t('tableDemo.createdAt'),
-      value: detail?.createdAt ? formatToDateTime(detail.createdAt) : '-',
+      value: detail?.createdAt ? formatToDateTime(detail.createdAt) : '-'
     },
     {
       label: t('tableDemo.updatedAt'),
-      value: detail?.updatedAt ? formatToDateTime(detail.updatedAt) : '-',
+      value: detail?.updatedAt ? formatToDateTime(detail.updatedAt) : '-'
     },
-    { label: t('role.creator'), value: detail?.creatorName || '-' },
+    { label: t('role.creator'), value: detail?.creatorName || '-' }
   ]
 })
 
@@ -65,7 +65,7 @@ const overviewCards = computed(() => [
     value: props.roleDetail?.menuCount ?? 0,
     icon: 'layout-grid',
     color: '#409eff',
-    bg: 'rgba(64, 158, 255, 0.1)',
+    bg: 'rgba(64, 158, 255, 0.1)'
   },
   {
     key: 'permissionCount',
@@ -73,7 +73,7 @@ const overviewCards = computed(() => [
     value: props.roleDetail?.permissionCount ?? 0,
     icon: 'lock',
     color: '#67c23a',
-    bg: 'rgba(103, 194, 58, 0.1)',
+    bg: 'rgba(103, 194, 58, 0.1)'
   },
   {
     key: 'userCount',
@@ -81,8 +81,8 @@ const overviewCards = computed(() => [
     value: props.roleDetail?.userCount ?? 0,
     icon: 'user',
     color: '#9c27b0',
-    bg: 'rgba(156, 39, 176, 0.1)',
-  },
+    bg: 'rgba(156, 39, 176, 0.1)'
+  }
 ])
 
 const isPermissionOwned = (menu: RoleMenuTreeNode, permission: RoleMenuPermissionItem) => {
@@ -92,7 +92,7 @@ const isPermissionOwned = (menu: RoleMenuTreeNode, permission: RoleMenuPermissio
 const dataScopeLabel = (permission: RoleMenuPermissionItem) => {
   if (!permission.dataScope) return t('role.dataScopePending')
   const label = t(DATA_SCOPE_I18N[permission.dataScope])
-  return permission.dataScope === 'CUSTOM'
+  return permission.dataScope === 'CUSTOM_DEFINE'
     ? t('role.customDepartmentCountLabel', { scope: label, count: permission.departmentIds.length })
     : label
 }
@@ -196,7 +196,7 @@ const handleCopyMenuPermission = () => {
                   <ElTag v-if="permission.disabledDepartmentIds.length" type="danger" effect="plain">
                     {{
                       t('role.invalidDepartmentCount', {
-                        count: permission.disabledDepartmentIds.length,
+                        count: permission.disabledDepartmentIds.length
                       })
                     }}
                   </ElTag>

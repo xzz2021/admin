@@ -180,10 +180,10 @@ describe('DepartmentService delete rules', () => {
     expect(remove).not.toHaveBeenCalled()
   })
 
-  it.each(['CUSTOM 数据范围', '客户'])(
+  it.each(['CUSTOM_DEFINE 数据范围', '客户'])(
     'refuses deletion when referenced by %s without bumping generation',
     async label => {
-      const referenceQuery = label === 'CUSTOM 数据范围' ? rolePermissionDepartmentFindFirst : customerFindFirst
+      const referenceQuery = label === 'CUSTOM_DEFINE 数据范围' ? rolePermissionDepartmentFindFirst : customerFindFirst
       findUnique.mockResolvedValue({ path: '/node' })
       findFirst.mockResolvedValue(null)
       referenceQuery.mockResolvedValue({ id: 'reference-1' })

@@ -67,7 +67,7 @@ export default {
     type: 'Type',
     sort: 'Sort',
     phone: 'Phone',
-    edit: 'Edit',
+    edit: 'Edit'
   },
   lock: {
     lockScreen: 'Lock screen',
@@ -77,13 +77,13 @@ export default {
     backToLogin: 'Back to login',
     entrySystem: 'Entry the system',
     placeholder: 'Please enter the lock screen password',
-    message: 'Lock screen password error',
+    message: 'Lock screen password error'
   },
   error: {
     noPermission: `Sorry, you don't have permission to access this page.`,
     pageError: 'Sorry, the page you visited does not exist.',
     networkError: 'Sorry, the server reported an error.',
-    returnToHome: 'Return to home',
+    returnToHome: 'Return to home'
   },
   setting: {
     projectSetting: 'Project setting',
@@ -116,12 +116,12 @@ export default {
     dynamicRouter: 'Enable dynamic router',
     serverDynamicRouter: 'Server dynamic router',
     reExperienced: 'Please exit the login experience again',
-    fixedMenu: 'Fixed menu',
+    fixedMenu: 'Fixed menu'
   },
   size: {
     default: 'Default',
     large: 'Large',
-    small: 'Small',
+    small: 'Small'
   },
   login: {
     welcome: 'Welcome to the system',
@@ -140,7 +140,7 @@ export default {
     code: 'Verification code',
     codePlaceholder: 'Please input verification code',
     getCode: 'Get code',
-    phone: 'Phone',
+    phone: 'Phone'
   },
   router: {
     login: 'Login',
@@ -224,7 +224,7 @@ export default {
     personal: 'Personal',
     avatars: 'Avatars',
     iAgree: 'I agree',
-    tree: 'Tree',
+    tree: 'Tree'
   },
   permission: {
     name: 'Name',
@@ -233,7 +233,7 @@ export default {
     hasPermission: 'Please set the operation permission value',
     addPermission: 'Add permission',
     updatePermission: 'Update permission',
-    addCurd: 'Quickly generate CRUD',
+    addCurd: 'Quickly generate CRUD'
   },
   onlineUser: {
     username: 'Username',
@@ -260,7 +260,7 @@ export default {
     kickSuccess: 'Done',
     cannotKickSelf: 'Current user',
     cannotKickAdmin: 'Super admin',
-    cannotKick: 'Protected',
+    cannotKick: 'Protected'
   },
   message: {
     inbox: 'My messages',
@@ -296,7 +296,7 @@ export default {
     untitled: 'Untitled',
     emptyContent: 'No content',
     contentPlaceholder: 'Enter message content',
-    contentTooLong: 'Message content cannot exceed 5000 characters',
+    contentTooLong: 'Message content cannot exceed 5000 characters'
   },
   monitor: {
     refreshHint: 'Backend scrapes every 10s into a Redis sliding window; frontend polls via WebSocket every 15s',
@@ -323,7 +323,7 @@ export default {
     time: 'Time',
     path: 'Path',
     message: 'Message',
-    noError: 'No errors',
+    noError: 'No errors'
   },
   analysis: {
     newUser: 'New user',
@@ -359,7 +359,7 @@ export default {
     thursday: 'Thursday',
     friday: 'Friday',
     saturday: 'Saturday',
-    sunday: 'Sunday',
+    sunday: 'Sunday'
   },
   workplace: {
     goodMorning: 'Good morning',
@@ -382,7 +382,7 @@ export default {
     dynamic: 'Dynamic',
     push: 'push',
     pushCode: 'Archer push code to Github',
-    follow: 'Follow',
+    follow: 'Follow'
   },
   formDemo: {
     input: 'Input',
@@ -470,7 +470,7 @@ export default {
     // 用户头像
     userAvatar: 'User avatar',
     iconPicker: 'Icon picker',
-    iAgree: 'I agree',
+    iAgree: 'I agree'
   },
   iconDemo: {
     icon: 'Icon',
@@ -479,12 +479,12 @@ export default {
     recommendedUse: 'Recommended use',
     recommendeDes:
       'Iconify component basically contains all icons. You can query any icon you want. And packaging will only package the icons used.',
-    accessAddress: 'Access address',
+    accessAddress: 'Access address'
   },
   echartDemo: {
     echart: 'Echart',
     echartDes:
-      'Based on the secondary packaging components of eckarts, the width is adaptive. The corresponding chart can be displayed by passing in the options and height attributes.',
+      'Based on the secondary packaging components of eckarts, the width is adaptive. The corresponding chart can be displayed by passing in the options and height attributes.'
   },
   countToDemo: {
     countTo: 'CountTo',
@@ -497,13 +497,13 @@ export default {
     startVal: 'Start val',
     start: 'Start',
     pause: 'Pause',
-    resume: 'Resume',
+    resume: 'Resume'
   },
   watermarkDemo: {
     watermark: 'Watermark',
     createdWatermark: 'Created watermark',
     clearWatermark: 'Clear watermark',
-    resetWatermark: 'Reset watermark',
+    resetWatermark: 'Reset watermark'
   },
   qrcodeDemo: {
     qrcode: 'Qrcode',
@@ -516,25 +516,25 @@ export default {
     invalid: 'Invalid',
     logoConfig: 'Logo config',
     logoStyle: 'Logo style',
-    size: 'size config',
+    size: 'size config'
   },
   treeDemo: {
     treeTitle: 'Tree control (right-click node to customize menu options)',
-    message: 'The tree component is based on the secondary packaging of the tree component of ElementPlus',
+    message: 'The tree component is based on the secondary packaging of the tree component of ElementPlus'
   },
   highlightDemo: {
     highlight: 'Highlight',
     message: 'The best time to plant a tree is ten years ago, followed by now.',
     keys1: 'ten years ago',
-    keys2: 'now',
+    keys2: 'now'
   },
   infotipDemo: {
     infotip: 'Infotip',
     infotipDes: 'Secondary packaging of components based on Highlight',
-    title: 'matters needing attention',
+    title: 'matters needing attention'
   },
   levelDemo: {
-    menu: 'Multi level menu cache',
+    menu: 'Multi level menu cache'
   },
   searchDemo: {
     search: 'Search',
@@ -556,10 +556,10 @@ export default {
     // 还原单选框
     restoreRadio: 'Restore radio',
     loading: 'Loading',
-    reset: 'Reset',
+    reset: 'Reset'
   },
   stickyDemo: {
-    sticky: 'Sticky',
+    sticky: 'Sticky'
   },
   tableDemo: {
     table: 'Table',
@@ -603,13 +603,13 @@ export default {
     createdAt: 'Created at',
     updatedAt: 'Updated at',
     operator: 'Operator',
-    keyword: 'Keyword',
+    keyword: 'Keyword'
   },
   richText: {
     richText: 'Rich text',
     richTextDes: 'Secondary packaging based on wangeditor',
     jsonEditor: 'JSON Editor',
-    jsonEditorDes: 'Secondary packaging based on vue-json-pretty',
+    jsonEditorDes: 'Secondary packaging based on vue-json-pretty'
   },
   dialogDemo: {
     dialog: 'Dialog',
@@ -618,12 +618,12 @@ export default {
     open: 'Open',
     close: 'Close',
     combineWithForm: 'Combine with form',
-    submit: 'Submit',
+    submit: 'Submit'
   },
   imageViewerDemo: {
     open: 'Open',
     imageViewer: 'Image viewer',
-    imageViewerDes: 'Secondary packaging of ImageViewer components based on ElementPlus',
+    imageViewerDes: 'Secondary packaging of ImageViewer components based on ElementPlus'
   },
   descriptionsDemo: {
     descriptions: 'Descriptions',
@@ -633,7 +633,7 @@ export default {
     phone: 'Phone',
     email: 'Email',
     addr: 'Address',
-    form: 'Combined with Form component',
+    form: 'Combined with Form component'
   },
   exampleDemo: {
     title: 'Title',
@@ -649,7 +649,7 @@ export default {
     content: 'Content',
     save: 'Save',
     detail: 'Detail',
-    sort: 'Sort',
+    sort: 'Sort'
   },
   userDemo: {
     title: 'User management',
@@ -683,7 +683,7 @@ export default {
     newPassword: 'New password',
     confirmNewPassword: 'Confirm password',
     personalInfo: 'Personal information',
-    basicInfo: 'Basic information',
+    basicInfo: 'Basic information'
   },
   personal: {
     personalInfo: 'Personal information',
@@ -710,7 +710,7 @@ export default {
     confirmModifyBtn: 'Confirm change',
     selectAvatarFirst: 'Please select and crop an avatar first',
     avatarUpdateSuccess: 'Avatar updated successfully',
-    userInfoError: 'User info error, please sign in again',
+    userInfoError: 'User info error, please sign in again'
   },
   file: {
     preview: 'Preview',
@@ -729,7 +729,7 @@ export default {
     probing: 'Checking...',
     previewUnsupported: 'Preview is not supported for this file type: {type}',
     previewUrlFailed: 'Failed to get the preview URL',
-    previewFailed: 'Preview failed, please try again later',
+    previewFailed: 'Preview failed, please try again later'
   },
   dbBackup: {
     configTitle: 'Backup configuration',
@@ -768,7 +768,7 @@ export default {
     startedAt: 'Started at',
     finishedAt: 'Finished at',
     statusPlaceholder: 'Filter by status',
-    triggerPlaceholder: 'Filter by trigger',
+    triggerPlaceholder: 'Filter by trigger'
   },
   dict: {
     searchTypePlaceholder: 'Search dictionary type',
@@ -778,11 +778,11 @@ export default {
     typeDisabled: 'Dictionary type disabled',
     deleteTypeHasEntries: 'This type has entries. Delete them first',
     confirmDeleteType: 'Delete dictionary "{name}"?',
-    confirmDeleteEntry: 'Delete dictionary entry "{name}"?',
+    confirmDeleteEntry: 'Delete dictionary entry "{name}"?'
   },
   department: {
     deleteHasChildren: 'This department has child departments. Delete them first',
-    confirmDelete: 'Delete department "{name}"?',
+    confirmDelete: 'Delete department "{name}"?'
   },
   userLog: {
     operator: 'Operator',
@@ -796,7 +796,7 @@ export default {
     location: 'Location',
     operateTime: 'Operated at',
     detailInfo: 'Details',
-    selectToDelete: 'Please select logs to delete',
+    selectToDelete: 'Please select logs to delete'
   },
   auditLog: {
     operator: 'Operator',
@@ -815,7 +815,7 @@ export default {
         lockout: 'Account locked',
         logout: 'Logout',
         force_logout: 'Force logout',
-        register: 'Register',
+        register: 'Register'
       },
       user: {
         create: 'Create user',
@@ -823,24 +823,24 @@ export default {
         delete: 'Delete user',
         reset_password: 'Reset password',
         update_password: 'Change password',
-        update_profile: 'Update profile',
+        update_profile: 'Update profile'
       },
       role: {
         create: 'Create role',
         update: 'Update role',
-        delete: 'Delete role',
+        delete: 'Delete role'
       },
       menu: {
         create: 'Create menu',
         update: 'Update menu',
-        delete: 'Delete menu',
+        delete: 'Delete menu'
       },
       department: {
         create: 'Create department',
         update: 'Update department',
-        delete: 'Delete department',
-      },
-    },
+        delete: 'Delete department'
+      }
+    }
   },
   menu: {
     name: 'Name',
@@ -930,6 +930,10 @@ export default {
     permissionTypeData: 'Data',
     permissionTypeApi: 'API',
     permissionTypeOther: 'Other',
+    scopeEnabled: 'Data scope',
+    scopeEnabledOn: 'On',
+    scopeEnabledOff: 'Off',
+    scopeEnabledTip: 'When on, this permission can be given a data scope on the role page'
   },
   role: {
     roleName: 'Role name',
@@ -1017,7 +1021,7 @@ export default {
     legacySnapshotScopeWarning:
       'The legacy snapshot restored selections only. Configure each scoped permission before saving',
     customDepartmentCountLabel: '{scope} ({count} departments)',
-    invalidDepartmentCount: '{count} invalid departments',
+    invalidDepartmentCount: '{count} invalid departments'
   },
   customer: {
     keyword: 'Keyword',
@@ -1045,14 +1049,14 @@ export default {
       LEAD: 'Lead',
       FOLLOWING: 'Following',
       WON: 'Won',
-      FROZEN: 'Frozen',
-    },
+      FROZEN: 'Frozen'
+    }
   },
   inputPasswordDemo: {
     title: 'InputPassword',
-    inputPasswordDes: 'Secondary packaging of Input components based on ElementPlus',
+    inputPasswordDes: 'Secondary packaging of Input components based on ElementPlus'
   },
   avatarsDemo: {
-    title: 'Avatar component for avatar list, secondary packaging based on element plus Avatar component',
-  },
+    title: 'Avatar component for avatar list, secondary packaging based on element plus Avatar component'
+  }
 }

@@ -17,7 +17,7 @@ describe('RoleAuthorizationTreeRes', () => {
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
       checked: true,
-      dataScope: DataScope.CUSTOM,
+      dataScope: DataScope.CUSTOM_DEFINE,
       departmentIds: ['dept-1'],
       disabledDepartmentIds: [],
     }

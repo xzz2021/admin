@@ -40,7 +40,7 @@ export enum DataScope {
   SELF = "SELF",
   DEPT = "DEPT",
   DEPT_TREE = "DEPT_TREE",
-  CUSTOM = "CUSTOM"
+  CUSTOM_DEFINE = "CUSTOM_DEFINE"
 }
 
 export enum CustomerStatus {

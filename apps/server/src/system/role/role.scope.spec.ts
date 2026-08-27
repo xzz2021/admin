@@ -107,9 +107,9 @@ describe('RoleService data scopes', () => {
     expect(roles.create).not.toHaveBeenCalled()
   })
 
-  it('rejects empty or disabled CUSTOM departments', async () => {
+  it('rejects empty or disabled CUSTOM_DEFINE departments', async () => {
     await expect(
-      service.createRoleInfo(dto([{ permissionId: 'permission-1', dataScope: DataScope.CUSTOM }])),
+      service.createRoleInfo(dto([{ permissionId: 'permission-1', dataScope: DataScope.CUSTOM_DEFINE }])),
     ).rejects.toThrow('至少选择一个部门')
 
     roles.findEnabledDepartmentsByIds.mockResolvedValue([{ id: 'dept-1' }])
@@ -118,7 +118,7 @@ describe('RoleService data scopes', () => {
         dto([
           {
             permissionId: 'permission-1',
-            dataScope: DataScope.CUSTOM,
+            dataScope: DataScope.CUSTOM_DEFINE,
             departmentIds: ['dept-1', 'dept-disabled'],
           },
         ]),
@@ -126,12 +126,12 @@ describe('RoleService data scopes', () => {
     ).rejects.toThrow('不存在或已禁用')
   })
 
-  it('rejects department residue for non-CUSTOM scopes', async () => {
+  it('rejects department residue for non-CUSTOM_DEFINE scopes', async () => {
     await expect(
       service.createRoleInfo(
         dto([{ permissionId: 'permission-1', dataScope: DataScope.ALL, departmentIds: ['dept-1'] }]),
       ),
-    ).rejects.toThrow('仅 CUSTOM')
+    ).rejects.toThrow('仅 CUSTOM_DEFINE')
   })
 
   it('invalidates assigned users after a committed scope update', async () => {
@@ -159,7 +159,7 @@ describe('RoleService data scopes', () => {
     expect(cache.invalidateUsers).not.toHaveBeenCalled()
   })
 
-  it('echoes disabled historical CUSTOM departments', async () => {
+  it('echoes disabled historical CUSTOM_DEFINE departments', async () => {
     roles.findEnabledMenusWithPermissions.mockResolvedValue([
       {
         id: 'menu-1',
@@ -184,7 +184,7 @@ describe('RoleService data scopes', () => {
     roles.findRolePermissionScopes.mockResolvedValue([
       {
         permissionId: 'permission-1',
-        dataScope: DataScope.CUSTOM,
+        dataScope: DataScope.CUSTOM_DEFINE,
         customDepartments: [
           { department: { id: 'dept-1', enabled: true } },
           { department: { id: 'dept-disabled', enabled: false } },
@@ -200,7 +200,7 @@ describe('RoleService data scopes', () => {
       action: 'read',
       scopeEnabled: true,
       checked: true,
-      dataScope: DataScope.CUSTOM,
+      dataScope: DataScope.CUSTOM_DEFINE,
       departmentIds: ['dept-1', 'dept-disabled'],
       disabledDepartmentIds: ['dept-disabled'],
     })

@@ -205,6 +205,7 @@ const handleImportPermissions = async () => {
         type: item.type,
         sort: item.sort ?? 0,
         enabled: item.enabled ?? true,
+        scopeEnabled: item.scopeEnabled ?? false,
         menuId
       })
       successCount++
@@ -581,7 +582,8 @@ const confirmPermission = async (data: MenuPermission) => {
     code: data.code,
     type: data.type,
     sort: data.sort ?? 0,
-    enabled: data.enabled ?? true
+    enabled: data.enabled ?? true,
+    scopeEnabled: data.scopeEnabled ?? false
   }
 
   permissionSaving.value = true

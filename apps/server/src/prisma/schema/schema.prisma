@@ -60,7 +60,9 @@ enum DataScope {
   SELF
   DEPT
   DEPT_TREE
-  CUSTOM
+
+  //  自定义
+  CUSTOM_DEFINE
 }
 
 enum CustomerStatus {
@@ -257,6 +259,7 @@ model RoleMenu {
   @@index([menuId])
 }
 
+// 角色权限记录dataScope 控制数据范围
 model RolePermission {
   id           String     @id @default(cuid())
   roleId       String

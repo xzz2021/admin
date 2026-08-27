@@ -5,11 +5,10 @@ import {
   exportCustomerApi,
   getCustomerDetailApi,
   getCustomerListApi,
-  updateCustomerApi,
+  updateCustomerApi
 } from '@/api/customer'
 import type { CreateCustomerPayload, CustomerItem, CustomerStatus, UpdateCustomerPayload } from '@/api/customer/type'
 import { CUSTOMER_STATUSES } from '@/api/customer/type'
-import type { DepartmentItem } from '@/api/department/types'
 import { getUserByDepartmentIdApi } from '@/api/user'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
@@ -22,7 +21,7 @@ import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
 import { useDepartmentStore } from '@/store/modules/department'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { ElDivider, ElInput, ElMessage, ElTag, ElTree } from 'element-plus'
+import { ElMessage, ElTag, ElTree } from 'element-plus'
 import { computed, nextTick, onMounted, reactive, ref, unref, watch } from 'vue'
 import Detail from './components/Detail.vue'
 import Write from './components/Write.vue'
@@ -34,7 +33,6 @@ const OWNER_PAGE_SIZE = 100
 const { t } = useI18n()
 const departmentStore = useDepartmentStore()
 const currentNodeKey = ref(ALL_DEPARTMENT)
-const departmentList = computed(() => [{ id: ALL_DEPARTMENT, name: t('userDemo.all') }, ...departmentStore.list])
 const departmentNameMap = computed(() => {
   const map = new Map<string, string>()
   for (const department of flattenDepartments(departmentStore.list)) {
@@ -56,7 +54,7 @@ const treeEl = ref<InstanceType<typeof ElTree>>()
 const currentDepartment = ref('')
 
 const selectedDepartmentId = computed(() =>
-  unref(currentNodeKey) === ALL_DEPARTMENT ? undefined : unref(currentNodeKey),
+  unref(currentNodeKey) === ALL_DEPARTMENT ? undefined : unref(currentNodeKey)
 )
 
 const canAdd = () => hasPermi('customer:add')
@@ -82,7 +80,7 @@ const loadOwnersForDepartment = async (departmentId?: string) => {
       ...(departmentId ? { id: departmentId } : {}),
       pageIndex: 1,
       pageSize: OWNER_PAGE_SIZE,
-      enabled: true,
+      enabled: true
     })
     rememberOwners(res.data.list || [])
   } catch {
@@ -98,11 +96,11 @@ const { tableRegister, tableState, tableMethods } = useTable<CustomerItem, strin
       pageIndex: unref(currentPage),
       pageSize: unref(pageSize),
       departmentId: selectedDepartmentId.value,
-      ...unref(searchParams),
+      ...unref(searchParams)
     })
     return {
       list: res.data.list || [],
-      total: res.data.total || 0,
+      total: res.data.total || 0
     }
   },
   getRowId: (row) => row.id,
@@ -113,7 +111,7 @@ const { tableRegister, tableState, tableMethods } = useTable<CustomerItem, strin
       return false
     }
   },
-  deleteApi: (ids) => deleteCustomerApi(ids),
+  deleteApi: (ids) => deleteCustomerApi(ids)
 })
 
 const { total, loading, dataList, pageSize, currentPage, delLoading } = tableState
@@ -123,7 +121,7 @@ const searchSchema = reactive<FormSchema[]>([
   {
     field: 'keyword',
     label: t('customer.keyword'),
-    component: 'Input',
+    component: 'Input'
   },
   {
     field: 'status',
@@ -133,10 +131,10 @@ const searchSchema = reactive<FormSchema[]>([
       clearable: true,
       options: CUSTOMER_STATUSES.map((status) => ({
         label: t(`customer.status.${status}`),
-        value: status,
-      })),
-    },
-  },
+        value: status
+      }))
+    }
+  }
 ])
 
 const tableColumns = computed<TableColumn[]>(() => [
@@ -144,18 +142,18 @@ const tableColumns = computed<TableColumn[]>(() => [
     field: 'selection',
     type: 'selection',
     hidden: !canDelete(),
-    selectable: (row: CustomerItem) => hasCapability(row, 'delete'),
+    selectable: (row: CustomerItem) => hasCapability(row, 'delete')
   },
   {
     field: 'index',
     label: t('userDemo.index'),
-    type: 'index',
+    type: 'index'
   },
   {
     field: 'name',
     label: t('customer.name'),
     minWidth: 140,
-    showOverflowTooltip: true,
+    showOverflowTooltip: true
   },
   {
     field: 'status',
@@ -164,20 +162,20 @@ const tableColumns = computed<TableColumn[]>(() => [
     slots: {
       default: (data: { row: CustomerItem }) => (
         <ElTag type={statusTagType(data.row.status)}>{t(`customer.status.${data.row.status}`)}</ElTag>
-      ),
-    },
+      )
+    }
   },
   {
     field: 'dealAmount',
     label: t('customer.dealAmount'),
-    width: 120,
+    width: 120
   },
   {
     field: 'internalCost',
     label: t('customer.internalCost'),
     width: 120,
     hidden: !canViewSensitive(),
-    formatter: (row: CustomerItem) => row.internalCost ?? '',
+    formatter: (row: CustomerItem) => row.internalCost ?? ''
   },
   {
     field: 'confidential',
@@ -188,26 +186,26 @@ const tableColumns = computed<TableColumn[]>(() => [
         <ElTag type={data.row.confidential ? 'warning' : 'info'}>
           {data.row.confidential ? t('customer.yes') : t('customer.no')}
         </ElTag>
-      ),
-    },
+      )
+    }
   },
   {
     field: 'departmentId',
     label: t('customer.department'),
     minWidth: 120,
-    formatter: (row: CustomerItem) => departmentNameMap.value.get(row.departmentId) || row.departmentId,
+    formatter: (row: CustomerItem) => departmentNameMap.value.get(row.departmentId) || row.departmentId
   },
   {
     field: 'ownerId',
     label: t('customer.owner'),
     minWidth: 110,
-    formatter: (row: CustomerItem) => ownerNameMap.value.get(row.ownerId) || row.ownerId,
+    formatter: (row: CustomerItem) => ownerNameMap.value.get(row.ownerId) || row.ownerId
   },
   {
     field: 'updatedAt',
     label: t('customer.updatedAt'),
     width: 180,
-    formatter: (row: CustomerItem) => formatToDateTime(row.updatedAt),
+    formatter: (row: CustomerItem) => formatToDateTime(row.updatedAt)
   },
   {
     field: 'action',
@@ -236,9 +234,9 @@ const tableColumns = computed<TableColumn[]>(() => [
             ) : null}
           </>
         )
-      },
-    },
-  },
+      }
+    }
+  }
 ])
 
 const writeCanAssign = computed(() => {
@@ -256,19 +254,6 @@ const setSearchParams = (params: Recordable) => {
     next.status = params.status as CustomerStatus
   }
   searchParams.value = next
-  getList()
-}
-
-const filterNode = (value: string, data: DepartmentItem) => {
-  if (!value || data.id === ALL_DEPARTMENT) return true
-  return data.name.includes(value)
-}
-
-const currentChange = (data?: DepartmentItem) => {
-  if (!data?.id) return
-  currentNodeKey.value = data.id
-  currentPage.value = 1
-  void loadOwnersForDepartment(data.id === ALL_DEPARTMENT ? undefined : data.id)
   getList()
 }
 
@@ -293,7 +278,7 @@ const openDialog = async (row: CustomerItem | undefined, type: 'add' | 'edit' | 
   }
 
   dialogTitle.value = t(
-    type === 'add' ? 'exampleDemo.add' : type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail',
+    type === 'add' ? 'exampleDemo.add' : type === 'edit' ? 'exampleDemo.edit' : 'exampleDemo.detail'
   )
   dialogVisible.value = true
 }
@@ -330,7 +315,7 @@ const handleExport = async () => {
   try {
     const response = await exportCustomerApi({
       departmentId: selectedDepartmentId.value,
-      ...unref(searchParams),
+      ...unref(searchParams)
     })
     if (response.data.type.includes('application/json')) {
       ElMessage.error(t('customer.exportFailed'))
@@ -373,31 +358,6 @@ onMounted(() => {
 
 <template>
   <div class="flex w-100% h-100%">
-    <ContentWrap class="w-250px">
-      <div class="flex justify-center items-center">
-        <div class="flex-1">{{ t('userDemo.departmentList') }}</div>
-        <ElInput v-model="currentDepartment" class="flex-[2]" :placeholder="t('userDemo.searchDepartment')" clearable />
-      </div>
-      <ElDivider />
-      <ElTree
-        ref="treeEl"
-        :data="departmentList"
-        default-expand-all
-        :expand-on-click-node="false"
-        node-key="id"
-        :current-node-key="currentNodeKey"
-        :props="{ label: 'name' }"
-        :filter-node-method="filterNode"
-        @current-change="currentChange"
-      >
-        <template #default="{ data }">
-          <div :title="data.name" class="whitespace-nowrap overflow-ellipsis overflow-hidden">
-            {{ data.name }}
-          </div>
-        </template>
-      </ElTree>
-    </ContentWrap>
-
     <ContentWrap class="flex-[3] ml-20px">
       <Search :schema="searchSchema" @reset="setSearchParams" @search="setSearchParams" />
 

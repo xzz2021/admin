@@ -18,7 +18,7 @@ describe('CreateRoleDto permission scopes', () => {
           permissionScopes: [
             {
               permissionId: 'permission-1',
-              dataScope: DataScope.CUSTOM,
+              dataScope: DataScope.CUSTOM_DEFINE,
               departmentIds: ['dept-1', 'dept-1'],
             },
           ],

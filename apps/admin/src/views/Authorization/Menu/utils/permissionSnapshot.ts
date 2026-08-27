@@ -10,6 +10,7 @@ export interface MenuPermissionSnapshotItem {
   type: PermissionType
   sort?: number
   enabled?: boolean
+  scopeEnabled?: boolean
 }
 
 export interface MenuPermissionSnapshot {
@@ -37,7 +38,8 @@ export const buildMenuPermissionSnapshot = (
     code: item.code,
     type: item.type,
     sort: item.sort ?? 0,
-    enabled: item.enabled ?? true
+    enabled: item.enabled ?? true,
+    scopeEnabled: item.scopeEnabled ?? false
   }))
 })
 
@@ -62,7 +64,8 @@ export const parseMenuPermissionSnapshot = (raw: string): MenuPermissionSnapshot
         code: item.code.trim(),
         type: item.type,
         sort: typeof item.sort === 'number' ? item.sort : 0,
-        enabled: item.enabled ?? true
+        enabled: item.enabled ?? true,
+        scopeEnabled: item.scopeEnabled ?? false
       })
     }
 
@@ -102,7 +105,8 @@ export const adaptPermissionSnapshotToMenu = (
       code,
       type: item.type,
       sort: item.sort ?? 0,
-      enabled: item.enabled ?? true
+      enabled: item.enabled ?? true,
+      scopeEnabled: item.scopeEnabled ?? false
     })
   }
 

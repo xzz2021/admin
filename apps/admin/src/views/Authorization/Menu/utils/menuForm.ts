@@ -37,6 +37,7 @@ export const normalizePermissions = (list: PermissionLike[] = []): MenuPermissio
     type: (item.type ?? 'BUTTON') as PermissionType,
     sort: item.sort ?? 0,
     enabled: item.enabled ?? true,
+    scopeEnabled: item.scopeEnabled ?? false,
     menuId: item.menuId
   }))
 

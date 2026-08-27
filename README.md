@@ -3,6 +3,15 @@
 ### 项目说明
 
 > 这是一个前端基于[vue-element-plus-admin](https://github.com/kailong321200875/vue-element-plus-admin)二开, 后端使用nestjs + prisma + postgresql, 通过docker构建部署的全栈项目
+>
+> 权限部分: rbac和casl控制接口和资源是否放行,datascope控制数据过滤
+>
+> RBAC 决定“你具有什么身份和基础权限”，CASL 把这些权限 + 数据范围 + 当前资源状态组合起来，最终回答“这个用户现在能不能对这条数据做这件事”。
+
+完整流程
+controller 里使用 RequiredPermission 装饰器传入需要的code权限码,全局守卫 APP_GUARD 引入 PermissionGuard 用于鉴权, PermissionGuard 调用 AuthorizationContext 查询当前用户所有权限信息, 构建上下文, 并判断受否拥有当前权限, 如果放行则进入 service 同时将 context 传入, service 首先调用 CustomerPolicy 授权适配器用于生产 Prisma WHERE 和 CASL Ability,
+
+CASL 不管行归属；Grant 不管「冻结能不能改」
 
 ## 技术栈
 

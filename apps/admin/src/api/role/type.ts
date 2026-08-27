@@ -18,7 +18,7 @@ export interface RoleDetail extends RoleItem {
   userCount: number
 }
 
-export type DataScope = 'ALL' | 'SELF' | 'DEPT' | 'DEPT_TREE' | 'CUSTOM'
+export type DataScope = 'ALL' | 'SELF' | 'DEPT' | 'DEPT_TREE' | 'CUSTOM_DEFINE'
 export type RolePermissionType = 'BUTTON' | 'DATA' | 'API' | 'OTHER'
 export type RoleMenuType = 'DIRECTORY' | 'MENU'
 
