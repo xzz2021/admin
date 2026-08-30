@@ -727,14 +727,14 @@ const _permission: PermissionSeedItem[] = [
 const permission: PermissionSeedItem[] = [
   //  凡是带有scopeEnabled的权限都要严格对应到后端代码层,细颗粒度的控制无法完全自动,需要代码合并手写控制逻辑
   {
-    name: '查看',
+    name: '查看客户',
     code: 'view',
     resource: 'customer',
     type: 'button',
     scopeEnabled: true,
   },
   {
-    name: '详情',
+    name: '客户详情',
     code: 'detail',
     resource: 'customer',
     type: 'button',
@@ -769,35 +769,28 @@ const permission: PermissionSeedItem[] = [
     scopeEnabled: true,
   },
   {
-    name: '分配',
-    code: 'assign',
-    resource: 'customer',
-    type: 'button',
-    scopeEnabled: false,
-  },
-  {
-    name: '高金额更新',
+    name: '更新高金额客户',
     code: 'high-value-update',
     resource: 'customer',
     type: 'button',
     scopeEnabled: false,
   },
   {
-    name: '成交删除',
+    name: '删除已成交客户',
     code: 'won-delete',
     resource: 'customer',
     type: 'button',
     scopeEnabled: false,
   },
   {
-    name: '敏感查看',
+    name: '查看客户敏感信息',
     code: 'sensitive-view',
     resource: 'customer',
     type: 'button',
     scopeEnabled: false,
   },
   {
-    name: '敏感更新',
+    name: '更新客户敏感信息',
     code: 'sensitive-update',
     resource: 'customer',
     type: 'button',

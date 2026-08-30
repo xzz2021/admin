@@ -51,6 +51,23 @@ export const getMenuPermissionCount = (node: RoleMenuTreeNode) => {
   return { selected, total }
 }
 
+// ElTree 默认父子联动：把已勾选的父节点传给 setCheckedKeys 会把全部子节点勾上。
+// 回显时只传叶子节点，父节点由子节点自动变成全选或半选。
+export const collectEchoCheckedKeys = (tree: RoleMenuTreeNode[]): string[] => {
+  const keys: string[] = []
+  const walk = (nodes: RoleMenuTreeNode[]) => {
+    for (const node of nodes) {
+      if (node.children?.length) {
+        walk(node.children)
+        continue
+      }
+      if (node.checked) keys.push(node.id)
+    }
+  }
+  walk(tree)
+  return keys
+}
+
 export const groupPermissionsByType = (permissions: RoleMenuPermissionItem[]) => {
   const groups = new Map<string, RoleMenuPermissionItem[]>()
   for (const permission of permissions) {

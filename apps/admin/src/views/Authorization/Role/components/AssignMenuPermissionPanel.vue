@@ -15,13 +15,13 @@ import {
   ElSwitch,
   ElTag,
   ElTooltip,
-  ElTree,
+  ElTree
 } from 'element-plus'
 import { computed, nextTick, PropType, ref, watch } from 'vue'
-import DataScopeEditor from './DataScopeEditor.vue'
 import { applyRoleMenuPermissionSnapshot, parseRoleMenuPermissionSnapshot } from '../utils/menuPermissionSnapshot'
 import {
   clearPermissionSelection,
+  collectEchoCheckedKeys,
   collectRoleSubmitData,
   filterRoleMenuNode,
   findFirstMenuNode,
@@ -31,8 +31,9 @@ import {
   ROLE_PERMISSION_TYPE_I18N,
   type RoleFormModel,
   type RoleMenuPermissionItem,
-  type RoleMenuTreeNode,
+  type RoleMenuTreeNode
 } from '../utils/roleMenuTree'
+import DataScopeEditor from './DataScopeEditor.vue'
 
 const emit = defineEmits<{
   cancel: []
@@ -53,16 +54,16 @@ const departmentStore = useDepartmentStore()
 const props = defineProps({
   menuTree: {
     type: Array as PropType<RoleMenuTreeNode[]>,
-    default: () => [],
+    default: () => []
   },
   loading: {
     type: Boolean,
-    default: false,
+    default: false
   },
   saveLoading: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 })
 
 const roleFormModel = defineModel<RoleFormModel>('roleForm', { required: true })
@@ -129,16 +130,12 @@ watch(
       return
     }
     await nextTick()
-    const checkedIds: string[] = []
-    eachTree(tree, (node) => {
-      if (node.checked) checkedIds.push(node.id)
-    })
-    applyTreeCheckedKeys(checkedIds)
+    applyTreeCheckedKeys(collectEchoCheckedKeys(tree))
     if (!currentMenu.value) {
       currentMenu.value = findFirstMenuNode(tree)
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 const handleNodeClick = (node: RoleMenuTreeNode) => {
@@ -171,7 +168,7 @@ const menuPermissionCountMap = computed(() => {
     const { selected, total } = getMenuPermissionCount(node)
     map[node.id] = {
       selected,
-      text: total > 0 ? `${selected}/${total}` : '0',
+      text: total > 0 ? `${selected}/${total}` : '0'
     }
   })
   return map
@@ -182,8 +179,8 @@ const currentMenuPermissions = computed(() => currentMenu.value?.permissions || 
 const permissionGroups = computed(() =>
   groupPermissionsByType(currentMenuPermissions.value).map((group) => ({
     ...group,
-    label: t(ROLE_PERMISSION_TYPE_I18N[group.type] || ROLE_PERMISSION_TYPE_I18N.OTHER),
-  })),
+    label: t(ROLE_PERMISSION_TYPE_I18N[group.type] || ROLE_PERMISSION_TYPE_I18N.OTHER)
+  }))
 )
 
 const isCurrentMenuAllChecked = computed(() => {
@@ -229,11 +226,7 @@ const toggleExpandAll = () => {
 }
 
 const syncTreeCheckedKeys = () => {
-  const checkedIds: string[] = []
-  eachTree(props.menuTree, (node) => {
-    if (node.checked) checkedIds.push(node.id)
-  })
-  applyTreeCheckedKeys(checkedIds)
+  applyTreeCheckedKeys(collectEchoCheckedKeys(props.menuTree))
 }
 
 const isAllMenuPermissionChecked = computed(() => {
@@ -282,7 +275,7 @@ const handleImportPermissions = async () => {
     await ElMessageBox.confirm(t('role.importPermissionConfirm'), t('common.reminder'), {
       confirmButtonText: t('common.ok'),
       cancelButtonText: t('common.cancel'),
-      type: 'warning',
+      type: 'warning'
     })
   } catch {
     return
@@ -304,8 +297,8 @@ const handleImportPermissions = async () => {
   ElMessage.success(
     t('role.importPermissionSuccess', {
       menuCount: matchedMenuCount,
-      permissionCount: matchedPermissionCount,
-    }),
+      permissionCount: matchedPermissionCount
+    })
   )
 }
 
@@ -314,7 +307,7 @@ const scopeValidationMessageKey = {
   customRequired: 'role.customDepartmentSaveRequired',
   invalidDepartments: 'role.invalidDepartmentSaveBlocked',
   departmentUnavailable: 'role.departmentUnavailableSaveBlocked',
-  nonCustomDepartments: 'role.nonCustomDepartmentSaveBlocked',
+  nonCustomDepartments: 'role.nonCustomDepartmentSaveBlocked'
 } as const
 
 const collectSubmitData = async () => {
@@ -322,7 +315,7 @@ const collectSubmitData = async () => {
   const issue = findFirstRoleScopeIssue(props.menuTree, {
     departments: departmentStore.list,
     departmentLoaded: departmentStore.loaded,
-    departmentLoadError: departmentStore.loadError,
+    departmentLoadError: departmentStore.loadError
   })
   if (issue) {
     currentMenu.value = issue.menu
@@ -332,7 +325,7 @@ const collectSubmitData = async () => {
     const permissionElement = document.getElementById(`role-permission-${issue.permission.id}`)
     permissionElement?.scrollIntoView({
       behavior: 'smooth',
-      block: 'center',
+      block: 'center'
     })
     permissionElement?.querySelector<HTMLInputElement>('input[type="checkbox"]')?.focus()
     return null
