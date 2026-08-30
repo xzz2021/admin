@@ -1,8 +1,10 @@
-import type { RbacPermissionCacheService } from '@/processor/rbac'
 import type { PgService } from '@/prisma/pg.service'
+import type { RbacPermissionCacheService } from '@/processor/rbac'
 import { QueryRoleParams } from './dto/role.dto'
 import { RoleRepository } from './role.repository'
-import { RoleService } from './role.service'
+import { ALWAYS_ACCESSIBLE_MENU_NAMES, RoleService } from './role.service'
+
+type MenuFindArgs = { where?: { name?: { in: string[] }; id?: { in: string[] } } }
 
 describe('RoleService seed and queries', () => {
   const roleFindMany = jest.fn()
@@ -57,7 +59,18 @@ describe('RoleService seed and queries', () => {
     roleCreateMany.mockResolvedValue({ count: 1 })
     executeRaw.mockResolvedValue(1)
     roleUpsert.mockResolvedValue({})
+    menuFindMany.mockResolvedValue([])
   })
+
+  const stubMenusByQuery = (byName: unknown[], byId: Record<string, unknown> = {}) => {
+    menuFindMany.mockImplementation((args: MenuFindArgs) => {
+      if (args.where?.name) return byName
+      const ids = args.where?.id?.in ?? []
+      return ids.map(id => byId[id]).filter(Boolean)
+    })
+  }
+
+  const idMenuQueries = () => menuFindMany.mock.calls.filter(call => (call[0] as MenuFindArgs)?.where?.id)
 
   it('seeds roles with createMany and one update statement instead of looping upsert', async () => {
     roleFindMany.mockResolvedValue([{ code: 'admin' }])
@@ -130,10 +143,195 @@ describe('RoleService seed and queries', () => {
 
     expect(roleMenuFindMany).toHaveBeenCalled()
     expect(rolePermissionFindMany).toHaveBeenCalled()
+    expect(menuFindMany).toHaveBeenCalled()
 
     resolveRoleMenus([])
     resolveRolePermissions([])
     await expect(pending).resolves.toEqual([])
+  })
+
+  it('injects allowlisted personal menus as hidden when the role did not assign them', async () => {
+    roleMenuFindMany.mockResolvedValue([])
+    rolePermissionFindMany.mockResolvedValue([])
+    stubMenusByQuery(
+      [
+        {
+          id: 'menu-personal-center',
+          parentId: 'menu-personal',
+          name: 'PersonalCenter',
+          path: 'information',
+          hidden: false,
+          canTo: false,
+        },
+        {
+          id: 'menu-message',
+          parentId: 'menu-personal',
+          name: 'Message',
+          path: 'message',
+          hidden: false,
+          canTo: false,
+        },
+      ],
+      {
+        'menu-personal': {
+          id: 'menu-personal',
+          parentId: null,
+          name: 'Personal',
+          path: 'personal',
+          hidden: false,
+          canTo: false,
+          component: '#',
+        },
+      },
+    )
+
+    const result = await service.getUserMenusWithPermissionCodes(['role-1'])
+
+    expect(result.map(item => item.name).sort()).toEqual(['Message', 'Personal', 'PersonalCenter'])
+    expect(result.every(item => item.hidden === true && item.canTo === true)).toBe(true)
+  })
+
+  it('keeps assigned allowlisted menus visible in the sidebar', async () => {
+    roleMenuFindMany.mockResolvedValue([
+      {
+        menu: {
+          id: 'menu-message',
+          parentId: 'menu-personal',
+          name: 'Message',
+          path: 'message',
+          hidden: false,
+          canTo: false,
+        },
+      },
+    ])
+    rolePermissionFindMany.mockResolvedValue([])
+    stubMenusByQuery(
+      [
+        {
+          id: 'menu-personal-center',
+          parentId: 'menu-personal',
+          name: 'PersonalCenter',
+          path: 'information',
+          hidden: false,
+          canTo: false,
+        },
+        {
+          id: 'menu-message',
+          parentId: 'menu-personal',
+          name: 'Message',
+          path: 'message',
+          hidden: false,
+          canTo: false,
+        },
+      ],
+      {
+        'menu-personal': {
+          id: 'menu-personal',
+          parentId: null,
+          name: 'Personal',
+          path: 'personal',
+          hidden: false,
+          canTo: false,
+          component: '#',
+        },
+      },
+    )
+
+    const result = await service.getUserMenusWithPermissionCodes(['role-1'])
+    const byName = Object.fromEntries(result.map(item => [item.name, item]))
+
+    expect(byName.Message).toMatchObject({ hidden: false, canTo: false })
+    expect(byName.Personal).toMatchObject({ hidden: false, canTo: false })
+    expect(byName.PersonalCenter).toMatchObject({ hidden: true, canTo: true })
+  })
+
+  it('hydrates missing ancestor menus when only a leaf is assigned', async () => {
+    roleMenuFindMany.mockResolvedValue([
+      {
+        menu: {
+          id: 'menu-role',
+          parentId: 'menu-auth',
+          path: 'role',
+          name: 'Role',
+        },
+      },
+    ])
+    rolePermissionFindMany.mockResolvedValue([])
+    stubMenusByQuery([], {
+      'menu-auth': {
+        id: 'menu-auth',
+        parentId: null,
+        path: 'authorization',
+        name: 'Authorization',
+        component: '#',
+      },
+    })
+
+    const result = await service.getUserMenusWithPermissionCodes(['role-1'])
+
+    expect(result.map(item => item.id).sort()).toEqual(['menu-auth', 'menu-role'])
+    expect(result.find(item => item.id === 'menu-auth')).toMatchObject({
+      path: 'authorization',
+      permissions: [],
+    })
+    expect(menuFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['menu-auth'] }, enabled: true },
+      }),
+    )
+  })
+
+  it('walks multiple missing ancestor levels in one login payload', async () => {
+    roleMenuFindMany.mockResolvedValue([
+      {
+        menu: {
+          id: 'menu-workplace',
+          parentId: 'menu-dashboard',
+          path: 'workplace',
+          name: 'Workplace',
+        },
+      },
+    ])
+    rolePermissionFindMany.mockResolvedValue([])
+    stubMenusByQuery([], {
+      'menu-dashboard': {
+        id: 'menu-dashboard',
+        parentId: 'menu-root',
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: '#',
+      },
+      'menu-root': {
+        id: 'menu-root',
+        parentId: null,
+        path: 'app',
+        name: 'App',
+        component: '#',
+      },
+    })
+
+    const result = await service.getUserMenusWithPermissionCodes(['role-1'])
+
+    expect(result.map(item => item.id).sort()).toEqual(['menu-dashboard', 'menu-root', 'menu-workplace'])
+    expect(idMenuQueries()).toHaveLength(2)
+  })
+
+  it('does not query ancestors when parent menus are already assigned', async () => {
+    roleMenuFindMany.mockResolvedValue([
+      { menu: { id: 'menu-auth', parentId: null, path: 'authorization', name: 'Authorization' } },
+      { menu: { id: 'menu-role', parentId: 'menu-auth', path: 'role', name: 'Role' } },
+    ])
+    rolePermissionFindMany.mockResolvedValue([])
+
+    const result = await service.getUserMenusWithPermissionCodes(['role-1'])
+
+    expect(result.map(item => item.id).sort()).toEqual(['menu-auth', 'menu-role'])
+    expect(idMenuQueries()).toHaveLength(0)
+    expect(menuFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { name: { in: [...ALWAYS_ACCESSIBLE_MENU_NAMES] }, enabled: true },
+      }),
+    )
   })
 
   it('throws when the role list is empty', async () => {

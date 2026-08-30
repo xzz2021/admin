@@ -10,6 +10,9 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { CreateRoleDto, QueryRoleParams, RoleSeedDto, UpdateRoleDto } from './dto/role.dto'
 import { RolePermissionSyncInput, RoleRepository } from './role.repository'
 
+// 登录时始终注入：未勾选则 hidden+canTo（顶栏可进、侧栏不显示）；勾选后沿用菜单表配置，侧栏可显示。
+export const ALWAYS_ACCESSIBLE_MENU_NAMES = ['Workplace', 'Personal', 'PersonalCenter', 'Message'] as const
+
 @Injectable()
 export class RoleService {
   constructor(
@@ -247,6 +250,28 @@ export class RoleService {
     return { list, message: '获取用户菜单成功' }
   }
 
+  private async hydrateAncestorMenus<T extends { id: string; parentId: string | null }>(menus: T[]): Promise<T[]> {
+    const byId = new Map(menus.map(menu => [menu.id, menu]))
+    const missing = new Set<string>()
+    for (const menu of menus) {
+      if (menu.parentId && !byId.has(menu.parentId)) {
+        missing.add(menu.parentId)
+      }
+    }
+    while (missing.size) {
+      const parents = await this.roles.findEnabledMenus([...missing])
+      missing.clear()
+      for (const parent of parents) {
+        if (byId.has(parent.id)) continue
+        byId.set(parent.id, parent as unknown as T)
+        if (parent.parentId && !byId.has(parent.parentId)) {
+          missing.add(parent.parentId)
+        }
+      }
+    }
+    return [...byId.values()]
+  }
+
   // 获取全部菜单及对应权限
   async getRoleMenuWithPermissionOfAdmin() {
     const roleWithMenusAndPermissions = await this.roles.findEnabledMenusWithAllPermissions()
@@ -268,24 +293,33 @@ export class RoleService {
 
   async getUserMenusWithPermissionCodes(roleIds: string[]) {
     if (roleIds.length === 0) return []
-    const [roleMenus, rolePermissions] = await Promise.all([
+    const [roleMenus, rolePermissions, alwaysMenus] = await Promise.all([
       this.roles.findMenusByRoleIds(roleIds),
       this.roles.findPermissionsByRoleIds(roleIds),
+      this.roles.findEnabledMenusByNames(ALWAYS_ACCESSIBLE_MENU_NAMES),
     ])
-    const menus = uniqueBy(
+    const assigned = uniqueBy(
       roleMenus.map(r => r.menu),
       menu => menu.id,
     )
+    const assignedTree = await this.hydrateAncestorMenus(assigned)
+    const assignedTreeIds = new Set(assignedTree.map(menu => menu.id))
+    const menus = await this.hydrateAncestorMenus(uniqueBy([...assignedTree, ...alwaysMenus], menu => menu.id))
     const permissions = uniqueBy(
       rolePermissions.map(r => r.permission),
       permission => permission.code,
     )
 
     // 4) 把 permission.code 注入到对应菜单的 meta 里
+    // extra：白名单注入、且不在「已勾选 + 勾选链路祖先」中 → 侧栏隐藏但仍可跳转
     const shaped = menus.map(m => {
       const codes = permissions.filter(p => p.menuId === m.id).map(p => p.code)
-
-      return { ...m, permissions: codes }
+      const extra = !assignedTreeIds.has(m.id)
+      return {
+        ...m,
+        permissions: codes,
+        ...(extra ? { hidden: true, canTo: true } : {}),
+      }
     })
 
     return shaped

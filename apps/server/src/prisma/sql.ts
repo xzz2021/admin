@@ -250,7 +250,7 @@ const _menu = [
   {
     name: 'Personal',
     path: 'personal',
-    redirect: '/persoanl/information',
+    redirect: '/personal/information',
     type: 'DIRECTORY',
     component: '#',
     sort: 2,

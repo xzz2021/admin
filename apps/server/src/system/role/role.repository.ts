@@ -147,6 +147,20 @@ export class RoleRepository {
     })
   }
 
+  findEnabledMenus(ids: string[], tx: Db = this.db) {
+    if (ids.length === 0) return Promise.resolve([])
+    return tx.menu.findMany({
+      where: { id: { in: ids }, enabled: true },
+    })
+  }
+
+  findEnabledMenusByNames(names: readonly string[], tx: Db = this.db) {
+    if (names.length === 0) return Promise.resolve([])
+    return tx.menu.findMany({
+      where: { name: { in: [...names] }, enabled: true },
+    })
+  }
+
   findEnabledPermissionsByIds(ids: string[], tx: Db = this.db) {
     return tx.permission.findMany({
       where: { id: { in: ids }, enabled: true },
