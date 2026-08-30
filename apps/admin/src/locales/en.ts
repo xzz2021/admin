@@ -222,6 +222,7 @@ export default {
     cardTable: 'Card table',
     personalCenter: 'Personal center',
     personal: 'Personal',
+    customer: 'Customers',
     avatars: 'Avatars',
     iAgree: 'I agree',
     tree: 'Tree'

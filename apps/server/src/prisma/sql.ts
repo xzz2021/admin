@@ -1,3 +1,5 @@
+import { type PermissionSeedItem } from './seed-permissions'
+
 const _role = [
   {
     name: '超级管理员',
@@ -479,7 +481,7 @@ const _menu = [
   },
 ]
 
-const _permission = [
+const _permission: PermissionSeedItem[] = [
   {
     name: '新增',
     code: 'add',
@@ -722,4 +724,85 @@ const _permission = [
   },
 ]
 
-export { _department, _menu, _permission, _role }
+const permission: PermissionSeedItem[] = [
+  //  凡是带有scopeEnabled的权限都要严格对应到后端代码层,细颗粒度的控制无法完全自动,需要代码合并手写控制逻辑
+  {
+    name: '查看',
+    code: 'view',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: true,
+  },
+  {
+    name: '详情',
+    code: 'detail',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: true,
+  },
+  {
+    name: '新增',
+    code: 'add',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: true,
+  },
+  {
+    name: '编辑',
+    code: 'update',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: true,
+  },
+  {
+    name: '删除',
+    code: 'delete',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: true,
+  },
+  {
+    name: '导出',
+    code: 'export',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: true,
+  },
+  {
+    name: '分配',
+    code: 'assign',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: false,
+  },
+  {
+    name: '高金额更新',
+    code: 'high-value:update',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: false,
+  },
+  {
+    name: '成交删除',
+    code: 'won:delete',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: false,
+  },
+  {
+    name: '敏感查看',
+    code: 'sensitive:view',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: false,
+  },
+  {
+    name: '敏感更新',
+    code: 'sensitive:update',
+    resource: 'customer',
+    type: 'button',
+    scopeEnabled: false,
+  },
+]
+
+export { _department, _menu, _permission, _role, permission }

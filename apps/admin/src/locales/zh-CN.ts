@@ -220,6 +220,7 @@ export default {
     cardTable: '卡片表格',
     personalCenter: '个人中心',
     personal: '个人',
+    customer: '客户管理',
     avatars: '头像列表',
     iAgree: '我同意',
     tree: 'Tree 树形控件'

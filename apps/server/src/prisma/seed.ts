@@ -5,8 +5,9 @@
 
 import { prisma, Prisma } from './lib/prisma'
 import { createSeedAdmin } from './seed-admin'
-import { _department, _menu, _permission, _role } from './sql'
-
+import { _customer, create_customers } from './seed-customers'
+import { create_additional_permissions } from './seed-permissions'
+import { _department, _menu, _permission, _role, permission } from './sql'
 async function create_menus_batch(menu_data: any[], tx: Prisma.TransactionClient, parentId?: string) {
   for (const menu_item of menu_data) {
     const { children, ...menu_fields } = menu_item
@@ -107,10 +108,11 @@ async function create_departments_batch(department_data: any[], tx: Prisma.Trans
   }
 }
 
-async function main() {
+async function seedInitialData() {
   await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
       //  创建前先检查数据库mneu是否存在,有说明已经生成过,跳过
+      //  这里用于服务器首次部署时初始化完整数据
       const menuCount = await tx.menu.count()
       if (menuCount > 0) {
         console.log(`ℹ️ Menu already contains ${menuCount} records; skipping seed.`)
@@ -128,8 +130,27 @@ async function main() {
       await create_users(seedAdmin, tx)
       console.log('✅ Seeding finished.')
     },
-    { timeout: 60_000 },
+    { timeout: 30_000 },
   )
+}
+
+async function seedAdditionalData() {
+  await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      // 这里相当于可以后续开发过程补充生产服务器增量数据
+      await create_additional_permissions(permission, tx)
+      console.log('🌱 Seeding additional permissions success...')
+      await create_customers(_customer, tx)
+      console.log('🌱 Seeding customers data success...')
+    },
+    { timeout: 30_000 },
+  )
+}
+
+async function main() {
+  await seedInitialData()
+  await seedAdditionalData()
+  console.log('✅ Seeding additional data finished.')
 }
 
 main()
