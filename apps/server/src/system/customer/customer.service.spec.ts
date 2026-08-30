@@ -102,7 +102,7 @@ describe('CustomerService', () => {
     const result = await service.list({}, context)
 
     expect(result.list).toHaveLength(2)
-    expect(result.list[0]?.capabilities).toEqual(['update', 'delete', 'assign'])
+    expect(result.list[0]?.capabilities).toEqual(['update', 'delete'])
     expect(repository.findPage).toHaveBeenCalledTimes(1)
     expect(repository.findFirst).not.toHaveBeenCalled()
   })

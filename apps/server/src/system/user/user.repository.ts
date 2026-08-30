@@ -29,6 +29,13 @@ const USER_LIST_SELECT = {
   },
 } satisfies Prisma.UserSelect
 
+const USER_LOOKUP_SELECT = {
+  id: true,
+  username: true,
+  enabled: true,
+  departmentId: true,
+} satisfies Prisma.UserSelect
+
 @Injectable()
 export class UserRepository {
   constructor(private readonly db: PgService) {}
@@ -172,6 +179,19 @@ export class UserRepository {
       this.db.user.findMany({
         where,
         select: USER_LIST_SELECT,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.db.user.count({ where }),
+    ])
+  }
+
+  findLookupPage(where: Prisma.UserWhereInput, skip: number, take: number) {
+    return Promise.all([
+      this.db.user.findMany({
+        where,
+        select: USER_LOOKUP_SELECT,
         skip,
         take,
         orderBy: { createdAt: 'desc' },

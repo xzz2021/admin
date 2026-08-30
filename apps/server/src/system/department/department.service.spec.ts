@@ -217,3 +217,62 @@ describe('DepartmentService unique names', () => {
     await expect(service.add({ name: '研发部', enabled: true })).rejects.toThrow('同级已存在同名部门')
   })
 })
+
+describe('DepartmentService lookup', () => {
+  const findMany = jest.fn()
+  const count = jest.fn()
+  const service = new DepartmentService(
+    new DepartmentRepository({
+      department: { findMany, count },
+    } as unknown as PgService),
+    { record: jest.fn() } as unknown as import('@/core/logger/audit-log.service').AuditLogService,
+    organizationGeneration,
+  )
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns a slim tree without management fields', async () => {
+    findMany.mockResolvedValue([
+      {
+        id: 'root',
+        name: '总部',
+        parentId: null,
+        enabled: true,
+        path: '/root',
+        description: '内部备注',
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        children: [
+          {
+            id: 'child',
+            name: '研发',
+            parentId: 'root',
+            enabled: true,
+            path: '/root/child',
+            description: '子部门备注',
+            createdAt: new Date('2026-01-01T00:00:00.000Z'),
+            updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+            children: [],
+          },
+        ],
+      },
+    ])
+    count.mockResolvedValue(2)
+
+    await expect(service.lookup()).resolves.toEqual({
+      list: [
+        {
+          id: 'root',
+          name: '总部',
+          parentId: null,
+          enabled: true,
+          children: [{ id: 'child', name: '研发', parentId: 'root', enabled: true, children: [] }],
+        },
+      ],
+      total: 2,
+      message: '获取部门列表成功',
+    })
+  })
+})

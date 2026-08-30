@@ -2,13 +2,7 @@ import { AuditAction } from '@/core/logger/audit-action'
 import { AuditLogService } from '@/core/logger/audit-log.service'
 import { Prisma } from '@/prisma/generated/prisma/client'
 import type { AuthorizationContext } from '@/processor/authorization/authorization-context'
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common'
 import { Readable } from 'node:stream'
 import {
   CUSTOMER_CSV_HEADER,
@@ -20,7 +14,7 @@ import { CustomerPolicy } from './customer.policy'
 import { CustomerRepository, type CustomerRow } from './customer.repository'
 import type { CreateCustomerDto, ExportCustomerDto, QueryCustomerDto, UpdateCustomerDto } from './dto/customer.dto'
 
-const HIDDEN_MESSAGE = '数据不存在或无权限'
+const HIDDEN_MESSAGE = '数据无操作权限或不符合条件'
 
 function sortedUniqueIds(ids: readonly string[]): string[] {
   return [...new Set(ids)].sort()
@@ -57,7 +51,7 @@ export class CustomerService {
   async detail(id: string, context?: AuthorizationContext) {
     const policy = this.policy(context)
     const row = await this.customers.findFirst(policy.queryWhere('customer:detail', { id }))
-    if (!row) throw new NotFoundException(HIDDEN_MESSAGE)
+    if (!row) throw new ForbiddenException(HIDDEN_MESSAGE)
     return this.project(row, policy)
   }
 
@@ -125,7 +119,7 @@ export class CustomerService {
     await this.customers.transaction(async tx => {
       const policyWhere = policy.mutationWhere('customer:update', { id })
       const candidate = await this.customers.findFirst(policyWhere, tx)
-      if (!candidate) throw new NotFoundException(HIDDEN_MESSAGE)
+      if (!candidate) throw new ForbiddenException(HIDDEN_MESSAGE)
 
       const candidateTargetOwnerId = patch.ownerId ?? candidate.ownerId
       const candidateTargetDepartmentId = patch.departmentId ?? candidate.departmentId
@@ -142,10 +136,10 @@ export class CustomerService {
         : []
 
       const locked = await this.customers.lockCustomerForUpdate(id, tx)
-      if (!locked) throw new NotFoundException(HIDDEN_MESSAGE)
+      if (!locked) throw new ForbiddenException(HIDDEN_MESSAGE)
 
       const current = await this.customers.findFirst(policyWhere, tx)
-      if (!current || !policy.can('update', current)) throw new NotFoundException(HIDDEN_MESSAGE)
+      if (!current || !policy.can('update', current)) throw new ForbiddenException(HIDDEN_MESSAGE)
       if (current.version !== version) throw new ConflictException('数据已被其他请求修改')
 
       const next = { ...current, ...patch } as CustomerRow
@@ -166,7 +160,7 @@ export class CustomerService {
         ) {
           throw new ConflictException('数据已被其他请求修改')
         }
-        if (!policy.can('assign', current)) throw new ForbiddenException('无权分配客户')
+        if (!context!.hasPermission('customer:assign')) throw new ForbiddenException('无权分配客户')
         if (!policy.targetMatchesGrant('customer:update', next.ownerId, next.departmentId)) {
           throw new ForbiddenException('目标超出可更新范围')
         }
@@ -200,7 +194,7 @@ export class CustomerService {
         if (stillOperable && policy.can('update', stillOperable)) {
           throw new ConflictException('数据已被其他请求修改')
         }
-        throw new NotFoundException(HIDDEN_MESSAGE)
+        throw new ForbiddenException(HIDDEN_MESSAGE)
       }
     })
     await this.audit.record({
@@ -221,10 +215,10 @@ export class CustomerService {
       const where = policy.mutationWhere('customer:delete', { id: { in: uniqueIds } })
       const rows = await this.customers.findMany(where, tx)
       if (rows.length !== uniqueIds.length || rows.some(row => !policy.can('delete', row))) {
-        throw new NotFoundException(HIDDEN_MESSAGE)
+        throw new ForbiddenException(HIDDEN_MESSAGE)
       }
       const deleted = await this.customers.deleteMany(where, tx)
-      if (deleted.count !== uniqueIds.length) throw new NotFoundException(HIDDEN_MESSAGE)
+      if (deleted.count !== uniqueIds.length) throw new ForbiddenException(HIDDEN_MESSAGE)
     })
     await this.audit.record({
       actorId: context!.userId,

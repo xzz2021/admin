@@ -230,7 +230,7 @@ onActivated(() => {
         <BaseButton type="primary" class="mb-[18px] flex-shrink-0" @click="openSortDialog">
           {{ t('menu.sort') }}
         </BaseButton>
-        <BaseButton type="danger" v-hasPermi="'menu:refresh'" class="mb-[18px] flex-shrink-0" @click="getRole">{{
+        <BaseButton type="danger" class="mb-[18px] flex-shrink-0" @click="getRole">{{
           t('common.refresh')
         }}</BaseButton>
       </div>

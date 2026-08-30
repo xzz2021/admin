@@ -1,6 +1,5 @@
 import { SetMetadata } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { Action } from '../constants/action'
 export const PERMISSION_KEY = 'permission'
 
 // 用于全局  给被装饰的 函数 添加 元数据
@@ -19,16 +18,4 @@ export const RequiredPermission2 = (key: string, permission: string) => {
       SetMetadata(key, [...classPermission, permission])(target as (...args: any[]) => any)
     }
   }
-}
-
-export const Create = () => {
-  return RequiredPermission2(PERMISSION_KEY, Action.CREATE)
-}
-
-export const Update = () => {
-  return RequiredPermission2(PERMISSION_KEY, Action.UPDATE)
-}
-
-export const Delete = () => {
-  return RequiredPermission2(PERMISSION_KEY, Action.DELETE)
 }

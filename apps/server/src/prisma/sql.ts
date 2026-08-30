@@ -505,12 +505,6 @@ const _permission = [
     type: 'button',
   },
   {
-    name: '种子数据',
-    code: 'seed',
-    resource: 'department',
-    type: 'button',
-  },
-  {
     name: '新增',
     code: 'add',
     resource: 'dictionary',
@@ -531,12 +525,6 @@ const _permission = [
   {
     name: '查看',
     code: 'view',
-    resource: 'dictionary',
-    type: 'button',
-  },
-  {
-    name: '种子数据',
-    code: 'seed',
     resource: 'dictionary',
     type: 'button',
   },
@@ -589,18 +577,6 @@ const _permission = [
     type: 'button',
   },
   {
-    name: '种子数据',
-    code: 'seed',
-    resource: 'menu',
-    type: 'button',
-  },
-  {
-    name: '刷新菜单',
-    code: 'refresh',
-    resource: 'menu',
-    type: 'button',
-  },
-  {
     name: '新增',
     code: 'add',
     resource: 'role',
@@ -621,12 +597,6 @@ const _permission = [
   {
     name: '查看',
     code: 'view',
-    resource: 'role',
-    type: 'button',
-  },
-  {
-    name: '生成种子',
-    code: 'seed',
     resource: 'role',
     type: 'button',
   },

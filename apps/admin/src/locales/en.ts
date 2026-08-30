@@ -1050,7 +1050,8 @@ export default {
       FOLLOWING: 'Following',
       WON: 'Won',
       FROZEN: 'Frozen'
-    }
+    },
+    noPermission: 'The current user does not have permission to operate or does not meet the conditions'
   },
   inputPasswordDemo: {
     title: 'InputPassword',

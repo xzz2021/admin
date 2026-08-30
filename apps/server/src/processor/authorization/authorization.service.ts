@@ -4,7 +4,7 @@ import { AuthorizationContext } from './authorization-context'
 import type { AuthorizationSnapshot } from './authorization-snapshot'
 import { AuthorizationSnapshotCacheService } from './authorization-snapshot-cache.service'
 import { AuthorizationRepository, type AuthorizationPermissionSource } from './authorization.repository'
-import { mergeGrants } from './grant-merger'
+import { mergeGrants } from './scope-grant-strategy.registry'
 import type { ScopeResolutionMemo } from './scope-resolver.interface'
 import { ScopeResolverRegistry } from './scope-resolver.registry'
 import type { AuthorizationDecision, ResolvedGrant } from './scope.types'
@@ -22,7 +22,7 @@ export class AuthorizationService {
     // requestedPermissionCodes 仅描述本次请求所需权限；缓存刻意保存用户完整快照，
     // 避免不同路由生成互不完整且无法安全复用的缓存条目。
     const snapshot = await this.cache.getOrLoad(userId, () => this.buildSnapshot(userId))
-    // 返回AuthorizationContext 实例, 包含权限代码和决策
+    // 返回AuthorizationContext 实例, 包含权限代码和决策  ( 当前用户    当前权限code    当前code下是否有scoped范围, 如果有则放入grant, 并且返回具体scopes[])
     return new AuthorizationContext(userId, snapshot.permissionCodes, snapshot.decisions)
   }
 
@@ -34,7 +34,7 @@ export class AuthorizationService {
     if (superAdmin) {
       return {
         permissionCodes: [ALL_PERMISSIONS],
-        // 超级管理员放行所有细颗粒度权限 无范围限制
+        // 超级管理员放行所有细颗粒度权限 无范围限制    Object.fromEntries把一组 [key, value] 键值对转换成普通 JavaScript 对象
         decisions: Object.fromEntries(
           source.permissionCatalog.map(permission => [
             permission.code,
@@ -67,7 +67,7 @@ export class AuthorizationService {
     )
     return {
       permissionCodes,
-      // decisions 用于 细颗粒度权限控制, 决定“这个用户能不能对这条数据做这件事”
+      // decisions 用于 细颗粒度权限控制, 决定“这个用户能不能对这条数据做这件事”   //    decisions 按权限 code 排成稳定的键序后再放进快照
       decisions: Object.fromEntries(Object.entries(decisions).sort(([left], [right]) => left.localeCompare(right))),
     }
   }
@@ -82,7 +82,9 @@ export class AuthorizationService {
 
     const grants: ResolvedGrant[] = await Promise.all(
       permissions.map(permission => {
+        //  当前权限项没有范围
         if (!permission.dataScope) return Promise.resolve({ all: false, scopes: [] })
+        // 有范围则获取具体范围   { all: false, scopes: [{ type: 'SELF' }] } 或者  { all: false, scopes: [{ type: 'DEPARTMENT', ids: [input.departmentId] }] }  等等
         return this.resolvers.resolveGrant(permission.dataScope, {
           userId,
           departmentId,
@@ -91,6 +93,7 @@ export class AuthorizationService {
         })
       }),
     )
+    // 深度 递归?  合并所有范围    { all: false, scopes: [{ type: 'SELF' }, { type: 'DEPARTMENT', ids: [input.departmentId] }] }
     return { scoped: true, grant: mergeGrants(grants) }
   }
 }

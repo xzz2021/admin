@@ -28,6 +28,7 @@ export class SelfScopeGrantStrategy implements ScopeGrantStrategy {
 export class DepartmentScopeGrantStrategy implements ScopeGrantStrategy {
   readonly type = 'DEPARTMENT' as const
 
+  // 去重合并排序
   merge(grants: readonly ScopeGrant[]): DepartmentGrant | null {
     const ids = new Set<string>()
     for (const grant of grants) {

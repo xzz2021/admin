@@ -317,4 +317,22 @@ describe('UserService list queries', () => {
       message: '获取用户列表成功',
     })
   })
+
+  it('returns a slim lookup page without phone or roles', async () => {
+    findMany.mockResolvedValue([{ id: 'user-1', username: 'alice', enabled: true, departmentId: 'dept-1' }])
+    count.mockResolvedValue(1)
+
+    await expect(
+      createService().lookupByDepartment({ pageIndex: 1, pageSize: 10, id: undefined, enabled: true }),
+    ).resolves.toEqual({
+      list: [{ id: 'user-1', username: 'alice', enabled: true, departmentId: 'dept-1' }],
+      total: 1,
+      message: '用户选项查询成功',
+    })
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        select: { id: true, username: true, enabled: true, departmentId: true },
+      }),
+    )
+  })
 })

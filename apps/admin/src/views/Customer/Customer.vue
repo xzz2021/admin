@@ -9,7 +9,7 @@ import {
 } from '@/api/customer'
 import type { CreateCustomerPayload, CustomerItem, CustomerStatus, UpdateCustomerPayload } from '@/api/customer/type'
 import { CUSTOMER_STATUSES } from '@/api/customer/type'
-import { getUserByDepartmentIdApi } from '@/api/user'
+import { getUserLookupApi } from '@/api/user'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Dialog } from '@/components/Dialog'
@@ -76,7 +76,7 @@ const rememberOwners = (users: Array<{ id: string; username: string }>) => {
 
 const loadOwnersForDepartment = async (departmentId?: string) => {
   try {
-    const res = await getUserByDepartmentIdApi({
+    const res = await getUserLookupApi({
       ...(departmentId ? { id: departmentId } : {}),
       pageIndex: 1,
       pageSize: OWNER_PAGE_SIZE,
@@ -217,21 +217,27 @@ const tableColumns = computed<TableColumn[]>(() => [
         const row = data.row
         return (
           <>
-            {canUpdate() && hasCapability(row, 'update') ? (
-              <BaseButton type="primary" onClick={() => openDialog(row, 'edit')}>
-                {t('exampleDemo.edit')}
-              </BaseButton>
-            ) : null}
-            {canDetail() ? (
-              <BaseButton type="success" onClick={() => openDialog(row, 'detail')}>
-                {t('exampleDemo.detail')}
-              </BaseButton>
-            ) : null}
-            {canDelete() && hasCapability(row, 'delete') ? (
-              <BaseButton type="danger" onClick={() => removeRows(row)}>
-                {t('exampleDemo.del')}
-              </BaseButton>
-            ) : null}
+            <BaseButton
+              type="primary"
+              disabled={!(canUpdate() && hasCapability(row, 'update'))}
+              onClick={() => openDialog(row, 'edit')}
+            >
+              {t('exampleDemo.edit')}
+            </BaseButton>
+            <BaseButton
+              type="success"
+              disabled={!(canDetail() && hasCapability(row, 'detail'))}
+              onClick={() => openDialog(row, 'detail')}
+            >
+              {t('exampleDemo.detail')}
+            </BaseButton>
+            <BaseButton
+              type="danger"
+              disabled={!(canDelete() && hasCapability(row, 'delete'))}
+              onClick={() => removeRows(row)}
+            >
+              {t('exampleDemo.del')}
+            </BaseButton>
           </>
         )
       }
@@ -239,10 +245,7 @@ const tableColumns = computed<TableColumn[]>(() => [
   }
 ])
 
-const writeCanAssign = computed(() => {
-  if (actionType.value === 'add') return canAssignPermission()
-  return !!currentRow.value && hasCapability(currentRow.value, 'assign')
-})
+const writeCanAssign = computed(() => canAssignPermission())
 
 const setSearchParams = (params: Recordable) => {
   currentPage.value = 1
@@ -258,15 +261,17 @@ const setSearchParams = (params: Recordable) => {
 }
 
 const openDialog = async (row: CustomerItem | undefined, type: 'add' | 'edit' | 'detail') => {
-  if (type === 'add' && !canAdd()) return
-  if (type === 'edit' && (!row || !canUpdate() || !hasCapability(row, 'update'))) return
-  if (type === 'detail' && (!row || !canDetail())) return
+  if (type === 'add' && !canAdd()) return ElMessage.error(t('customer.noPermission'))
+  if (type === 'edit' && (!row || !canUpdate() || !hasCapability(row, 'update')))
+    return ElMessage.error(t('customer.noPermission'))
+  if (type === 'detail' && (!row || !canDetail() || !hasCapability(row, 'detail')))
+    return ElMessage.error(t('customer.noPermission'))
   if (type === 'add' || type === 'edit') await departmentStore.ensureList()
 
   actionType.value = type
   defaultDepartmentId.value = type === 'add' && currentNodeKey.value !== ALL_DEPARTMENT ? currentNodeKey.value : ''
 
-  if (row && (type === 'detail' || (type === 'edit' && canDetail()))) {
+  if (type === 'detail' && row) {
     try {
       const res = await getCustomerDetailApi(row.id)
       currentRow.value = res.data

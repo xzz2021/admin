@@ -18,6 +18,19 @@ export const getUserByDepartmentIdApi = (
   return request.get({ url: 'user/listByDepartmentId', params })
 }
 
+export interface UserLookupItem {
+  id: string
+  username: string
+  enabled: boolean
+  departmentId: string | null
+}
+
+export const getUserLookupApi = (
+  params: QueryUserParams
+): Promise<IResponse<{ list: UserLookupItem[]; total: number }>> => {
+  return request.get({ url: 'user/lookup', params })
+}
+
 export const addUserApi = (data: CreateUserPayload) => {
   return request.post({ url: 'user/add', data })
 }

@@ -2,7 +2,7 @@ export const CUSTOMER_STATUSES = ['LEAD', 'FOLLOWING', 'WON', 'FROZEN'] as const
 
 export type CustomerStatus = (typeof CUSTOMER_STATUSES)[number]
 
-export type CustomerCapability = 'update' | 'delete' | 'assign'
+export type CustomerCapability = 'update' | 'delete' | 'detail'
 
 export interface CustomerItem {
   id: string

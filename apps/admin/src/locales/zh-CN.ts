@@ -1038,7 +1038,8 @@ export default {
       FOLLOWING: '跟进中',
       WON: '已成交',
       FROZEN: '已冻结'
-    }
+    },
+    noPermission: '当前用户没有操作权限或不符合条件'
   },
   inputPasswordDemo: {
     title: '密码输入框',

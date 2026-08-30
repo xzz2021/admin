@@ -2,7 +2,7 @@ import { AuthorizationContext } from '@/processor/authorization/authorization-co
 import type { AuthorizationService } from '@/processor/authorization/authorization.service'
 import { PERMISSION_KEY } from '@/processor/decorator/permission'
 import { Prisma } from '@/prisma/generated/prisma/client'
-import { ServiceUnavailableException, type ExecutionContext } from '@nestjs/common'
+import { ForbiddenException, ServiceUnavailableException, type ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { PermissionGuard } from './permission'
 
@@ -41,7 +41,9 @@ describe('PermissionGuard', () => {
   })
 
   it('rejects protected routes without an authenticated user', async () => {
-    await expect(createGuard().canActivate(executionContext('user:update').context)).resolves.toBe(false)
+    await expect(createGuard().canActivate(executionContext('user:update').context)).rejects.toThrow(
+      new ForbiddenException('身份无效，无法校验权限'),
+    )
     expect(authCreateContext).not.toHaveBeenCalled()
   })
 
@@ -60,7 +62,9 @@ describe('PermissionGuard', () => {
   it('rejects a request when the required permission is missing', async () => {
     authCreateContext.mockResolvedValue(new AuthorizationContext('user-1', ['user:view'], {}))
 
-    await expect(createGuard().canActivate(executionContext('user:update', 'user-1').context)).resolves.toBe(false)
+    await expect(createGuard().canActivate(executionContext('user:update', 'user-1').context)).rejects.toThrow(
+      new ForbiddenException('无权限访问当前接口'),
+    )
   })
 
   it('maps transient database failures to 503', async () => {

@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { addDepartmentApi, delDepartmentApi, editDepartmentApi } from '@/api/department'
+import { addDepartmentApi, delDepartmentApi, editDepartmentApi, getDepartmentListApi } from '@/api/department'
 import type { DepartmentItem } from '@/api/department/types'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
@@ -26,14 +26,19 @@ const searchParams = ref<Recordable>({})
 const applyFilter = (list: DepartmentItem[] = sourceList.value) =>
   filterDepartmentTree(list, {
     name: searchParams.value.name,
-    enabled: searchParams.value.enabled,
+    enabled: searchParams.value.enabled
   })
 
 const { tableRegister, tableState, tableMethods } = useTable<DepartmentItem, string>({
   fetchDataApi: async () => {
-    const res = await departmentStore.requestNewList()
-    sourceList.value = applyFilter(res.list)
-    return res
+    const res = await getDepartmentListApi()
+    const list = res.data.list || []
+    sourceList.value = list
+    void departmentStore.requestNewList().catch(() => undefined)
+    return {
+      list: applyFilter(list),
+      total: res.data.total || 0
+    }
   },
   getRowId: (row) => row.id,
   confirmMessage: (rows) => t('department.confirmDelete', { name: rows[0].name }),
@@ -44,7 +49,7 @@ const { tableRegister, tableState, tableMethods } = useTable<DepartmentItem, str
       return false
     }
   },
-  deleteApi: (ids) => delDepartmentApi(ids[0]),
+  deleteApi: (ids) => delDepartmentApi(ids[0])
 })
 
 const { dataList, loading } = tableState
@@ -54,12 +59,12 @@ const tableColumns = reactive<TableColumn[]>([
   {
     field: 'index',
     label: t('tableDemo.index'),
-    type: 'index',
+    type: 'index'
   },
   {
     field: 'name',
     label: t('userDemo.departmentName'),
-    minWidth: 200,
+    minWidth: 200
   },
   // {
   //   field: 'sort',
@@ -75,20 +80,20 @@ const tableColumns = reactive<TableColumn[]>([
         <ElTag type={data.row.enabled ? 'success' : 'danger'}>
           {data.row.enabled ? t('userDemo.enable') : t('userDemo.disable')}
         </ElTag>
-      ),
-    },
+      )
+    }
   },
   {
     field: 'description',
     label: t('userDemo.remark'),
     minWidth: 80,
-    showOverflowTooltip: true,
+    showOverflowTooltip: true
   },
   {
     field: 'createdAt',
     label: t('tableDemo.displayTime'),
     width: 180,
-    formatter: (row: DepartmentItem) => formatToDateTime(row.createdAt),
+    formatter: (row: DepartmentItem) => formatToDateTime(row.createdAt)
   },
   {
     field: 'action',
@@ -107,16 +112,16 @@ const tableColumns = reactive<TableColumn[]>([
             </BaseButton>
           </>
         )
-      },
-    },
-  },
+      }
+    }
+  }
 ])
 
 const searchSchema = reactive<FormSchema[]>([
   {
     field: 'name',
     label: t('userDemo.departmentName'),
-    component: 'Input',
+    component: 'Input'
   },
   {
     field: 'enabled',
@@ -125,10 +130,10 @@ const searchSchema = reactive<FormSchema[]>([
     componentProps: {
       options: [
         { label: t('userDemo.enable'), value: true },
-        { label: t('userDemo.disable'), value: false },
-      ],
-    },
-  },
+        { label: t('userDemo.disable'), value: false }
+      ]
+    }
+  }
 ])
 
 const setSearchParams = (data: Recordable) => {
@@ -158,7 +163,7 @@ const handleSave = async () => {
       name: formData.name,
       parentId: formData.parentId || null,
       enabled: formData.enabled ?? true,
-      description: formData.description || undefined,
+      description: formData.description || undefined
     }
 
     if (formData.id) {

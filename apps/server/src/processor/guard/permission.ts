@@ -2,7 +2,13 @@ import type { AuthorizationContext } from '@/processor/authorization/authorizati
 import { AuthorizationService } from '@/processor/authorization/authorization.service'
 import { PERMISSION_KEY } from '@/processor/decorator/permission'
 import { isTransientDbError } from '@/processor/filter/prisma.exception'
-import { CanActivate, ExecutionContext, Injectable, ServiceUnavailableException } from '@nestjs/common'
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { Request } from 'express'
 /*
@@ -40,13 +46,17 @@ export class PermissionGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<AuthorizedJwtRequest>()
     const userId = request.user?.id
-    if (!userId) return false
+    // 返回 false 时 Nest 会抛默认 ForbiddenException('Forbidden resource')，这里主动抛出以自定义文案
+    if (!userId) throw new ForbiddenException('身份无效，无法校验权限')
 
     try {
       const authorizationContext = await this.authorization.createContext(userId, [requiredPermission])
       request.authorizationContext = authorizationContext
       // 上面是接口放行了, 这里开始细颗粒度权限判断
-      return authorizationContext.hasPermission(requiredPermission)
+      if (!authorizationContext.hasPermission(requiredPermission)) {
+        throw new ForbiddenException('无权限访问当前接口')
+      }
+      return true
     } catch (error) {
       if (error instanceof ServiceUnavailableException) throw error
       if (isTransientDbError(error)) {

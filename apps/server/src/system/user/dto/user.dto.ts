@@ -65,6 +65,20 @@ const UserListResSchema = z.object({
 })
 export class UserListRes extends createZodDto(UserListResSchema) {}
 
+const UserLookupSchema = z.object({
+  id: z.string().min(1),
+  username: z.string(),
+  enabled: z.boolean(),
+  departmentId: z.string().nullable(),
+})
+export class UserLookupItemDto extends createZodDto(UserLookupSchema) {}
+
+const UserLookupListResSchema = z.object({
+  total: z.number(),
+  list: z.array(UserLookupSchema),
+})
+export class UserLookupListRes extends createZodDto(UserLookupListResSchema) {}
+
 const UpdatePwdSchema = z.object({
   id: z.string().min(1).meta({ description: '用户ID', example: '1' }),
   password: UserModel.shape.password.meta({ description: '旧密码', example: 'OldPass_123!' }),

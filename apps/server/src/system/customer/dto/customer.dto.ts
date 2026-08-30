@@ -86,7 +86,7 @@ const CustomerResponseSchema = z
     version: z.number().int(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
-    capabilities: z.array(z.enum(['update', 'delete', 'assign'])),
+    capabilities: z.array(z.enum(['update', 'delete', 'detail'])),
   })
   .strict()
 

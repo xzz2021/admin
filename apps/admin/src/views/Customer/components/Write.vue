@@ -4,9 +4,9 @@ import {
   type CreateCustomerPayload,
   type CustomerItem,
   type CustomerStatus,
-  type UpdateCustomerPayload,
+  type UpdateCustomerPayload
 } from '@/api/customer/type'
-import { getUserByDepartmentIdApi } from '@/api/user'
+import { getUserLookupApi } from '@/api/user'
 import { Form, FormSchema } from '@/components/Form'
 import { useForm } from '@/hooks/web/useForm'
 import { useI18n } from '@/hooks/web/useI18n'
@@ -36,20 +36,20 @@ interface CustomerFormValues {
 const props = defineProps({
   currentRow: {
     type: Object as PropType<CustomerItem | undefined>,
-    default: () => undefined,
+    default: () => undefined
   },
   defaultDepartmentId: {
     type: String,
-    default: '',
+    default: ''
   },
   canAssign: {
     type: Boolean,
-    default: false,
+    default: false
   },
   canUpdateSensitive: {
     type: Boolean,
-    default: false,
-  },
+    default: false
+  }
 })
 
 const { t } = useI18n()
@@ -58,7 +58,7 @@ const departmentStore = useDepartmentStore()
 
 const statusOptions = CUSTOMER_STATUSES.map((status) => ({
   label: t(`customer.status.${status}`),
-  value: status,
+  value: status
 }))
 
 const amountRule = (): FormItemRule => ({
@@ -69,13 +69,13 @@ const amountRule = (): FormItemRule => ({
       return
     }
     callback()
-  },
+  }
 })
 
 const ownerSelectProps = reactive({
   filterable: true,
   clearable: true,
-  options: [] as Array<{ label: string; value: string }>,
+  options: [] as Array<{ label: string; value: string }>
 })
 
 const formSchema = reactive<FormSchema[]>([
@@ -84,34 +84,34 @@ const formSchema = reactive<FormSchema[]>([
     label: t('customer.name'),
     component: 'Input',
     colProps: { span: 24 },
-    componentProps: { maxlength: 100 },
+    componentProps: { maxlength: 100 }
   },
   {
     field: 'phone',
     label: t('customer.phone'),
     component: 'Input',
     colProps: { span: 24 },
-    componentProps: { maxlength: 30 },
+    componentProps: { maxlength: 30 }
   },
   {
     field: 'status',
     label: t('customer.statusLabel'),
     component: 'Select',
     colProps: { span: 24 },
-    componentProps: { options: statusOptions },
+    componentProps: { options: statusOptions }
   },
   {
     field: 'dealAmount',
     label: t('customer.dealAmount'),
     component: 'Input',
-    colProps: { span: 24 },
+    colProps: { span: 24 }
   },
   {
     field: 'internalCost',
     label: t('customer.internalCost'),
     component: 'Input',
     colProps: { span: 24 },
-    remove: !props.canUpdateSensitive,
+    remove: !props.canUpdateSensitive
   },
   {
     field: 'confidential',
@@ -122,8 +122,8 @@ const formSchema = reactive<FormSchema[]>([
     componentProps: {
       inlinePrompt: true,
       activeText: t('customer.yes'),
-      inactiveText: t('customer.no'),
-    },
+      inactiveText: t('customer.no')
+    }
   },
   {
     field: 'departmentId',
@@ -136,7 +136,7 @@ const formSchema = reactive<FormSchema[]>([
       props: {
         label: 'name',
         value: 'id',
-        children: 'children',
+        children: 'children'
       },
       highlightCurrent: true,
       expandOnClickNode: false,
@@ -146,9 +146,9 @@ const formSchema = reactive<FormSchema[]>([
       clearable: true,
       onChange: (value: string | undefined) => {
         void loadOwners(value, true)
-      },
+      }
     },
-    optionApi: () => unref(departmentStore.list),
+    optionApi: () => unref(departmentStore.list)
   },
   {
     field: 'ownerId',
@@ -156,21 +156,21 @@ const formSchema = reactive<FormSchema[]>([
     component: 'Select',
     colProps: { span: 24 },
     remove: !props.canAssign,
-    componentProps: ownerSelectProps,
+    componentProps: ownerSelectProps
   },
   {
     field: 'remark',
     label: t('customer.remark'),
     component: 'Input',
     colProps: { span: 24 },
-    componentProps: { type: 'textarea', rows: 3, maxlength: 2000 },
-  },
+    componentProps: { type: 'textarea', rows: 3, maxlength: 2000 }
+  }
 ])
 
 const rules = reactive<Record<string, FormItemRule[]>>({
   name: [required()],
   dealAmount: [amountRule()],
-  internalCost: [amountRule()],
+  internalCost: [amountRule()]
 })
 
 const { formRegister, formMethods } = useForm()
@@ -189,15 +189,15 @@ const loadOwners = async (departmentId: string | undefined, resetOwner: boolean)
   }
 
   try {
-    const res = await getUserByDepartmentIdApi({
+    const res = await getUserLookupApi({
       id: departmentId,
       pageIndex: 1,
       pageSize: OWNER_PAGE_SIZE,
-      enabled: true,
+      enabled: true
     })
     ownerSelectProps.options = (res.data.list || []).map((user) => ({
       label: user.username,
-      value: user.id,
+      value: user.id
     }))
     if (resetOwner) {
       await setValues({ ownerId: undefined })
@@ -209,7 +209,7 @@ const loadOwners = async (departmentId: string | undefined, resetOwner: boolean)
 
 const toCreatePayload = (formData: CustomerFormValues): CreateCustomerPayload => {
   const payload: CreateCustomerPayload = {
-    name: String(formData.name || '').trim(),
+    name: String(formData.name || '').trim()
   }
   const phone = normalizeOptionalText(formData.phone)
   const remark = normalizeOptionalText(formData.remark)
@@ -231,7 +231,7 @@ const toCreatePayload = (formData: CustomerFormValues): CreateCustomerPayload =>
 const toUpdatePayload = (original: CustomerItem, formData: CustomerFormValues): UpdateCustomerPayload | undefined => {
   const payload: UpdateCustomerPayload = {
     id: original.id,
-    version: original.version,
+    version: original.version
   }
   let changed = false
 
@@ -326,7 +326,7 @@ watch(
         internalCost: '',
         confidential: false,
         ownerId: undefined,
-        departmentId,
+        departmentId
       })
       await loadOwners(departmentId, false)
       return
@@ -343,11 +343,11 @@ watch(
       internalCost: currentRow.internalCost || '',
       confidential: currentRow.confidential,
       ownerId: currentRow.ownerId,
-      departmentId: currentRow.departmentId,
+      departmentId: currentRow.departmentId
     })
     await loadOwners(canAssign ? currentRow.departmentId : undefined, false)
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 defineExpose({ submit })

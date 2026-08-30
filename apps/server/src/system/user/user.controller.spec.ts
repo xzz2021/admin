@@ -17,7 +17,7 @@ describe('UserController permission boundary', () => {
     expect(Reflect.getMetadata(PERMISSION_KEY, UserController.prototype[methodName])).toBe(permission)
   })
 
-  it.each(['detailInfo', 'updatePersonalInfo', 'updatePassword', 'uploadAvatar'] as const)(
+  it.each(['detailInfo', 'updatePersonalInfo', 'updatePassword', 'uploadAvatar', 'lookup'] as const)(
     'does not require management permission for %s',
     methodName => {
       expect(Reflect.getMetadata(PERMISSION_KEY, UserController.prototype[methodName])).toBeUndefined()

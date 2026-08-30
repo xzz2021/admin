@@ -8,6 +8,7 @@ import {
   CreateDepartmentDto,
   DeleteDepartmentDto,
   DepartmentListResDto,
+  DepartmentLookupResDto,
   DepartmentSeedArrayDto,
   UpdateDepartmentDto,
 } from './dto/department.dto'
@@ -26,11 +27,19 @@ export class DepartmentController {
 
   @Get('list')
   @RequiredPermission('department:view')
-  @ApiOperation({ summary: '获取部门列表' })
+  @ApiOperation({ summary: '获取部门管理列表' })
   @Serialize(DepartmentListResDto)
   @ApiResponse({ type: DepartmentListResDto, isArray: true })
   findAll() {
     return this.departmentService.findAll()
+  }
+
+  @Get('lookup')
+  @ApiOperation({ summary: '获取部门精简树, 用于下拉和范围选择' })
+  @Serialize(DepartmentLookupResDto)
+  @ApiResponse({ type: DepartmentLookupResDto, isArray: true })
+  lookupDep() {
+    return this.departmentService.lookup()
   }
 
   @Post('update')

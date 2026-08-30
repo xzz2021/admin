@@ -110,12 +110,12 @@ describe('CustomerPolicy', () => {
     expect(superAdmin.can('delete', customer({ status: CustomerStatus.FROZEN }))).toBe(true)
   })
 
-  it('returns pure in-memory capabilities and only exposes assign for updatable records', () => {
+  it('returns pure in-memory capabilities without a row-level assign flag', () => {
     const policy = new CustomerPolicy(
       context(['customer:update', 'customer:delete', 'customer:assign'], 'customer:update', { all: true, scopes: [] }),
     )
 
-    expect(policy.capabilities(customer())).toEqual(['update', 'delete', 'assign'])
+    expect(policy.capabilities(customer())).toEqual(['update', 'delete'])
     expect(policy.capabilities(customer({ status: CustomerStatus.FROZEN }))).toEqual([])
   })
 
@@ -134,5 +134,21 @@ describe('CustomerPolicy', () => {
     expect(policy.capabilities(customer({ ownerId: 'other', departmentId: 'dept-1' }))).toEqual([])
     expect(policy.capabilities(customer({ ownerId: 'user-1', departmentId: 'dept-1' }))).toEqual(['update'])
     expect(policy.capabilities(customer({ ownerId: 'other', departmentId: 'dept-2' }))).toEqual(['delete'])
+  })
+
+  it('exposes detail from customer:detail grant without mutation attribute limits', () => {
+    const policy = new CustomerPolicy(
+      new AuthorizationContext('user-1', ['customer:view', 'customer:detail'], {
+        'customer:view': { scoped: true, grant: { all: true, scopes: [] } },
+        'customer:detail': { scoped: true, grant: { all: false, scopes: [{ type: 'SELF' }] } },
+      }),
+    )
+    const frozenOwn = customer({ status: CustomerStatus.FROZEN, ownerId: 'user-1' })
+    const others = customer({ ownerId: 'other', departmentId: 'dept-1' })
+
+    expect(policy.can('detail', frozenOwn)).toBe(true)
+    expect(policy.capabilities(frozenOwn)).toEqual(['detail'])
+    expect(policy.can('detail', others)).toBe(false)
+    expect(policy.capabilities(others)).toEqual([])
   })
 })

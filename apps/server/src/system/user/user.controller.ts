@@ -27,6 +27,7 @@ import {
   UpdatePwdDto,
   UpdateUserDto,
   UserListRes,
+  UserLookupListRes,
 } from './dto/user.dto'
 import { UserService } from './user.service'
 @ApiTags('用户')
@@ -43,6 +44,13 @@ export class UserController {
   @ApiResponse({ type: UserListRes })
   findBy(@Query() params: QueryUserParams) {
     return this.userService.findByDepartmentId(params)
+  }
+
+  @Get('lookup')
+  @ApiOperation({ summary: '获取用户精简选项, 用于负责人下拉' })
+  @ApiResponse({ type: UserLookupListRes })
+  lookup(@Query() params: QueryUserParams) {
+    return this.userService.lookupByDepartment(params)
   }
 
   @Get('detailInfo')

@@ -5,7 +5,12 @@ import { OrganizationGenerationService } from '@/processor/authorization/organiz
 import { assertAcyclicParent } from '@/processor/utils/tree-cycle'
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { DepartmentRepository } from './department.repository'
-import { CreateDepartmentDto, DepartmentSeedDto, UpdateDepartmentDto } from './dto/department.dto'
+import {
+  CreateDepartmentDto,
+  DepartmentSeedDto,
+  UpdateDepartmentDto,
+  type DepartmentLookupNode,
+} from './dto/department.dto'
 
 @Injectable()
 export class DepartmentService {
@@ -41,6 +46,29 @@ export class DepartmentService {
     const [list, total] = await Promise.all([this.departments.findRootTrees(), this.departments.count()])
     if (!list?.length) throw new BadRequestException('部门列表为空')
     return { list, total, message: '获取部门列表成功' }
+  }
+
+  async lookup(): Promise<{ list: DepartmentLookupNode[]; total: number; message: string }> {
+    const [list, total] = await Promise.all([this.departments.findRootTrees(), this.departments.count()])
+    return { list: list.map(node => this.toLookupNode(node)), total, message: '获取部门列表成功' }
+  }
+
+  private toLookupNode(node: {
+    id: string
+    name: string
+    parentId: string | null
+    enabled: boolean
+    children?: unknown[]
+  }): DepartmentLookupNode {
+    return {
+      id: node.id,
+      name: node.name,
+      parentId: node.parentId,
+      enabled: node.enabled,
+      children: Array.isArray(node.children)
+        ? node.children.map(child => this.toLookupNode(child as Parameters<DepartmentService['toLookupNode']>[0]))
+        : [],
+    }
   }
 
   async update(updateDepartmentDto: UpdateDepartmentDto, operatorId?: string, ip?: string) {

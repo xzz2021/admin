@@ -1,6 +1,6 @@
-import type { ScopeGrantStrategy } from './scope-grant-strategy.interface'
 import { DepartmentScopeGrantStrategy, SelfScopeGrantStrategy } from './scope-grant-strategies'
-import type { ScopeGrant } from './scope.types'
+import type { ScopeGrantStrategy } from './scope-grant-strategy.interface'
+import type { ResolvedGrant, ScopeGrant } from './scope.types'
 
 export class ScopeGrantStrategyRegistry {
   private readonly strategies: ReadonlyMap<ScopeGrant['type'], ScopeGrantStrategy>
@@ -35,3 +35,9 @@ export class ScopeGrantStrategyRegistry {
 }
 
 export const scopeGrantStrategies = ScopeGrantStrategyRegistry.createDefault()
+
+export function mergeGrants(grants: readonly ResolvedGrant[]): ResolvedGrant {
+  if (grants.some(grant => grant.all)) return { all: true, scopes: [] }
+
+  return { all: false, scopes: scopeGrantStrategies.normalize(grants.flatMap(grant => grant.scopes)) }
+}

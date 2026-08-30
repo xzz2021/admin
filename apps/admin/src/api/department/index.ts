@@ -7,6 +7,10 @@ export const getDepartmentListApi = (): Promise<IResponse<{ list: DepartmentItem
   return request.get({ url: 'department/list' })
 }
 
+export const getDepartmentLookupApi = (): Promise<IResponse<{ list: DepartmentItem[]; total: number }>> => {
+  return request.get({ url: 'department/lookup' })
+}
+
 export const addDepartmentApi = (data: CreateDepartmentDto): Promise<IResponse<{ id: string }>> => {
   return request.post({ url: 'department/add', data })
 }

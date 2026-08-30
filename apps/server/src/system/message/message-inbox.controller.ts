@@ -18,7 +18,6 @@ export class MessageInboxController {
   }
 
   @Get('unreadCount')
-  @RequiredPermission('message:view')
   @ApiOperation({ summary: '未读数量' })
   async unreadCount(@User() user: JwtUser) {
     const unread = await this.messageService.getUnreadCount(user.id)

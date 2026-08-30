@@ -44,6 +44,19 @@ const DepartmentTreeSchema = DepartmentModel.omit({
 
 export class DepartmentListResDto extends createZodDto(DepartmentTreeSchema) {}
 
+const DepartmentLookupNodeSchema = z.object({
+  id: DepartmentIdSchema,
+  name: z.string(),
+  parentId: DepartmentIdSchema.nullable(),
+  enabled: z.boolean(),
+  get children() {
+    return z.array(DepartmentLookupNodeSchema).optional()
+  },
+})
+
+export class DepartmentLookupResDto extends createZodDto(DepartmentLookupNodeSchema) {}
+export type DepartmentLookupNode = z.infer<typeof DepartmentLookupNodeSchema>
+
 const DepartmentSeedSchema = DepartmentBaseSchema.omit({
   parentId: true,
 }).extend({

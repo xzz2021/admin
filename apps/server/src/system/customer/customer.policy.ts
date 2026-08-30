@@ -2,11 +2,11 @@ import { Prisma } from '@/prisma/generated/prisma/client'
 import { CustomerStatus, type CustomerStatus as CustomerStatusValue } from '@/prisma/generated/prisma/enums'
 import { AuthorizationContext } from '@/processor/authorization/authorization-context'
 import type { ScopeGrant } from '@/processor/authorization/scope.types'
-import { createMongoAbility, subject, type ForcedSubject, type MongoAbility, type RawRuleOf } from '@casl/ability'
+import { createMongoAbility, subject, type MongoAbility, type RawRuleOf } from '@casl/ability'
 
 export const CUSTOMER_HIGH_VALUE_THRESHOLD = 100000
 
-export type CustomerCapability = 'update' | 'delete' | 'assign'
+export type CustomerCapability = 'update' | 'delete' | 'detail'
 type CustomerAbilityAction = CustomerCapability | 'read-sensitive' | 'update-sensitive'
 
 interface CustomerAbilityAttributes {
@@ -17,7 +17,9 @@ interface CustomerAbilityAttributes {
   won: boolean
 }
 
-type CustomerAbilityObject = CustomerAbilityAttributes & ForcedSubject<'Customer'>
+interface CustomerAbilityObject extends CustomerAbilityAttributes {
+  readonly __caslSubjectType__: 'Customer'
+}
 type CustomerAbility = MongoAbility<[CustomerAbilityAction, 'Customer' | CustomerAbilityObject]>
 
 export interface CustomerPolicyRecord {
@@ -48,24 +50,30 @@ export class CustomerPolicy {
     this.ability = this.buildAbility()
   }
 
-  // 负责行过滤条件
+  // 负责行的decision过滤条件, 不管是查看编辑或任意操作 , 都是根据传入的权限code获取当前code下的行权限
   whereFor(permissionCode: string): Prisma.CustomerWhereInput {
     if (this.superAdmin) return {}
     const decision = this.context.decisionFor(permissionCode)
-    // 如果
     if (!decision?.scoped) return DENY_ALL_WHERE
     if (decision.grant.all) return {}
     if (decision.grant.scopes.length === 0) return DENY_ALL_WHERE
     return { OR: decision.grant.scopes.map(scope => this.scopeWhere(scope)) }
   }
 
-  // 合并查询条件
+  /* 合并查询条件   作为查询 第一个入口  接受权限code  以及自定义的不涉及权限的 简单查询条件
+      核心是 合并 whereFor
+  */
   queryWhere(permissionCode: string, businessWhere: Prisma.CustomerWhereInput): Prisma.CustomerWhereInput {
     return {
+      /*  合并敏感信息 也是根据数据库对应字段 和 权限key  判断过滤  也就是表格数据的confidential字段  其实也能合并任意其他简单判断的字段
+          this.canReadSensitive() 这里调用是为了在查询数据库时就直接过滤掉   queryWhere 控制数据库层
+          控制 是否查出 敏感数据
+      */
       AND: [this.whereFor(permissionCode), this.canReadSensitive() ? {} : { confidential: false }, businessWhere],
     }
   }
 
+  // mutation 突变操作  具体字段的 金额范围权限  大于 小于  手写实现
   mutationWhere(
     permissionCode: 'customer:update' | 'customer:delete',
     businessWhere: Prisma.CustomerWhereInput = {},
@@ -90,13 +98,16 @@ export class CustomerPolicy {
     }
   }
 
+  // 判断 是否具有当前行的  相应操作权限
   can(action: CustomerAbilityAction, record: CustomerPolicyRecord, field?: string): boolean {
     const permissionCode =
       action === 'delete'
         ? 'customer:delete'
-        : action === 'update' || action === 'assign' || action === 'update-sensitive'
-          ? 'customer:update'
-          : undefined
+        : action === 'detail'
+          ? 'customer:detail'
+          : action === 'update' || action === 'update-sensitive'
+            ? 'customer:update'
+            : undefined
     if (permissionCode && !this.recordMatchesGrant(permissionCode, record)) return false
     const attributes = this.abilityAttributes(record)
     return field
@@ -112,23 +123,24 @@ export class CustomerPolicy {
     return this.can('update-sensitive', record, field)
   }
 
-  // 构建ability数组
+  // 构建ability数组  返回给每一行的能力
   capabilities(record: CustomerPolicyRecord): CustomerCapability[] {
     const result: CustomerCapability[] = []
     if (this.can('update', record)) result.push('update')
     if (this.can('delete', record)) result.push('delete')
-    if (this.can('assign', record)) result.push('assign')
+    if (this.can('detail', record)) result.push('detail')
     return result
   }
 
-  // 用于响应数据脱敏和 ability 计算 返回最终数据 以及 行数据的操作权限
+  // 用于响应数据脱敏和 ability 计算 返回最终数据 以及 行数据的操作权限   主要为了控制当前行
   project<T extends CustomerPolicyRecord>(record: T, capabilities = this.capabilities(record)): CustomerProjection {
     const { internalCost, dealAmount, ...rest } = record
     return {
       ...rest,
       dealAmount: dealAmount.toString(),
+      //  queryWhere在数据库层过滤了  为什么还要调用一次this.canReadSensitive()??   当允许敏感数据后  再次判断 是否返回 普通数据 下  当前行  的 internalCost 字段
       ...(this.canReadSensitive() && internalCost !== undefined ? { internalCost: internalCost.toString() } : {}),
-      capabilities,
+      capabilities, //  行数据的权限
     }
   }
 
@@ -142,6 +154,7 @@ export class CustomerPolicy {
     )
   }
 
+  // 判断 当前行  数据的所有者 或者 所属部门  是否符合权限
   private recordMatchesGrant(permissionCode: string, record: CustomerPolicyRecord): boolean {
     if (this.superAdmin) return true
     const decision = this.context.decisionFor(permissionCode)
@@ -152,6 +165,7 @@ export class CustomerPolicy {
     )
   }
 
+  //  一次构建所有crud等权限
   private buildAbility(): CustomerAbility {
     const rules: RawRuleOf<CustomerAbility>[] = []
     const allow = (
@@ -167,8 +181,9 @@ export class CustomerPolicy {
       })
     }
 
+    //  遍历所有权限code  负责code权限ability  包含字段判断   只判断有无  不包含范围
     if (this.superAdmin) {
-      for (const action of ['update', 'delete', 'assign', 'read-sensitive', 'update-sensitive'] as const) allow(action)
+      for (const action of ['update', 'delete', 'detail', 'read-sensitive', 'update-sensitive'] as const) allow(action)
       return createMongoAbility(rules)
     }
 
@@ -183,9 +198,7 @@ export class CustomerPolicy {
         ...(this.context.hasPermission('customer:won:delete') ? {} : { won: false }),
       })
     }
-    if (this.context.hasPermission('customer:assign') && this.context.hasPermission('customer:update')) {
-      allow('assign', updateConditions)
-    }
+    if (this.context.hasPermission('customer:detail')) allow('detail')
     if (this.context.hasPermission('customer:sensitive:view')) allow('read-sensitive')
     if (this.context.hasPermission('customer:sensitive:update')) {
       allow('update-sensitive', updateConditions, ['internalCost', 'confidential'])
@@ -203,6 +216,7 @@ export class CustomerPolicy {
     }
   }
 
+  //  这里控制判断 数据的所有者 或者 所属部门     后期如果有其他限制条件也可以放这里筛选, 字段 ownerId 根据业务调整
   private scopeWhere(scope: ScopeGrant): Prisma.CustomerWhereInput {
     return scope.type === 'SELF' ? { ownerId: this.context.userId } : { departmentId: { in: scope.ids } }
   }

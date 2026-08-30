@@ -1,4 +1,4 @@
-import { getDepartmentListApi } from '@/api/department'
+import { getDepartmentLookupApi } from '@/api/department'
 import type { DepartmentItem } from '@/api/department/types'
 import { defineStore } from 'pinia'
 
@@ -16,14 +16,14 @@ export const useDepartmentStore = defineStore('department', {
     list: [],
     loaded: false,
     loading: false,
-    loadError: false,
+    loadError: false
   }),
   actions: {
     async requestNewList() {
       this.loading = true
       this.loadError = false
       try {
-        const res = await getDepartmentListApi()
+        const res = await getDepartmentLookupApi()
         const { list = [], total = 0 } = res.data
         this.list = list
         this.loaded = true
@@ -50,6 +50,6 @@ export const useDepartmentStore = defineStore('department', {
         })
 
       return ensurePromise
-    },
-  },
+    }
+  }
 })

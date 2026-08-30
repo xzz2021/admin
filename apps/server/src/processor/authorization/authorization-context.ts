@@ -54,7 +54,8 @@ export class AuthorizationContext {
     grant: {
       all: false,
       scopes: [
-        { type: 'DEPARTMENT', ids: ['dept-sales'] }  // ids 已冻结
+        { type: 'DEPARTMENT', ids: ['dept-sales'] },  // ids 已冻结
+         { type: 'SELF' }
       ]
     }
   },
@@ -71,6 +72,8 @@ export class AuthorizationContext {
     scoped: false   // scopeEnabled === false，没有行级 Grant
   }
 }
+
+  核心点在于  这里可以细分到 根据不同操作 有不同的限制颗粒度
   */
   decisionFor(code: string): AuthorizationDecision | undefined {
     return this.decisions[code]

@@ -34,24 +34,8 @@ export class UserService {
   }
 
   async findByDepartmentId(searchParam: QueryUserParams) {
-    const { id, pageIndex, pageSize, enabled, ...rest } = searchParam
-    const skip = (pageIndex - 1) * pageSize
-    const take = pageSize
-    const where = Object.entries(rest).reduce(
-      (acc, [key, value]) => {
-        if (value) {
-          acc[key] = { contains: value }
-        }
-        return acc
-      },
-      {} as Record<string, { contains: unknown }>,
-    ) as Prisma.UserWhereInput
-    where.enabled = enabled
-    if (id) {
-      where.departmentId = { in: await this.users.findSubtreeDepartmentIds(id) }
-    }
-
-    const [rawlist, total] = await this.users.findDepartmentPage(where, Number(skip), Number(take))
+    const { skip, take, where } = await this.departmentUserQuery(searchParam)
+    const [rawlist, total] = await this.users.findDepartmentPage(where, skip, take)
     const list = rawlist.map(u => ({
       ...u,
       createdAt: formatDateToYMDHMS(u.createdAt),
@@ -59,6 +43,17 @@ export class UserService {
     }))
 
     return { list, total, message: '部门用户列表查询成功' }
+  }
+
+  async lookupByDepartment(searchParam: QueryUserParams) {
+    const { skip, take, where } = await this.departmentUserQuery({
+      id: searchParam.id,
+      pageIndex: searchParam.pageIndex,
+      pageSize: searchParam.pageSize,
+      enabled: searchParam.enabled,
+    })
+    const [list, total] = await this.users.findLookupPage(where, skip, take)
+    return { list, total, message: '用户选项查询成功' }
   }
 
   async addUser(addUserinfoDto: CreateUserDto, operatorId?: string, ip?: string) {
@@ -236,6 +231,26 @@ export class UserService {
       await this.fileCleanupService.enqueue([{ kind: 'orphan-path', path: previousDiskPath }])
     }
     return { filePath, message: '更新头像成功' }
+  }
+
+  private async departmentUserQuery(searchParam: QueryUserParams) {
+    const { id, pageIndex, pageSize, enabled, ...rest } = searchParam
+    const skip = (pageIndex - 1) * pageSize
+    const take = pageSize
+    const where = Object.entries(rest).reduce(
+      (acc, [key, value]) => {
+        if (value) {
+          acc[key] = { contains: value }
+        }
+        return acc
+      },
+      {} as Record<string, { contains: unknown }>,
+    ) as Prisma.UserWhereInput
+    where.enabled = enabled
+    if (id) {
+      where.departmentId = { in: await this.users.findSubtreeDepartmentIds(id) }
+    }
+    return { skip: Number(skip), take: Number(take), where }
   }
 
   private toAvatarDiskPath(avatar: string | null | undefined): string | null {
