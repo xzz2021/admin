@@ -1,6 +1,6 @@
 import { AuditLogService } from '@/core/logger/audit-log.service'
-import { AuthorizationContext } from '@/processor/authorization/authorization-context'
 import { CustomerStatus } from '@/prisma/generated/prisma/enums'
+import { AuthorizationContext } from '@/processor/authorization/authorization-context'
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import type { CustomerRepository } from './customer.repository'
 import { CustomerService } from './customer.service'
@@ -252,7 +252,7 @@ describe('CustomerService', () => {
     await expect(service.update({ id: 'c1', version: 0, name: 'B' }, context)).rejects.toBeInstanceOf(NotFoundException)
   })
 
-  it('requires sensitive:update only when sensitive values change', async () => {
+  it('requires sensitive-update only when sensitive values change', async () => {
     repository.findFirst.mockResolvedValue(row())
     const context = auth(['customer:update'], 'customer:update', { all: true, scopes: [] })
 
@@ -310,7 +310,7 @@ describe('CustomerService', () => {
     )
   })
 
-  it('does not export internalCost without sensitive:view', async () => {
+  it('does not export internalCost without sensitive-view', async () => {
     const context = auth(['customer:export'], 'customer:export', { all: true, scopes: [] })
     repository.findExportBatch.mockResolvedValueOnce([row()]).mockResolvedValueOnce([])
 
@@ -382,7 +382,7 @@ describe('CustomerService', () => {
   })
 
   it('never writes sensitive values to audit metadata', async () => {
-    const context = auth(['customer:add', 'customer:sensitive:update'], 'customer:add', { all: true, scopes: [] })
+    const context = auth(['customer:add', 'customer:sensitive-update'], 'customer:add', { all: true, scopes: [] })
 
     await service.create({ name: 'A', phone: '123', internalCost: '9.00', confidential: true }, context)
 

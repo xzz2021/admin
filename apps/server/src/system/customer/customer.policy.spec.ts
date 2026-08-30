@@ -76,7 +76,7 @@ describe('CustomerPolicy', () => {
   it('lets sensitive readers see confidential rows and strips internalCost otherwise', () => {
     const normal = new CustomerPolicy(context(['customer:view'], 'customer:view', { all: true, scopes: [] }))
     const sensitive = new CustomerPolicy(
-      context(['customer:view', 'customer:sensitive:view'], 'customer:view', { all: true, scopes: [] }),
+      context(['customer:view', 'customer:sensitive-view'], 'customer:view', { all: true, scopes: [] }),
     )
 
     expect(normal.queryWhere('customer:view', {})).toEqual({ AND: [{}, { confidential: false }, {}] })
@@ -98,7 +98,7 @@ describe('CustomerPolicy', () => {
   it('explicit deny wins but wildcard super admin bypasses frozen and exceptional checks', () => {
     const elevated = new CustomerPolicy(
       context(
-        ['customer:update', 'customer:delete', 'customer:high-value:update', 'customer:won:delete'],
+        ['customer:update', 'customer:delete', 'customer:high-value-update', 'customer:won-delete'],
         'customer:update',
         { all: true, scopes: [] },
       ),

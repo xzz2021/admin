@@ -78,7 +78,7 @@ export class CustomerService {
         throw new ForbiddenException('目标超出可创建范围')
       }
       if ((dto.internalCost !== undefined && Number(dto.internalCost) !== 0) || dto.confidential === true) {
-        if (!context!.hasPermission('customer:sensitive:update')) {
+        if (!context!.hasPermission('customer:sensitive-update')) {
           throw new ForbiddenException('无权设置敏感字段')
         }
       }

@@ -23,10 +23,10 @@
 | 权限码                       | 作用                                     |
 | ---------------------------- | ---------------------------------------- |
 | `customer:assign`            | 变更负责人 / 部门                        |
-| `customer:high-value:update` | 更新成交金额 ≥ 100000 的客户             |
-| `customer:won:delete`        | 删除 `WON` 客户                          |
-| `customer:sensitive:view`    | 列表/详情返回 `internalCost`；可见机密行 |
-| `customer:sensitive:update`  | 更新 `internalCost` / `confidential`     |
+| `customer:high-value-update` | 更新成交金额 ≥ 100000 的客户             |
+| `customer:won-delete`        | 删除 `WON` 客户                          |
+| `customer:sensitive-view`    | 列表/详情返回 `internalCost`；可见机密行 |
+| `customer:sensitive-update`  | 更新 `internalCost` / `confidential`     |
 
 ## 运行时链路
 
@@ -60,7 +60,7 @@
 
 | 范围          | 角色配置                                                | 期望                                             |
 | ------------- | ------------------------------------------------------- | ------------------------------------------------ |
-| ALL           | `customer:view` = ALL                                   | 非机密行全可见；有 `sensitive:view` 时含机密行   |
+| ALL           | `customer:view` = ALL                                   | 非机密行全可见；有 `sensitive-view` 时含机密行   |
 | SELF          | view/detail/update = SELF                               | 只看到 `ownerId = 自己` 的客户；改别人的返回 404 |
 | DEPT          | view = DEPT                                             | 只看到本部门；看不到子部门                       |
 | DEPT_TREE     | view = DEPT_TREE                                        | 本部门 + 子孙部门                                |
@@ -74,18 +74,18 @@
 | 场景                | 无例外权限时                   | 有例外权限时                 |
 | ------------------- | ------------------------------ | ---------------------------- |
 | `FROZEN` 更新/删除  | 行上无 update/delete；接口 404 | 仅超管可改删                 |
-| 金额 ≥ 100000 更新  | 无 update 能力；接口 404       | `customer:high-value:update` |
-| `WON` 删除          | 无 delete 能力；接口 404       | `customer:won:delete`        |
+| 金额 ≥ 100000 更新  | 无 update 能力；接口 404       | `customer:high-value-update` |
+| `WON` 删除          | 无 delete 能力；接口 404       | `customer:won-delete`        |
 | 改 owner/department | 无 assign 能力；请求被拒       | `customer:assign` + update   |
 
 ### 字段权限
 
 | 权限                  | 列表/详情                             | 编辑                                  |
 | --------------------- | ------------------------------------- | ------------------------------------- |
-| 无 `sensitive:view`   | 不返回 `internalCost`；机密行整行隐藏 | 前端不渲染成本列                      |
-| 有 `sensitive:view`   | 返回 `internalCost`；可见机密行       | —                                     |
-| 无 `sensitive:update` | —                                     | 不出现成本/机密字段，请求体也不应带上 |
-| 有 `sensitive:update` | —                                     | 可改 `internalCost`、`confidential`   |
+| 无 `sensitive-view`   | 不返回 `internalCost`；机密行整行隐藏 | 前端不渲染成本列                      |
+| 有 `sensitive-view`   | 返回 `internalCost`；可见机密行       | —                                     |
+| 无 `sensitive-update` | —                                     | 不出现成本/机密字段，请求体也不应带上 |
+| 有 `sensitive-update` | —                                     | 可改 `internalCost`、`confidential`   |
 
 ### 多角色合并
 
@@ -118,7 +118,7 @@ Redis generation 允许短暂最终一致，不必要求同一毫秒内所有节
 - 路由由后端菜单加载，`component = views/Customer/Customer`
 - 功能按钮用 `v-hasPermi`（新增/批量删除/导出）
 - 行按钮看 `capabilities`，不在前端重写冻结/高金额/成交规则
-- `internalCost` 仅当响应存在（或具备 `sensitive:view`）时渲染
+- `internalCost` 仅当响应存在（或具备 `sensitive-view`）时渲染
 - 空列表、403、404、409、分页、CSV 导出
 - 不引入独立全局 Store，不引入 Vitest
 

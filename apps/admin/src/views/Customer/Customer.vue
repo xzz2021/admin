@@ -71,8 +71,8 @@ const canDelete = () => hasPermi('customer:delete')
 const canDetail = () => hasPermi('customer:detail')
 const canExport = () => hasPermi('customer:export')
 const canAssignPermission = () => hasPermi('customer:assign')
-const canUpdateSensitive = () => hasPermi('customer:sensitive:update')
-const canViewSensitive = () => hasPermi('customer:sensitive:view')
+const canUpdateSensitive = () => hasPermi('customer:sensitive-update')
+const canViewSensitive = () => hasPermi('customer:sensitive-view')
 
 const rememberOwners = (users: Array<{ id: string; username: string }>) => {
   const next = new Map(ownerNameMap.value)

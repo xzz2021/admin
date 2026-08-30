@@ -69,6 +69,10 @@ COPY --from=builder --chown=node:node /app/apps/server/dist apps/server/dist
 
 WORKDIR /app/apps/server
 
+# 无 bind mount / 使用 named volume 时，node 才能写 winston 日志。
+# bind mount 会覆盖此目录的属主，宿主机仍须 chown 1000:1000。
+# RUN mkdir -p logs && chown node:node logs
+
 USER node
 
 EXPOSE 3000

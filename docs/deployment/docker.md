@@ -6,13 +6,13 @@
 
 根目录 **`compose.yml`**（另有 `compose.local.yml`，只起本机 Postgres/Redis，并映射宿主机端口，不用于生产）。
 
-| 服务     | 镜像/构建                            | 说明                                                                               |
-| -------- | ------------------------------------ | ---------------------------------------------------------------------------------- |
-| postgres | postgres:18-alpine                   | 卷 `postgres-data`；挂载 `docker/postgres/init-users.sh` 初始化管理/迁移/运行账号  |
-| redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                                        |
-| migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`，成功后退出                                    |
-| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；bind mount `./data/server/public`、`./data/server/backups` |
-| admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                                                |
+| 服务     | 镜像/构建                            | 说明                                                                                                     |
+| -------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| postgres | postgres:18-alpine                   | 卷 `postgres-data`；挂载 `docker/postgres/init-users.sh` 初始化管理/迁移/运行账号                        |
+| redis    | redis:8-alpine                       | 密码 + AOF；卷 `redis-data`                                                                              |
+| migrate  | server Dockerfile `target: migrator` | 一次性：`migrate deploy && db seed`，成功后退出                                                          |
+| server   | server Dockerfile `target: runner`   | 健康检查 `GET /health`；bind mount `./data/server/public`、`./data/server/backups`、`./data/server/logs` |
+| admin    | admin Dockerfile                     | Nginx 托管 SPA；依赖 server healthy                                                                      |
 
 启动顺序：postgres/redis healthy → migrate 成功退出 → server / admin。
 
@@ -55,6 +55,14 @@ docker exec app-admin nginx -s reload
 
 - `.dockerignore`：排除 node_modules、多数 `.env`、测试等；放行 `apps/admin/.env.pro`、`dist-pro` 等
 - 空数据卷首次 initdb 会跑 `docker/postgres/init-users.sh`。已有卷补用户见 `docker/postgres/migrate-existing-users.sql`
-- 备份与上传目录必须是宿主机 bind mount（`./data/server/backups`、`./data/server/public`），且属主为 uid 1000，与镜像内 `node` 一致
+- 备份、上传、日志目录必须是宿主机 bind mount（`./data/server/backups`、`./data/server/public`、`./data/server/logs`），且属主为 uid 1000，与镜像内 `node` 一致。Compose 若自动创建宿主机目录，属主会是 root，`USER node` 写入会 EACCES
+
+  如果有新挂载目录一定要执行
+
+```
+   mkdir -p data/server/{新目录名}
+   chown -R 1000:1000 data/server
+```
+
 - 数据库备份由 server 内 BullMQ 执行；环境变量见 [environment.md](./environment.md)
 - CI（`.github/workflows/ci.yml`）只跑 `pnpm check`，不构建/推送镜像

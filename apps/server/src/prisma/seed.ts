@@ -149,8 +149,8 @@ async function seedAdditionalData() {
 
 async function main() {
   await seedInitialData()
-  await seedAdditionalData()
-  console.log('✅ Seeding additional data finished.')
+  // await seedAdditionalData()
+  // console.log('✅ Seeding additional data finished.')
 }
 
 main()

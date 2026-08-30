@@ -81,10 +81,10 @@ export class CustomerPolicy {
     const attributeWhere: Prisma.CustomerWhereInput[] = []
     if (!this.superAdmin) {
       attributeWhere.push({ status: { not: CustomerStatus.FROZEN } })
-      if (permissionCode === 'customer:update' && !this.context.hasPermission('customer:high-value:update')) {
+      if (permissionCode === 'customer:update' && !this.context.hasPermission('customer:high-value-update')) {
         attributeWhere.push({ dealAmount: { lt: CUSTOMER_HIGH_VALUE_THRESHOLD } })
       }
-      if (permissionCode === 'customer:delete' && !this.context.hasPermission('customer:won:delete')) {
+      if (permissionCode === 'customer:delete' && !this.context.hasPermission('customer:won-delete')) {
         attributeWhere.push({ status: { not: CustomerStatus.WON } })
       }
     }
@@ -116,7 +116,7 @@ export class CustomerPolicy {
   }
 
   canReadSensitive(): boolean {
-    return this.context.hasPermission('customer:sensitive:view')
+    return this.context.hasPermission('customer:sensitive-view')
   }
 
   canUpdateSensitive(record: CustomerPolicyRecord, field: 'internalCost' | 'confidential'): boolean {
@@ -189,18 +189,18 @@ export class CustomerPolicy {
 
     const updateConditions: Partial<CustomerAbilityAttributes> = {
       frozen: false,
-      ...(this.context.hasPermission('customer:high-value:update') ? {} : { highValue: false }),
+      ...(this.context.hasPermission('customer:high-value-update') ? {} : { highValue: false }),
     }
     if (this.context.hasPermission('customer:update')) allow('update', updateConditions)
     if (this.context.hasPermission('customer:delete')) {
       allow('delete', {
         frozen: false,
-        ...(this.context.hasPermission('customer:won:delete') ? {} : { won: false }),
+        ...(this.context.hasPermission('customer:won-delete') ? {} : { won: false }),
       })
     }
     if (this.context.hasPermission('customer:detail')) allow('detail')
-    if (this.context.hasPermission('customer:sensitive:view')) allow('read-sensitive')
-    if (this.context.hasPermission('customer:sensitive:update')) {
+    if (this.context.hasPermission('customer:sensitive-view')) allow('read-sensitive')
+    if (this.context.hasPermission('customer:sensitive-update')) {
       allow('update-sensitive', updateConditions, ['internalCost', 'confidential'])
     }
     return createMongoAbility(rules)

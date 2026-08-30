@@ -5,10 +5,10 @@
 ## 前置
 
 1. 环境变量：`cp .env.example .env`，或 `pnpm env:generate` 后审阅并合并进 `.env`。填好密码、密钥，以及 **`PG_DATABASE_URL`（迁移账号）和 `APP_DATABASE_URL`（运行账号）**。
-2. 数据目录（与镜像内 `node` uid **1000** 对齐，否则备份/上传会 EACCES）：
+2. 数据目录（与镜像内 `node` uid **1000** 对齐，否则备份/上传/日志会 EACCES）：
 
    ```bash
-   mkdir -p data/server/{public,backups}
+   mkdir -p data/server/{public,backups,logs}
    chown -R 1000:1000 data/server
    ```
 
