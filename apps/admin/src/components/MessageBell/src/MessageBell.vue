@@ -11,7 +11,7 @@ const router = useRouter()
 const messageStore = useMessageStore()
 
 const goInbox = () => {
-  router.push('/system/message')
+  router.push('/personal/message')
 }
 
 const markAll = async () => {

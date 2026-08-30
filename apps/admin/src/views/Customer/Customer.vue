@@ -14,14 +14,16 @@ import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
 import { Dialog } from '@/components/Dialog'
 import { FormSchema } from '@/components/Form'
+import { Icon } from '@/components/Icon'
 import { hasPermi } from '@/components/Permission'
 import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
+import { useClipboard } from '@/hooks/web/useClipboard'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
 import { useDepartmentStore } from '@/store/modules/department'
 import { formatToDateTime } from '@/utils/dateUtil'
-import { ElMessage, ElTag, ElTree } from 'element-plus'
+import { ElLink, ElMessage, ElTag, ElTree } from 'element-plus'
 import { computed, nextTick, onMounted, reactive, ref, unref, watch } from 'vue'
 import Detail from './components/Detail.vue'
 import Write from './components/Write.vue'
@@ -31,7 +33,13 @@ const ALL_DEPARTMENT = '__all__'
 const OWNER_PAGE_SIZE = 100
 
 const { t } = useI18n()
+const { copy } = useClipboard()
 const departmentStore = useDepartmentStore()
+
+const demoAccounts = [
+  { label: '管理员 · 产品部', phone: '13012340000', password: '000000', tagType: 'danger' as const },
+  { label: '普通用户 · 人事部', phone: '13012341111', password: '111111', tagType: 'info' as const }
+]
 const currentNodeKey = ref(ALL_DEPARTMENT)
 const departmentNameMap = computed(() => {
   const map = new Map<string, string>()
@@ -364,6 +372,38 @@ onMounted(() => {
 <template>
   <div class="flex w-100% h-100%">
     <ContentWrap class="flex-[3] ml-20px">
+      <div
+        class="mb-12px rounded-8px border border-[var(--el-color-primary-light-5)] bg-[var(--el-color-primary-light-9)] px-16px py-14px"
+      >
+        <div class="mb-8px flex items-center gap-6px text-14px font-600 text-[var(--el-text-color-primary)]">
+          <Icon icon="info" :size="16" color="var(--el-color-primary)" />
+          权限说明
+        </div>
+        <p class="m-0 mb-8px text-13px leading-22px text-[var(--el-text-color-regular)]">
+          可在「角色管理」中按角色动态配置。本页列表即为当前账号可见的数据。登录不同账号即可测试效果.
+        </p>
+        <ol class="m-0 mb-12px list-decimal pl-18px text-13px leading-22px text-[var(--el-text-color-regular)]">
+          <li>数据范围：全部 / 本部门 / 仅自己 / 部门及下级。</li>
+          <li>行内操作：编辑、详情、删除会按客户状态、所属部门、是否机密等禁用, 即使强行使用后端也会校验报错。</li>
+          <li>提交复核：按钮可点不代表一定成功。大额、机密、隐私等字段限制会在后端再次校验。</li>
+        </ol>
+        <div class="flex flex-wrap gap-8px">
+          <div
+            v-for="account in demoAccounts"
+            :key="account.phone"
+            class="flex flex-wrap items-center gap-8px rounded-6px bg-[var(--el-bg-color)] px-12px py-8px"
+          >
+            <ElTag size="small" :type="account.tagType" effect="plain">{{ account.label }}</ElTag>
+            <ElLink type="primary" :underline="false" title="点击复制手机号" @click="copy(account.phone)">
+              <span class="inline-flex items-center gap-4px font-mono">
+                {{ account.phone }}
+                <Icon icon="copy" :size="13" />
+              </span>
+            </ElLink>
+            <span class="text-13px text-[var(--el-text-color-secondary)]">密码 {{ account.password }}</span>
+          </div>
+        </div>
+      </div>
       <Search :schema="searchSchema" @reset="setSearchParams" @search="setSearchParams" />
 
       <div class="mb-10px">

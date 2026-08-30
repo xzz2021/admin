@@ -15,7 +15,6 @@ export class NotificationController {
   ) {}
 
   @Get('receivers')
-  @RequiredPermission('notification:send')
   @ApiOperation({ summary: '获取站内信接收人列表' })
   receivers(@Query() query: ReceiversQueryDto, @User() user: JwtUser) {
     return this.messageService.searchReceivers(query.keyword, user.id)
