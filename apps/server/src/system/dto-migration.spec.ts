@@ -1,4 +1,4 @@
-import { DeleteLogDto, QueryLogParams } from '@/core/logger/dto/logger.dto'
+import { DeleteLogDto, QueryLogParams } from '@/core/logger/logger.dto'
 import { CreatePermissionDto } from '@/system/permission/dto/permission.dto'
 import { DeleteFileDto } from '@/system/staticfile/file.dto'
 import { DepartmentSeedArrayDto, UpdateDepartmentDto } from './department/dto/department.dto'

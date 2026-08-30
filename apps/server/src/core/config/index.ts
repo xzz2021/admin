@@ -39,6 +39,9 @@ interface AppConfig {
     filePrefix: string
     gzip: boolean
   }
+  logger: {
+    fileEnabled: boolean
+  }
 
   // 可以添加更多配置项
   [key: string]: any
@@ -144,6 +147,9 @@ export const appConfig = (): AppConfig => {
       gzip: processEnv.DB_BACKUP_GZIP ? processEnv.DB_BACKUP_GZIP === 'true' : true,
     },
     helmet: processEnv.HELMET ? processEnv.HELMET === 'true' : nodeEnv === 'production',
+    logger: {
+      fileEnabled: processEnv.LOG_FILE === 'true',
+    },
   }
 }
 

@@ -86,7 +86,6 @@ export class OperationLogInterceptor implements NestInterceptor {
           detailInfo: {
             statusCode: parsed.status,
             meta: parsed.meta,
-            stack: err instanceof Error ? err.stack?.slice(0, 500) : undefined,
           },
           isSuccess: false,
           duration: Date.now() - start,

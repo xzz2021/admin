@@ -103,6 +103,7 @@ redis.call('PEXPIRE', KEYS[1], ttl)
 return {allowed, tokens}
 `
 
+/** 比较并删除：仅在值相等时删除。返回 1 成功，0 失败。 */
 export const COMPARE_AND_DELETE_SCRIPT = `
 if redis.call('GET', KEYS[1]) == ARGV[1] then
   return redis.call('DEL', KEYS[1])
@@ -110,6 +111,7 @@ end
 return 0
 `
 
+/** 比较并设置过期：仅在值相等时设置过期。返回 1 成功，0 失败。 */
 export const COMPARE_AND_PEXPIRE_SCRIPT = `
 if redis.call('GET', KEYS[1]) == ARGV[1] then
   return redis.call('PEXPIRE', KEYS[1], ARGV[2])

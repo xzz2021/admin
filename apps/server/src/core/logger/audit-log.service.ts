@@ -1,16 +1,16 @@
 import { Prisma } from '@/prisma/generated/prisma/client'
 import { PgService } from '@/prisma/pg.service'
 import { lookupIpLocation } from '@/processor/utils'
+import type { LoggerService } from '@nestjs/common'
 import { Inject, Injectable } from '@nestjs/common'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
-import { Logger } from 'winston'
 import { sanitizeAuditMetadata, type AuditRecordInput } from './audit-log.sanitize'
-import { QueryAuditLogParams } from './dto/logger.dto'
+import { QueryAuditLogParams } from './logger.dto'
 
 @Injectable()
 export class AuditLogService {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER as 'NestWinston') private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly pgService: PgService,
   ) {}
 
@@ -30,7 +30,11 @@ export class AuditLogService {
         },
       })
     } catch (error) {
-      this.logger.error('写入领域审计日志失败', error instanceof Error ? error.stack : String(error))
+      this.logger.error(
+        '写入领域审计日志失败',
+        error instanceof Error ? error.stack : String(error),
+        AuditLogService.name,
+      )
     }
   }
 
@@ -45,7 +49,7 @@ export class AuditLogService {
     if (resourceId) where.resourceId = resourceId
     if (success !== undefined) where.success = success
     if (dateRange) {
-      const [start, end] = (typeof dateRange === 'string' ? JSON.parse(dateRange) : dateRange) as [string, string]
+      const [start, end] = dateRange
       where.createdAt = {
         gte: new Date(start),
         lte: new Date(end),

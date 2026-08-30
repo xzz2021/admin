@@ -1,4 +1,4 @@
-import { validateEnvironment } from './index'
+import { appConfig, validateEnvironment } from './index'
 
 describe('production environment validation', () => {
   const validEnvironment = {
@@ -51,5 +51,23 @@ describe('production environment validation', () => {
       SWAGGER: 'true',
       SWAGGER_USERNAME: 'docs-admin',
     })
+  })
+
+  it('treats LOG_FILE as an opt-in flag', () => {
+    const previous = process.env.LOG_FILE
+    delete process.env.LOG_FILE
+    expect(appConfig().logger.fileEnabled).toBe(false)
+
+    process.env.LOG_FILE = 'true'
+    expect(appConfig().logger.fileEnabled).toBe(true)
+
+    process.env.LOG_FILE = 'false'
+    expect(appConfig().logger.fileEnabled).toBe(false)
+
+    if (previous === undefined) {
+      delete process.env.LOG_FILE
+    } else {
+      process.env.LOG_FILE = previous
+    }
   })
 })

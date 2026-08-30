@@ -65,6 +65,7 @@
     "svg-captcha": "^1.4.0",
     "systeminformation": "^5.33.0",
     "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
     "ws": "^8.21.1",
     "xss": "^1.0.15",
     "zod": "^4.4.3"

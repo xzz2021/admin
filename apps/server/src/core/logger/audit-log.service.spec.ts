@@ -42,7 +42,7 @@ describe('AuditLogService', () => {
         metadata: { password: '[Redacted]', enabled: true },
       }),
     })
-    expect(error).toHaveBeenCalled()
+    expect(error).toHaveBeenCalledWith('写入领域审计日志失败', expect.any(String), 'AuditLogService')
   })
 
   it('loads audit logs and count in parallel', async () => {
@@ -71,5 +71,27 @@ describe('AuditLogService', () => {
       total: 0,
       message: '获取操作日志成功',
     })
+  })
+
+  it('applies a DTO-parsed dateRange without JSON.parse', async () => {
+    findMany.mockResolvedValue([])
+    count.mockResolvedValue(0)
+
+    await service.getAuditLogList({
+      pageIndex: 1,
+      pageSize: 10,
+      dateRange: ['2026-01-01T00:00:00.000Z', '2026-01-31T23:59:59.000Z'],
+    })
+
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          createdAt: {
+            gte: new Date('2026-01-01T00:00:00.000Z'),
+            lte: new Date('2026-01-31T23:59:59.000Z'),
+          },
+        },
+      }),
+    )
   })
 })

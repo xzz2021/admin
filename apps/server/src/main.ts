@@ -13,7 +13,7 @@ import { GlobalZodValidationPipe } from './processor/pipe/global.zod.validation.
 // import * as cookieParser from 'cookie-parser';
 // import { doubleCsrf } from 'csrf-csrf';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { bufferLogs: true })
   app.useWebSocketAdapter(new WsAdapter(app))
 
   // Express 只把私网跳当作代理；admin Nginx 会覆盖 X-Forwarded-* 后再转到这里。

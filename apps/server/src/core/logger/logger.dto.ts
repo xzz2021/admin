@@ -2,6 +2,26 @@ import { AuditLogModel, UserOperationLogModel } from '@prisma/generated/zod'
 import { createZodDto } from 'nestjs-zod'
 import { z } from 'zod'
 
+const queryBooleanSchema = z.preprocess((val: unknown) => {
+  if (val === undefined || val === '') return undefined
+  if (val === true || val === 'true') return true
+  if (val === false || val === 'false') return false
+  return val
+}, z.boolean().optional())
+
+const dateRangeSchema = z.preprocess(
+  (val: unknown) => {
+    if (val === undefined || val === '') return undefined
+    if (typeof val !== 'string') return val
+    try {
+      return JSON.parse(val)
+    } catch {
+      return val
+    }
+  },
+  z.tuple([z.iso.datetime(), z.iso.datetime()]).optional(),
+)
+
 const LogSchema = UserOperationLogModel.pick({
   id: true,
   ip: true,
@@ -26,10 +46,10 @@ const QueryLogParamsSchema = z.object({
     .optional()
     .default(10)
     .meta({ description: '每页条数', example: 10 }),
-  isSuccess: z.boolean().optional().meta({ description: '状态' }),
+  isSuccess: queryBooleanSchema.meta({ description: '状态' }),
   method: z.string().optional().meta({ description: '方法' }),
   requestUrl: z.string().optional().meta({ description: '请求URL' }),
-  dateRange: z.string().optional().meta({ description: '日期范围' }),
+  dateRange: dateRangeSchema.meta({ description: '日期范围' }),
 })
 export class QueryLogParams extends createZodDto(QueryLogParamsSchema) {}
 
@@ -60,15 +80,8 @@ const QueryAuditLogParamsSchema = z.object({
   action: z.string().min(1).max(80).optional().meta({ description: '领域动作', example: 'user.update' }),
   resource: z.string().min(1).max(100).optional().meta({ description: '聚合根类型', example: 'User' }),
   resourceId: z.string().min(1).max(64).optional().meta({ description: '聚合根 ID' }),
-  success: z
-    .preprocess((val: unknown) => {
-      if (val === undefined || val === '') return undefined
-      if (val === true || val === 'true') return true
-      if (val === false || val === 'false') return false
-      return val
-    }, z.boolean().optional())
-    .meta({ description: '业务是否成功', example: true }),
-  dateRange: z.string().optional().meta({ description: '日期范围' }),
+  success: queryBooleanSchema.meta({ description: '业务是否成功', example: true }),
+  dateRange: dateRangeSchema.meta({ description: '日期范围' }),
 })
 export class QueryAuditLogParams extends createZodDto(QueryAuditLogParamsSchema) {}
 

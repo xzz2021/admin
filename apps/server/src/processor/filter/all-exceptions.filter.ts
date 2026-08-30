@@ -2,18 +2,10 @@
 // 如果需要源信息   后期考虑 实现return next.handle().pipe() 来捕获
 
 import { PgService } from '@/prisma/pg.service'
-import { MonitorService } from '@/system/monitor/monitor.service'
 import { ResOp } from '@/processor/utils/response.model'
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpStatus,
-  Inject,
-  Logger,
-  NotFoundException,
-  Optional,
-} from '@nestjs/common'
+import { MonitorService } from '@/system/monitor/monitor.service'
+import type { LoggerService } from '@nestjs/common'
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Inject, NotFoundException, Optional } from '@nestjs/common'
 import { Request, Response } from 'express'
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston'
 import { parseException } from './exception.util'
@@ -22,7 +14,7 @@ import { checkPrismaError } from './prisma.exception'
 @Catch() // @Catch()参数留空  表示 捕获所有异常
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @Optional() private readonly monitorService?: MonitorService,
     @Optional() private readonly pgService?: PgService,
   ) {}
@@ -58,6 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const shouldLog = status !== 401 && !(exception instanceof NotFoundException)
     if (shouldLog) {
+      /*
       this.logger.error({
         timestamp: new Date().toISOString(),
         stack: exception instanceof Error ? exception.stack?.slice(0, 500) : null,
@@ -66,6 +59,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         status,
         message,
       })
+      */
+      this.logger.error(
+        `${request.method} ${path} ${status} ${message} ${Date.now() - start}ms`,
+        exception instanceof Error ? exception.stack : undefined,
+        AllExceptionsFilter.name,
+      )
       void this.monitorService?.recordError({
         status,
         method: request.method,

@@ -50,6 +50,7 @@ export class RedisAtomicService {
     return { count, ttlMs: Math.max(ttlMs, 0) }
   }
 
+  /** 固定窗口限流：INCRBY + 首次 PEXPIRE。返回 allowed, count, remaining, retryAfterMs。 */
   async fixedWindowAllow(key: string, limit: number, windowMs: number, cost = 1): Promise<RateLimitResult> {
     this.assertPositive('limit', limit)
     this.assertPositive('windowMs', windowMs)
@@ -64,6 +65,7 @@ export class RedisAtomicService {
     return this.toRateLimit(allowed, count, remaining, retryAfterMs)
   }
 
+  /** 滑动窗口日志：ZSET 存时间戳，精确但内存随请求量增长。 */
   async slidingWindowAllow(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
     this.assertPositive('limit', limit)
     this.assertPositive('windowMs', windowMs)
@@ -78,6 +80,7 @@ export class RedisAtomicService {
     return this.toRateLimit(allowed, count, remaining, retryAfterMs)
   }
 
+  /** 滑动窗口计数：ZSET 存时间戳，精确但内存随请求量增长。 */
   async slidingWindowCounterAllow(key: string, limit: number, windowMs: number): Promise<RateLimitResult> {
     this.assertPositive('limit', limit)
     this.assertPositive('windowMs', windowMs)
@@ -95,6 +98,7 @@ export class RedisAtomicService {
     return this.toRateLimit(allowed, count, remaining, retryAfterMs)
   }
 
+  /** 令牌桶限流：令牌数随时间增长，每次请求消耗令牌。返回 allowed, tokens。 */
   async tokenBucketAllow(key: string, capacity: number, refillPerSecond: number, cost = 1): Promise<TokenBucketResult> {
     this.assertPositive('capacity', capacity)
     this.assertPositive('refillPerSecond', refillPerSecond)
@@ -146,6 +150,7 @@ export class RedisAtomicService {
     return handle !== null
   }
 
+  /** 执行 Redis 脚本并返回数字数组。 */
   private async evalNumbers(
     script: string,
     numKeys: number,
@@ -160,6 +165,7 @@ export class RedisAtomicService {
     return result.slice(0, length).map(item => this.requireNumber(item))
   }
 
+  /** 将 Redis 脚本结果转换为数字。 */
   private requireNumber(value: unknown): number {
     const parsed = Number(value)
     if (!Number.isFinite(parsed)) throw new Error('Unexpected Redis script result')

@@ -11,6 +11,7 @@ export interface AuditRecordInput {
   metadata?: Record<string, unknown> | null
 }
 
+/** 清理审计日志中的敏感数据。 */
 export function sanitizeAuditMetadata(
   metadata: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> | null {
@@ -24,6 +25,7 @@ export function sanitizeAuditMetadata(
   return { truncated: true, preview: json.slice(0, MAX_METADATA_BYTES) }
 }
 
+/** 递归清理敏感数据。 */
 function redact(value: unknown, depth = 0): unknown {
   if (depth > 6) return '[MaxDepth]'
   if (value == null) return value
