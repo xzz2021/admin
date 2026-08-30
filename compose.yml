@@ -69,6 +69,7 @@ services:
       # Linux: mkdir -p data/server/{public,backups} && chown -R 1000:1000 data/server
       - ./data/server/public:/app/apps/server/public
       - ./data/server/backups:/app/apps/server/backups
+      - ./data/server/logs:/app/apps/server/logs
 
   postgres:
     image: postgres:18-alpine
