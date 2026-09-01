@@ -15,6 +15,7 @@ const UploadFileSchema = FileModel.omit({
   id: true,
   createdAt: true,
   deletedAt: true,
+  sha256: true,
 }).extend({
   name: z.string().nonempty().meta({ description: '文件名称', example: '文件名称' }),
   mimeType: z.string().nonempty().meta({ description: '文件MIME类型', example: 'application/pdf' }),
@@ -27,5 +28,6 @@ export class UploadFileDto extends createZodDto(UploadFileSchema) {}
 
 const FileListResSchema = UploadFileSchema.extend({
   createdAt: z.string(),
+  sha256: z.string().length(64).optional().nullable(),
 })
 export class FileListResDto extends createZodDto(FileListResSchema) {}

@@ -1,5 +1,6 @@
 import { RequiredPermission } from '@/processor/decorator'
 import { Serialize } from '@/processor/decorator/serialize'
+import type { JwtReqDto } from '@/system/auth/dto/auth.dto'
 import {
   BadRequestException,
   Body,
@@ -7,7 +8,11 @@ import {
   Delete,
   Get,
   Header,
+  Param,
+  ParseIntPipe,
   Post,
+  Put,
+  Req,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
@@ -15,23 +20,27 @@ import {
 import { ConfigService } from '@nestjs/config'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { Throttle } from '@nestjs/throttler'
 import { createReadStream } from 'fs'
 import { join } from 'path'
+import { InitiateUploadDto } from './file-upload.dto'
+import { FileUploadService } from './file-upload.service'
 import { DeleteFileDto, FileListResDto } from './file.dto'
-import { generateMulterConfig } from './multer.config'
+import { generateChunkMulterConfig, generateMulterConfig } from './multer.config'
 import { StaticfileService } from './staticfile.service'
+
+const chunkMulter = generateChunkMulterConfig(parseInt(process.env.FILE_UPLOAD_CHUNK_BYTES || '5242880', 10))
 
 @ApiTags('静态文件')
 @Controller('staticfile')
 export class StaticfileController {
-  // private readonly serverUrl;
   private readonly staticFileServeRoot
 
   constructor(
     private readonly staticfileService: StaticfileService,
+    private readonly fileUploadService: FileUploadService,
     private readonly configService: ConfigService,
   ) {
-    // this.serverUrl = this.configService.get<string>('serverUrl');
     this.staticFileServeRoot = this.configService.get<string>('staticFileServeRoot')
   }
   //  流文件
@@ -65,6 +74,51 @@ export class StaticfileController {
     return this.staticfileService.getFileList()
   }
 
+  @Post('uploads/initiate')
+  @RequiredPermission('fileList:add')
+  @ApiOperation({ summary: '初始化大文件上传 / 秒传 / 续传' })
+  initiateUpload(@Body() body: InitiateUploadDto, @Req() req: JwtReqDto) {
+    return this.fileUploadService.initiate(req.user.id, body)
+  }
+
+  @Put('uploads/:id/chunks/:index')
+  @RequiredPermission('fileList:add')
+  @Throttle({ default: { limit: 300, ttl: 60_000 } })
+  @ApiOperation({ summary: '上传文件分片' })
+  @UseInterceptors(FileInterceptor('chunk', chunkMulter))
+  uploadChunk(
+    @Param('id') id: string,
+    @Param('index', ParseIntPipe) index: number,
+    @UploadedFile() chunk: Express.Multer.File,
+    @Req() req: JwtReqDto,
+  ) {
+    if (!chunk?.buffer) {
+      throw new BadRequestException('分片不存在')
+    }
+    return this.fileUploadService.uploadChunk(req.user.id, id, index, chunk.buffer)
+  }
+
+  @Get('uploads/:id')
+  @RequiredPermission('fileList:view')
+  @ApiOperation({ summary: '查询上传会话' })
+  getUploadSession(@Param('id') id: string, @Req() req: JwtReqDto) {
+    return this.fileUploadService.getSession(req.user.id, id)
+  }
+
+  @Post('uploads/:id/complete')
+  @RequiredPermission('fileList:add')
+  @ApiOperation({ summary: '完成分片上传' })
+  completeUpload(@Param('id') id: string, @Req() req: JwtReqDto) {
+    return this.fileUploadService.complete(req.user.id, id)
+  }
+
+  @Post('uploads/:id/abort')
+  @RequiredPermission('fileList:add')
+  @ApiOperation({ summary: '取消上传' })
+  abortUpload(@Param('id') id: string, @Req() req: JwtReqDto) {
+    return this.fileUploadService.abort(req.user.id, id)
+  }
+
   //  上传文件
   @Post('upload')
   @RequiredPermission('fileList:add')
@@ -77,11 +131,6 @@ export class StaticfileController {
 
     const fileExt = file.filename.split('.').pop() || '' // 文件扩展名
     const { filename, path } = file
-    // 文件路径
-    // const staticUrl = this.serverUrl;
-    // if (!staticUrl) {
-    //   throw new BadRequestException('STATIC_URL 配置不存在');
-    // }
     const url = `${this.staticFileServeRoot}/file/manage/${filename}`
     const size = file.size // 文件大小
     return this.staticfileService.uploadFile({

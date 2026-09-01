@@ -35,6 +35,26 @@ export class FileRepository {
     })
   }
 
+  findActiveBySha256(sha256: string) {
+    return this.db.file.findFirst({
+      where: { sha256, deletedAt: null },
+    })
+  }
+
+  findDeletedBySha256(sha256: string) {
+    return this.db.file.findFirst({
+      where: { sha256, deletedAt: { not: null } },
+      orderBy: { deletedAt: 'desc' },
+    })
+  }
+
+  restoreById(id: number) {
+    return this.db.file.update({
+      where: { id },
+      data: { deletedAt: null },
+    })
+  }
+
   purgeSoftDeleted(id: number) {
     return this.db.file.deleteMany({
       where: { id, deletedAt: { not: null } },

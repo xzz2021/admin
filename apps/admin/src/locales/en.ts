@@ -730,7 +730,19 @@ export default {
     probing: 'Checking...',
     previewUnsupported: 'Preview is not supported for this file type: {type}',
     previewUrlFailed: 'Failed to get the preview URL',
-    previewFailed: 'Preview failed, please try again later'
+    previewFailed: 'Preview failed, please try again later',
+    selectFiles: 'Select files',
+    hashing: 'Checksum',
+    waiting: 'Waiting',
+    uploading: 'Uploading',
+    paused: 'Paused',
+    instant: 'Instant upload',
+    reselect: 'Re-select the file to resume',
+    pause: 'Pause',
+    resume: 'Resume',
+    cancel: 'Cancel',
+    matchFailed: 'Selected file does not match the pending upload',
+    instantSuccess: 'File already exists (instant upload)'
   },
   dbBackup: {
     configTitle: 'Backup configuration',

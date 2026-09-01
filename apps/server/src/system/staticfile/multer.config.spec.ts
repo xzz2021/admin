@@ -4,6 +4,8 @@ import {
   assertPathInsideRoot,
   sanitizePathSegment,
   sanitizeUploadFilename,
+  sanitizeUploadFilenameByBlacklist,
+  originalUploadBasename,
   tryResolvePathInsideRoot,
   UPLOAD_ALLOWLIST,
 } from './multer.config'
@@ -23,6 +25,19 @@ describe('multer upload safety helpers', () => {
     expect(() => sanitizeUploadFilename('../../etc/passwd', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(BadRequestException)
     expect(() => sanitizeUploadFilename('shell.php', UPLOAD_ALLOWLIST.MANAGE_EXT)).toThrow(BadRequestException)
     expect(() => sanitizeUploadFilename('photo.exe.jpg', UPLOAD_ALLOWLIST.IMAGE_EXT)).toThrow(BadRequestException)
+  })
+
+  it('blacklist sanitizer allows non-dangerous types and still blocks double extensions', () => {
+    const name = sanitizeUploadFilenameByBlacklist('report.docx')
+    expect(name).toMatch(/^\d+-[a-f0-9]{8}-report\.docx$/i)
+    expect(() => sanitizeUploadFilenameByBlacklist('payload.php.jpg')).toThrow(BadRequestException)
+    expect(() => sanitizeUploadFilenameByBlacklist('run.exe')).toThrow(BadRequestException)
+  })
+
+  it('keeps the original basename for display without a unique prefix', () => {
+    expect(originalUploadBasename('report.docx')).toBe('report.docx')
+    expect(originalUploadBasename('../dir/报告.ZIP')).toBe('报告.ZIP')
+    expect(() => originalUploadBasename('run.exe')).toThrow(BadRequestException)
   })
 
   it('keeps only basename and generates a safe stored name', () => {

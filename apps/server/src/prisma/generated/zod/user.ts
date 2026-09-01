@@ -1,6 +1,6 @@
 import * as z from "zod"
 import { createZodDto } from "nestjs-zod/dto"
-import { CompleteDepartment, RelatedDepartmentModel, CompleteUserRole, RelatedUserRoleModel, CompleteUserSession, RelatedUserSessionModel, CompleteAuditLog, RelatedAuditLogModel, CompleteUserOperationLog, RelatedUserOperationLogModel, CompleteMessage, RelatedMessageModel, CompleteDbBackupJob, RelatedDbBackupJobModel, CompleteRole, RelatedRoleModel, CompleteCustomer, RelatedCustomerModel } from "./index"
+import { CompleteDepartment, RelatedDepartmentModel, CompleteUserRole, RelatedUserRoleModel, CompleteUserSession, RelatedUserSessionModel, CompleteAuditLog, RelatedAuditLogModel, CompleteUserOperationLog, RelatedUserOperationLogModel, CompleteMessage, RelatedMessageModel, CompleteDbBackupJob, RelatedDbBackupJobModel, CompleteRole, RelatedRoleModel, CompleteCustomer, RelatedCustomerModel, CompleteFileUploadSession, RelatedFileUploadSessionModel } from "./index"
 
 export const UserModel = z.object({
   id: z.string(),
@@ -37,6 +37,7 @@ export interface CompleteUser extends z.infer<typeof UserModel> {
   assignedUserRoles: CompleteUserRole[]
   ownedCustomers: CompleteCustomer[]
   createdCustomers: CompleteCustomer[]
+  uploadSessions: CompleteFileUploadSession[]
 }
 
 /**
@@ -57,4 +58,5 @@ export const RelatedUserModel: z.ZodType<CompleteUser> = z.lazy(() => UserModel.
   assignedUserRoles: RelatedUserRoleModel.array(),
   ownedCustomers: RelatedCustomerModel.array(),
   createdCustomers: RelatedCustomerModel.array(),
+  uploadSessions: RelatedFileUploadSessionModel.array(),
 }))

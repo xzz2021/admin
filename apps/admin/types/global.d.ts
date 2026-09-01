@@ -41,6 +41,8 @@ declare global {
     headers?: RawAxiosRequestHeaders
     responseType?: AxiosResponseType
     withCredentials?: boolean
+    timeout?: number
+    onUploadProgress?: (event: { loaded: number; total?: number }) => void
   }
 
   declare interface IResponse<T = any> {

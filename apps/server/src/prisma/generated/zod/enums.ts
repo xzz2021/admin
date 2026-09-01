@@ -49,3 +49,13 @@ export enum CustomerStatus {
   WON = "WON",
   FROZEN = "FROZEN"
 }
+
+export enum FileUploadStatus {
+  INITIATED = "INITIATED",
+  UPLOADING = "UPLOADING",
+  COMPLETING = "COMPLETING",
+  COMPLETED = "COMPLETED",
+  ABORTED = "ABORTED",
+  EXPIRED = "EXPIRED",
+  FAILED = "FAILED"
+}

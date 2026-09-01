@@ -113,6 +113,16 @@ export type DbBackupJob = Prisma.DbBackupJobModel
  */
 export type File = Prisma.FileModel
 /**
+ * Model FileUploadSession
+ * 
+ */
+export type FileUploadSession = Prisma.FileUploadSessionModel
+/**
+ * Model FileUploadChunk
+ * 
+ */
+export type FileUploadChunk = Prisma.FileUploadChunkModel
+/**
  * Model UserOperationLog
  * 
  */

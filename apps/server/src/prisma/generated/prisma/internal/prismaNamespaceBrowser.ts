@@ -70,6 +70,8 @@ export const ModelName = {
   DbBackupConfig: 'DbBackupConfig',
   DbBackupJob: 'DbBackupJob',
   File: 'File',
+  FileUploadSession: 'FileUploadSession',
+  FileUploadChunk: 'FileUploadChunk',
   UserOperationLog: 'UserOperationLog'
 } as const
 
@@ -386,11 +388,41 @@ export const FileScalarFieldEnum = {
   extension: 'extension',
   size: 'size',
   url: 'url',
+  sha256: 'sha256',
   createdAt: 'createdAt',
   deletedAt: 'deletedAt'
 } as const
 
 export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
+
+
+export const FileUploadSessionScalarFieldEnum = {
+  id: 'id',
+  sha256: 'sha256',
+  size: 'size',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  chunkSize: 'chunkSize',
+  totalChunks: 'totalChunks',
+  status: 'status',
+  createdById: 'createdById',
+  tempDir: 'tempDir',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileUploadSessionScalarFieldEnum = (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum]
+
+
+export const FileUploadChunkScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  chunkIndex: 'chunkIndex',
+  size: 'size'
+} as const
+
+export type FileUploadChunkScalarFieldEnum = (typeof FileUploadChunkScalarFieldEnum)[keyof typeof FileUploadChunkScalarFieldEnum]
 
 
 export const UserOperationLogScalarFieldEnum = {

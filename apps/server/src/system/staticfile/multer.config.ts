@@ -3,7 +3,7 @@ import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/m
 import { randomUUID } from 'crypto'
 import type { Request } from 'express'
 import * as fs from 'fs'
-import { diskStorage } from 'multer'
+import { diskStorage, memoryStorage } from 'multer'
 import path, { basename, extname, join, resolve, sep } from 'path'
 
 const IMAGE_MIME = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'])
@@ -21,6 +21,8 @@ const MANAGE_EXT = new Set([...IMAGE_EXT, '.pdf', '.txt', '.zip'])
 const AVATAR_MAX_BYTES = 5 * 1024 * 1024
 const MANAGE_MAX_BYTES = 10 * 1024 * 1024
 
+export const DANGEROUS_FILENAME_RE = /\.(php|phtml|asp|aspx|exe|sh|bat|cmd|js|mjs|cjs|html|htm|shtml)(\.|$)/i
+
 export function getStaticFileRoot(): string {
   const configured = process.env.STATIC_FILE_ROOT_PATH
   if (!configured) {
@@ -37,13 +39,42 @@ export function decodeOriginalName(originalname: string): string {
 export function sanitizeUploadFilename(originalname: string, allowedExts: Set<string>): string {
   const decoded = decodeOriginalName(originalname)
   const base = basename(decoded).replace(/[/\\]/g, '')
-  if (/\.(php|phtml|asp|aspx|exe|sh|bat|cmd|js|mjs|cjs|html|htm|shtml)(\.|$)/i.test(base)) {
+  if (DANGEROUS_FILENAME_RE.test(base)) {
     throw new BadRequestException('文件名包含危险扩展名')
   }
   const ext = extname(base).toLowerCase()
   if (!allowedExts.has(ext)) {
     throw new BadRequestException(`不允许的文件扩展名: ${ext || '(无)'}`)
   }
+  const stem =
+    base
+      .slice(0, Math.max(0, base.length - ext.length))
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .slice(0, 64) || 'file'
+  return `${Date.now()}-${randomUUID().slice(0, 8)}-${stem}${ext}`
+}
+
+export function assertNotDangerousFilename(originalname: string): void {
+  const decoded = decodeOriginalName(originalname)
+  const base = basename(decoded).replace(/[/\\]/g, '')
+  if (!base || DANGEROUS_FILENAME_RE.test(base)) {
+    throw new BadRequestException('文件名包含危险扩展名')
+  }
+}
+
+/** 列表/下载展示用原始文件名：只取 basename，不加时间戳或随机串 */
+export function originalUploadBasename(originalname: string): string {
+  const base = basename(originalname).replace(/[/\\]/g, '').trim()
+  if (!base || DANGEROUS_FILENAME_RE.test(base)) {
+    throw new BadRequestException('文件名包含危险扩展名')
+  }
+  return base.slice(0, 255)
+}
+
+/** 大文件上传：只拦危险后缀，允许其余类型；磁盘文件名仍加唯一前缀避免同名覆盖 */
+export function sanitizeUploadFilenameByBlacklist(originalname: string): string {
+  const base = originalUploadBasename(originalname)
+  const ext = extname(base).toLowerCase()
   const stem =
     base
       .slice(0, Math.max(0, base.length - ext.length))
@@ -90,6 +121,13 @@ function ensureDirInsideRoot(root: string, relativeDir: string): string {
   const target = assertPathInsideRoot(root, join(root, relativeDir))
   fs.mkdirSync(target, { recursive: true })
   return target
+}
+
+export function ensureUploadTempDir(sessionId: string): string {
+  if (!/^[a-z0-9_-]+$/i.test(sessionId) || sessionId.length > 64) {
+    throw new BadRequestException('非法会话')
+  }
+  return ensureDirInsideRoot(getStaticFileRoot(), join('file', 'tmp', sessionId))
 }
 
 function createFileFilter(
@@ -187,6 +225,17 @@ export const generateMulterConfigOfImg = (directory: string, isImg: boolean = tr
     }),
     limits: {
       fileSize: isImg ? AVATAR_MAX_BYTES : MANAGE_MAX_BYTES,
+      files: 1,
+    },
+  }
+}
+
+/** 分片上传：内存接收裸字节，类型在 initiate 已校验 */
+export const generateChunkMulterConfig = (maxChunkBytes: number): MulterOptions => {
+  return {
+    storage: memoryStorage(),
+    limits: {
+      fileSize: maxChunkBytes + 1024,
       files: 1,
     },
   }

@@ -8,6 +8,7 @@ import { FileCleanupService } from './file-cleanup.service'
 jest.mock('node:fs', () => ({
   promises: {
     unlink: jest.fn(),
+    rm: jest.fn(),
   },
 }))
 
@@ -27,7 +28,9 @@ jest.mock('@/system/staticfile/multer.config', () => ({
 
 describe('FileCleanupService', () => {
   const unlink = fs.unlink as jest.MockedFunction<typeof fs.unlink>
+  const rm = fs.rm as jest.MockedFunction<typeof fs.rm>
   const queueAdd = jest.fn()
+  const findUnique = jest.fn()
 
   const createService = () => {
     const events = new DiskCleanupEventBus()
@@ -37,6 +40,7 @@ describe('FileCleanupService', () => {
       } as unknown as ConfigService,
       { add: queueAdd } as unknown as Queue,
       events,
+      { file: { findUnique } } as never,
     )
     return { service, events }
   }
@@ -44,7 +48,9 @@ describe('FileCleanupService', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     unlink.mockResolvedValue(undefined)
+    rm.mockResolvedValue(undefined)
     queueAdd.mockResolvedValue({})
+    findUnique.mockResolvedValue({ deletedAt: new Date() })
   })
 
   it('enqueues unlink jobs without touching the filesystem', async () => {
@@ -101,6 +107,38 @@ describe('FileCleanupService', () => {
       kind: 'backup-job',
       backupJobId: 'job-1',
       path: '/backups/a.sql.gz',
+    })
+  })
+
+  it('skips managed-file unlink when the file has been restored', async () => {
+    const { service, events } = createService()
+    findUnique.mockResolvedValue({ deletedAt: null })
+    const onUnlinked = jest.fn()
+    events.onUnlinked(onUnlinked)
+
+    await service.process({ kind: 'managed-file', fileId: 9, path: 'a.png' })
+
+    expect(unlink).not.toHaveBeenCalled()
+    expect(onUnlinked).not.toHaveBeenCalled()
+  })
+
+  it('recursively removes upload session temp directories', async () => {
+    const { service, events } = createService()
+    const onUnlinked = jest.fn()
+    events.onUnlinked(onUnlinked)
+
+    await service.process({
+      kind: 'upload-session',
+      sessionId: 'sess-1',
+      path: 'file/tmp/sess-1',
+    })
+
+    expect(rm).toHaveBeenCalledWith('/static-root/file/tmp/sess-1', { recursive: true, force: true })
+    expect(unlink).not.toHaveBeenCalled()
+    expect(onUnlinked).toHaveBeenCalledWith({
+      kind: 'upload-session',
+      sessionId: 'sess-1',
+      path: 'file/tmp/sess-1',
     })
   })
 })

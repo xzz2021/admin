@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import { Queue } from 'bullmq'
 import { promises as fs } from 'node:fs'
 import { resolve } from 'node:path'
+import { PgService } from '@/prisma/pg.service'
 import { DiskCleanupEventBus } from './disk-cleanup.events'
 import { FILE_CLEANUP_QUEUE, FILE_CLEANUP_UNLINK } from './file-cleanup.constants'
 import type { FileCleanupJob } from './file-cleanup.types'
@@ -17,6 +18,7 @@ export class FileCleanupService {
     private readonly configService: ConfigService,
     @InjectQueue(FILE_CLEANUP_QUEUE) private readonly queue: Queue,
     private readonly events: DiskCleanupEventBus,
+    private readonly db: PgService,
   ) {}
 
   async enqueue(jobs: FileCleanupJob[]) {
@@ -33,9 +35,24 @@ export class FileCleanupService {
   }
 
   async process(job: FileCleanupJob) {
+    if (job.kind === 'managed-file') {
+      const file = await this.db.file.findUnique({
+        where: { id: job.fileId },
+        select: { deletedAt: true },
+      })
+      if (!file || file.deletedAt == null) {
+        this.logger.log(`跳过已恢复或不存在的托管文件 fileId=${job.fileId}`)
+        return
+      }
+    }
+
     const safePath = this.resolveSafePath(job.path)
     if (safePath) {
-      await unlinkIgnoringMissing(safePath)
+      if (job.kind === 'upload-session') {
+        await fs.rm(safePath, { recursive: true, force: true })
+      } else {
+        await unlinkIgnoringMissing(safePath)
+      }
     } else {
       this.logger.warn(`跳过无法解析或不在允许目录内的路径 path=${job.path}`)
     }

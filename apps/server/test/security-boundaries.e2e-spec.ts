@@ -3,6 +3,8 @@ import { AuthorizationService } from '@/processor/authorization/authorization.se
 import { RequiredPermission } from '@/processor/decorator'
 import { JwtRefreshAuthGuard, PermissionGuard } from '@/processor/guard'
 import { RtTokenService } from '@/system/auth/rt.token.service'
+import { FileUploadService } from '@/system/staticfile/file-upload.service'
+import { assertNotDangerousFilename } from '@/system/staticfile/multer.config'
 import { StaticfileController } from '@/system/staticfile/staticfile.controller'
 import { StaticfileService } from '@/system/staticfile/staticfile.service'
 import { Controller, Get, INestApplication, Post, UseGuards } from '@nestjs/common'
@@ -42,6 +44,11 @@ describe('Security boundaries (e2e)', () => {
   const getFileList = jest.fn()
   const uploadFile = jest.fn()
   const deleteFile = jest.fn()
+  const initiate = jest.fn()
+  const getSession = jest.fn()
+  const uploadChunk = jest.fn()
+  const complete = jest.fn()
+  const abort = jest.fn()
 
   beforeAll(async () => {
     uploadRoot = mkdtempSync(join(tmpdir(), 'admin2-upload-e2e-'))
@@ -68,6 +75,10 @@ describe('Security boundaries (e2e)', () => {
         {
           provide: StaticfileService,
           useValue: { getFileList, uploadFile, deleteFile },
+        },
+        {
+          provide: FileUploadService,
+          useValue: { initiate, getSession, uploadChunk, complete, abort },
         },
         {
           provide: AuthorizationService,
@@ -170,5 +181,45 @@ describe('Security boundaries (e2e)', () => {
       .expect(413)
 
     expect(uploadFile).not.toHaveBeenCalled()
+  })
+
+  it('rejects initiating a chunked upload without fileList:add', async () => {
+    await request(app.getHttpServer())
+      .post('/staticfile/uploads/initiate')
+      .send({
+        sha256: 'a'.repeat(64),
+        size: 4,
+        originalName: 'a.bin',
+        mimeType: 'application/octet-stream',
+      })
+      .expect(403)
+
+    expect(initiate).not.toHaveBeenCalled()
+  })
+
+  it('rejects initiating a chunked upload with a dangerous filename', async () => {
+    permissions = ['fileList:add']
+    initiate.mockImplementation((_userId: string, dto: { originalName: string }) => {
+      assertNotDangerousFilename(dto.originalName)
+      return { message: 'ok' }
+    })
+
+    await request(app.getHttpServer())
+      .post('/staticfile/uploads/initiate')
+      .send({
+        sha256: 'a'.repeat(64),
+        size: 4,
+        originalName: 'payload.exe',
+        mimeType: 'application/octet-stream',
+      })
+      .expect(400)
+
+    expect(initiate).toHaveBeenCalled()
+    initiate.mockReset()
+  })
+
+  it('rejects chunk upload without fileList:add', async () => {
+    await request(app.getHttpServer()).put('/staticfile/uploads/sess-1/chunks/0').expect(403)
+    expect(uploadChunk).not.toHaveBeenCalled()
   })
 })

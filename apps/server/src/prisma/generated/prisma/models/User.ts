@@ -282,6 +282,7 @@ export type UserWhereInput = {
   assignedUserRoles?: Prisma.UserRoleListRelationFilter
   ownedCustomers?: Prisma.CustomerListRelationFilter
   createdCustomers?: Prisma.CustomerListRelationFilter
+  uploadSessions?: Prisma.FileUploadSessionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -313,6 +314,7 @@ export type UserOrderByWithRelationInput = {
   assignedUserRoles?: Prisma.UserRoleOrderByRelationAggregateInput
   ownedCustomers?: Prisma.CustomerOrderByRelationAggregateInput
   createdCustomers?: Prisma.CustomerOrderByRelationAggregateInput
+  uploadSessions?: Prisma.FileUploadSessionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -347,6 +349,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   assignedUserRoles?: Prisma.UserRoleListRelationFilter
   ownedCustomers?: Prisma.CustomerListRelationFilter
   createdCustomers?: Prisma.CustomerListRelationFilter
+  uploadSessions?: Prisma.FileUploadSessionListRelationFilter
 }, "id" | "email" | "phone">
 
 export type UserOrderByWithAggregationInput = {
@@ -421,6 +424,7 @@ export type UserCreateInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -451,6 +455,7 @@ export type UserUncheckedCreateInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUpdateInput = {
@@ -481,6 +486,7 @@ export type UserUpdateInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -511,6 +517,7 @@ export type UserUncheckedUpdateInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -858,6 +865,20 @@ export type UserUpdateOneWithoutBackupJobsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutBackupJobsInput, Prisma.UserUpdateWithoutBackupJobsInput>, Prisma.UserUncheckedUpdateWithoutBackupJobsInput>
 }
 
+export type UserCreateNestedOneWithoutUploadSessionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUploadSessionsInput, Prisma.UserUncheckedCreateWithoutUploadSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUploadSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutUploadSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUploadSessionsInput, Prisma.UserUncheckedCreateWithoutUploadSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUploadSessionsInput
+  upsert?: Prisma.UserUpsertWithoutUploadSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUploadSessionsInput, Prisma.UserUpdateWithoutUploadSessionsInput>, Prisma.UserUncheckedUpdateWithoutUploadSessionsInput>
+}
+
 export type UserCreateNestedOneWithoutOperationLogsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutOperationLogsInput, Prisma.UserUncheckedCreateWithoutOperationLogsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutOperationLogsInput
@@ -901,6 +922,7 @@ export type UserCreateWithoutCreatedRolesInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutCreatedRolesInput = {
@@ -930,6 +952,7 @@ export type UserUncheckedCreateWithoutCreatedRolesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutCreatedRolesInput = {
@@ -975,6 +998,7 @@ export type UserUpdateWithoutCreatedRolesInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedRolesInput = {
@@ -1004,6 +1028,7 @@ export type UserUncheckedUpdateWithoutCreatedRolesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutRolesInput = {
@@ -1033,6 +1058,7 @@ export type UserCreateWithoutRolesInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -1062,6 +1088,7 @@ export type UserUncheckedCreateWithoutRolesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -1096,6 +1123,7 @@ export type UserCreateWithoutAssignedUserRolesInput = {
   createdRoles?: Prisma.RoleCreateNestedManyWithoutCreatedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAssignedUserRolesInput = {
@@ -1125,6 +1153,7 @@ export type UserUncheckedCreateWithoutAssignedUserRolesInput = {
   createdRoles?: Prisma.RoleUncheckedCreateNestedManyWithoutCreatedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAssignedUserRolesInput = {
@@ -1170,6 +1199,7 @@ export type UserUpdateWithoutRolesInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -1199,6 +1229,7 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutAssignedUserRolesInput = {
@@ -1239,6 +1270,7 @@ export type UserUpdateWithoutAssignedUserRolesInput = {
   createdRoles?: Prisma.RoleUpdateManyWithoutCreatedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedUserRolesInput = {
@@ -1268,6 +1300,7 @@ export type UserUncheckedUpdateWithoutAssignedUserRolesInput = {
   createdRoles?: Prisma.RoleUncheckedUpdateManyWithoutCreatedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutDepartmentInput = {
@@ -1297,6 +1330,7 @@ export type UserCreateWithoutDepartmentInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutDepartmentInput = {
@@ -1326,6 +1360,7 @@ export type UserUncheckedCreateWithoutDepartmentInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutDepartmentInput = {
@@ -1403,6 +1438,7 @@ export type UserCreateWithoutOwnedCustomersInput = {
   createdRoles?: Prisma.RoleCreateNestedManyWithoutCreatedByInput
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutOwnedCustomersInput = {
@@ -1432,6 +1468,7 @@ export type UserUncheckedCreateWithoutOwnedCustomersInput = {
   createdRoles?: Prisma.RoleUncheckedCreateNestedManyWithoutCreatedByInput
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutOwnedCustomersInput = {
@@ -1466,6 +1503,7 @@ export type UserCreateWithoutCreatedCustomersInput = {
   createdRoles?: Prisma.RoleCreateNestedManyWithoutCreatedByInput
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutCreatedCustomersInput = {
@@ -1495,6 +1533,7 @@ export type UserUncheckedCreateWithoutCreatedCustomersInput = {
   createdRoles?: Prisma.RoleUncheckedCreateNestedManyWithoutCreatedByInput
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutCreatedCustomersInput = {
@@ -1540,6 +1579,7 @@ export type UserUpdateWithoutOwnedCustomersInput = {
   createdRoles?: Prisma.RoleUpdateManyWithoutCreatedByNestedInput
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedCustomersInput = {
@@ -1569,6 +1609,7 @@ export type UserUncheckedUpdateWithoutOwnedCustomersInput = {
   createdRoles?: Prisma.RoleUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutCreatedCustomersInput = {
@@ -1609,6 +1650,7 @@ export type UserUpdateWithoutCreatedCustomersInput = {
   createdRoles?: Prisma.RoleUpdateManyWithoutCreatedByNestedInput
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedCustomersInput = {
@@ -1638,6 +1680,7 @@ export type UserUncheckedUpdateWithoutCreatedCustomersInput = {
   createdRoles?: Prisma.RoleUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutSentMessagesInput = {
@@ -1667,6 +1710,7 @@ export type UserCreateWithoutSentMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -1696,6 +1740,7 @@ export type UserUncheckedCreateWithoutSentMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -1730,6 +1775,7 @@ export type UserCreateWithoutReceivedMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutReceivedMessagesInput = {
@@ -1759,6 +1805,7 @@ export type UserUncheckedCreateWithoutReceivedMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutReceivedMessagesInput = {
@@ -1804,6 +1851,7 @@ export type UserUpdateWithoutSentMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -1833,6 +1881,7 @@ export type UserUncheckedUpdateWithoutSentMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutReceivedMessagesInput = {
@@ -1873,6 +1922,7 @@ export type UserUpdateWithoutReceivedMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
@@ -1902,6 +1952,7 @@ export type UserUncheckedUpdateWithoutReceivedMessagesInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1931,6 +1982,7 @@ export type UserCreateWithoutSessionsInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1960,6 +2012,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -2005,6 +2058,7 @@ export type UserUpdateWithoutSessionsInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -2034,6 +2088,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -2063,6 +2118,7 @@ export type UserCreateWithoutAuditLogsInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2092,6 +2148,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -2137,6 +2194,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -2166,6 +2224,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutBackupJobsInput = {
@@ -2195,6 +2254,7 @@ export type UserCreateWithoutBackupJobsInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutBackupJobsInput = {
@@ -2224,6 +2284,7 @@ export type UserUncheckedCreateWithoutBackupJobsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutBackupJobsInput = {
@@ -2269,6 +2330,7 @@ export type UserUpdateWithoutBackupJobsInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBackupJobsInput = {
@@ -2294,6 +2356,143 @@ export type UserUncheckedUpdateWithoutBackupJobsInput = {
   operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  createdRoles?: Prisma.RoleUncheckedUpdateManyWithoutCreatedByNestedInput
+  assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
+  ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
+  createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutUploadSessionsInput = {
+  id?: string
+  username: string
+  password: string
+  nickname?: string | null
+  email?: string | null
+  phone: string
+  avatar?: string | null
+  enabled?: boolean
+  lastLoginAt?: Date | string | null
+  lastLoginIp?: string | null
+  lastLoginLocation?: string | null
+  remark?: string | null
+  passwordChangedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  department?: Prisma.DepartmentCreateNestedOneWithoutUsersInput
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  operationLogs?: Prisma.UserOperationLogCreateNestedManyWithoutUserInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  receivedMessages?: Prisma.MessageCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobCreateNestedManyWithoutCreatedByInput
+  createdRoles?: Prisma.RoleCreateNestedManyWithoutCreatedByInput
+  assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
+  ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
+  createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutUploadSessionsInput = {
+  id?: string
+  username: string
+  password: string
+  nickname?: string | null
+  email?: string | null
+  phone: string
+  avatar?: string | null
+  enabled?: boolean
+  lastLoginAt?: Date | string | null
+  lastLoginIp?: string | null
+  lastLoginLocation?: string | null
+  remark?: string | null
+  passwordChangedAt?: Date | string | null
+  departmentId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.UserSessionUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  operationLogs?: Prisma.UserOperationLogUncheckedCreateNestedManyWithoutUserInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  receivedMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutReceiverInput
+  backupJobs?: Prisma.DbBackupJobUncheckedCreateNestedManyWithoutCreatedByInput
+  createdRoles?: Prisma.RoleUncheckedCreateNestedManyWithoutCreatedByInput
+  assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
+  ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
+  createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutUploadSessionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutUploadSessionsInput, Prisma.UserUncheckedCreateWithoutUploadSessionsInput>
+}
+
+export type UserUpsertWithoutUploadSessionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutUploadSessionsInput, Prisma.UserUncheckedUpdateWithoutUploadSessionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutUploadSessionsInput, Prisma.UserUncheckedCreateWithoutUploadSessionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutUploadSessionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutUploadSessionsInput, Prisma.UserUncheckedUpdateWithoutUploadSessionsInput>
+}
+
+export type UserUpdateWithoutUploadSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  department?: Prisma.DepartmentUpdateOneWithoutUsersNestedInput
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  operationLogs?: Prisma.UserOperationLogUpdateManyWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  receivedMessages?: Prisma.MessageUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUpdateManyWithoutCreatedByNestedInput
+  createdRoles?: Prisma.RoleUpdateManyWithoutCreatedByNestedInput
+  assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
+  ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
+  createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutUploadSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginIp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  remark?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.UserSessionUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  operationLogs?: Prisma.UserOperationLogUncheckedUpdateManyWithoutUserNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  receivedMessages?: Prisma.MessageUncheckedUpdateManyWithoutReceiverNestedInput
+  backupJobs?: Prisma.DbBackupJobUncheckedUpdateManyWithoutCreatedByNestedInput
   createdRoles?: Prisma.RoleUncheckedUpdateManyWithoutCreatedByNestedInput
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
@@ -2327,6 +2526,7 @@ export type UserCreateWithoutOperationLogsInput = {
   assignedUserRoles?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutOperationLogsInput = {
@@ -2356,6 +2556,7 @@ export type UserUncheckedCreateWithoutOperationLogsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
   ownedCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutOwnerInput
   createdCustomers?: Prisma.CustomerUncheckedCreateNestedManyWithoutCreatedByInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutOperationLogsInput = {
@@ -2401,6 +2602,7 @@ export type UserUpdateWithoutOperationLogsInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOperationLogsInput = {
@@ -2430,6 +2632,7 @@ export type UserUncheckedUpdateWithoutOperationLogsInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyDepartmentInput = {
@@ -2477,6 +2680,7 @@ export type UserUpdateWithoutDepartmentInput = {
   assignedUserRoles?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDepartmentInput = {
@@ -2506,6 +2710,7 @@ export type UserUncheckedUpdateWithoutDepartmentInput = {
   assignedUserRoles?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
   ownedCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutOwnerNestedInput
   createdCustomers?: Prisma.CustomerUncheckedUpdateManyWithoutCreatedByNestedInput
+  uploadSessions?: Prisma.FileUploadSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutDepartmentInput = {
@@ -2543,6 +2748,7 @@ export type UserCountOutputType = {
   assignedUserRoles: number
   ownedCustomers: number
   createdCustomers: number
+  uploadSessions: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2557,6 +2763,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   assignedUserRoles?: boolean | UserCountOutputTypeCountAssignedUserRolesArgs
   ownedCustomers?: boolean | UserCountOutputTypeCountOwnedCustomersArgs
   createdCustomers?: boolean | UserCountOutputTypeCountCreatedCustomersArgs
+  uploadSessions?: boolean | UserCountOutputTypeCountUploadSessionsArgs
 }
 
 /**
@@ -2646,6 +2853,13 @@ export type UserCountOutputTypeCountCreatedCustomersArgs<ExtArgs extends runtime
   where?: Prisma.CustomerWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUploadSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FileUploadSessionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2676,6 +2890,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   assignedUserRoles?: boolean | Prisma.User$assignedUserRolesArgs<ExtArgs>
   ownedCustomers?: boolean | Prisma.User$ownedCustomersArgs<ExtArgs>
   createdCustomers?: boolean | Prisma.User$createdCustomersArgs<ExtArgs>
+  uploadSessions?: boolean | Prisma.User$uploadSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2752,6 +2967,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   assignedUserRoles?: boolean | Prisma.User$assignedUserRolesArgs<ExtArgs>
   ownedCustomers?: boolean | Prisma.User$ownedCustomersArgs<ExtArgs>
   createdCustomers?: boolean | Prisma.User$createdCustomersArgs<ExtArgs>
+  uploadSessions?: boolean | Prisma.User$uploadSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2776,6 +2992,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     assignedUserRoles: Prisma.$UserRolePayload<ExtArgs>[]
     ownedCustomers: Prisma.$CustomerPayload<ExtArgs>[]
     createdCustomers: Prisma.$CustomerPayload<ExtArgs>[]
+    uploadSessions: Prisma.$FileUploadSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3239,6 +3456,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   assignedUserRoles<T extends Prisma.User$assignedUserRolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedUserRolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ownedCustomers<T extends Prisma.User$ownedCustomersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ownedCustomersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   createdCustomers<T extends Prisma.User$createdCustomersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdCustomersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  uploadSessions<T extends Prisma.User$uploadSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$uploadSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileUploadSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3965,6 +4183,30 @@ export type User$createdCustomersArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.CustomerScalarFieldEnum | Prisma.CustomerScalarFieldEnum[]
+}
+
+/**
+ * User.uploadSessions
+ */
+export type User$uploadSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileUploadSession
+   */
+  select?: Prisma.FileUploadSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileUploadSession
+   */
+  omit?: Prisma.FileUploadSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileUploadSessionInclude<ExtArgs> | null
+  where?: Prisma.FileUploadSessionWhereInput
+  orderBy?: Prisma.FileUploadSessionOrderByWithRelationInput | Prisma.FileUploadSessionOrderByWithRelationInput[]
+  cursor?: Prisma.FileUploadSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FileUploadSessionScalarFieldEnum | Prisma.FileUploadSessionScalarFieldEnum[]
 }
 
 /**

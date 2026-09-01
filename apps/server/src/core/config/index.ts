@@ -31,6 +31,12 @@ interface AppConfig {
   staticFileRootPath: string
   // 静态文件访问前缀
   staticFileServeRoot: string
+  fileUpload: {
+    maxBytes: number
+    chunkBytes: number
+    sessionTtlHours: number
+    maxOpenSessions: number
+  }
   dbBackup: {
     dir: string
     cron: string
@@ -138,6 +144,12 @@ export const appConfig = (): AppConfig => {
     },
     staticFileRootPath: processEnv.STATIC_FILE_ROOT_PATH || '',
     staticFileServeRoot: processEnv.STATIC_FILE_SERVE_ROOT || '',
+    fileUpload: {
+      maxBytes: parseInt(processEnv.FILE_UPLOAD_MAX_BYTES || '524288000', 10),
+      chunkBytes: parseInt(processEnv.FILE_UPLOAD_CHUNK_BYTES || '5242880', 10),
+      sessionTtlHours: parseInt(processEnv.FILE_UPLOAD_SESSION_TTL_HOURS || '24', 10),
+      maxOpenSessions: parseInt(processEnv.FILE_UPLOAD_MAX_OPEN_SESSIONS || '5', 10),
+    },
     dbBackup: {
       dir: processEnv.DB_BACKUP_DIR || 'backups',
       cron: processEnv.DB_BACKUP_CRON || '0 0 * * * *',

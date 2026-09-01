@@ -58,6 +58,18 @@ describe('createStaticFileMiddleware', () => {
     expect(res.status).toBe(200)
     expect(res.text).toBe('api')
   })
+
+  it('never serves upload temp chunks under file/tmp', async () => {
+    mkdirSync(join(diskRoot, 'file', 'tmp', 'session-1'), { recursive: true })
+    writeFileSync(join(diskRoot, 'file', 'tmp', 'session-1', '0'), 'secret-chunk')
+
+    const app = express()
+    app.use(createStaticFileMiddleware(diskRoot, 'public'))
+
+    const res = await request(app).get('/public/file/tmp/session-1/0')
+    expect(res.status).toBe(404)
+    expect(res.text).not.toContain('secret-chunk')
+  })
 })
 
 describe('StaticAssetsModule', () => {

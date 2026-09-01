@@ -72,6 +72,16 @@ enum CustomerStatus {
   FROZEN
 }
 
+enum FileUploadStatus {
+  INITIATED
+  UPLOADING
+  COMPLETING
+  COMPLETED
+  ABORTED
+  EXPIRED
+  FAILED
+}
+
 model User {
   id       String @id @default(cuid())
   /// @z.string().min(2).max(50).meta({ description: '用户名', example: 'admin' })
@@ -112,6 +122,7 @@ model User {
   assignedUserRoles UserRole[] @relation("UserRoleAssigner")
   ownedCustomers   Customer[] @relation("CustomerOwner")
   createdCustomers Customer[] @relation("CustomerCreator")
+  uploadSessions   FileUploadSession[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -534,8 +545,8 @@ model File {
   id   Int    @id @default(autoincrement())
   /// @z.string().min(1).max(255).meta({ description: '文件名', example: 'avatar.png' })
   name      String  @db.VarChar(255)
-  /// @z.string().min(1).max(50).meta({ description: 'MIME 类型', example: 'image/png' })
-  mimeType  String  @db.VarChar(50)
+  /// @z.string().min(1).max(255).meta({ description: 'MIME 类型', example: 'image/png' })
+  mimeType  String  @db.VarChar(255)
   /// @z.string().min(1).max(255).meta({ description: '存储路径', example: '/uploads/2026/avatar.png' })
   path      String  @unique @db.VarChar(255)
   /// @z.string().max(20).optional().meta({ description: '文件扩展名', example: 'png' })
@@ -544,6 +555,8 @@ model File {
   size BigInt
   /// @z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' })
   url  String @db.VarChar(255)
+  /// @z.string().length(64).regex(/^[0-9a-f]{64}$/).optional().meta({ description: 'SHA-256', example: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' })
+  sha256 String? @db.Char(64)
   createdAt DateTime @default(now())
   /// @z.coerce.date().optional().meta({ description: '软删除时间，待异步清理磁盘', example: '2026-01-01T12:00:00.000Z' })
   deletedAt DateTime?
@@ -551,6 +564,48 @@ model File {
   @@index([extension])
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([sha256])
+}
+
+model FileUploadSession {
+  id           String           @id @default(cuid())
+  /// @z.string().length(64).regex(/^[0-9a-f]{64}$/).meta({ description: '申报 SHA-256', example: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' })
+  sha256       String           @db.Char(64)
+  /// @z.coerce.bigint().meta({ description: '文件大小（字节）', example: '1024' })
+  size         BigInt
+  /// @z.string().min(1).max(255).meta({ description: '原始文件名', example: 'report.docx' })
+  originalName String           @db.VarChar(255)
+  /// @z.string().min(1).max(255).meta({ description: 'MIME 类型', example: 'application/pdf' })
+  mimeType     String           @db.VarChar(255)
+  /// @z.coerce.number().int().positive().meta({ description: '分片大小', example: 5242880 })
+  chunkSize    Int
+  /// @z.coerce.number().int().positive().meta({ description: '分片总数', example: 12 })
+  totalChunks  Int
+  /// @z.nativeEnum(FileUploadStatus).meta({ description: '上传会话状态', example: 'UPLOADING' })
+  status       FileUploadStatus @default(INITIATED)
+  createdById  String
+  createdBy    User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  /// @z.string().min(1).max(255).meta({ description: '临时目录相对路径', example: 'file/tmp/clxxx' })
+  tempDir      String           @db.VarChar(255)
+  expiresAt    DateTime
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  chunks       FileUploadChunk[]
+
+  @@index([createdById])
+  @@index([sha256])
+  @@index([status, expiresAt])
+}
+
+model FileUploadChunk {
+  id         Int               @id @default(autoincrement())
+  sessionId  String
+  session    FileUploadSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  chunkIndex Int
+  size       Int
+
+  @@unique([sessionId, chunkIndex])
+  @@index([sessionId])
 }
 
 model UserOperationLog {

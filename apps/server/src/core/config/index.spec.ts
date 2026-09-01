@@ -70,4 +70,33 @@ describe('production environment validation', () => {
       process.env.LOG_FILE = previous
     }
   })
+
+  it('defaults file upload limits to 500MB / 5MB / 24h / 5 sessions', () => {
+    const previous = {
+      max: process.env.FILE_UPLOAD_MAX_BYTES,
+      chunk: process.env.FILE_UPLOAD_CHUNK_BYTES,
+      ttl: process.env.FILE_UPLOAD_SESSION_TTL_HOURS,
+      open: process.env.FILE_UPLOAD_MAX_OPEN_SESSIONS,
+    }
+    delete process.env.FILE_UPLOAD_MAX_BYTES
+    delete process.env.FILE_UPLOAD_CHUNK_BYTES
+    delete process.env.FILE_UPLOAD_SESSION_TTL_HOURS
+    delete process.env.FILE_UPLOAD_MAX_OPEN_SESSIONS
+
+    expect(appConfig().fileUpload).toEqual({
+      maxBytes: 524288000,
+      chunkBytes: 5242880,
+      sessionTtlHours: 24,
+      maxOpenSessions: 5,
+    })
+
+    if (previous.max === undefined) delete process.env.FILE_UPLOAD_MAX_BYTES
+    else process.env.FILE_UPLOAD_MAX_BYTES = previous.max
+    if (previous.chunk === undefined) delete process.env.FILE_UPLOAD_CHUNK_BYTES
+    else process.env.FILE_UPLOAD_CHUNK_BYTES = previous.chunk
+    if (previous.ttl === undefined) delete process.env.FILE_UPLOAD_SESSION_TTL_HOURS
+    else process.env.FILE_UPLOAD_SESSION_TTL_HOURS = previous.ttl
+    if (previous.open === undefined) delete process.env.FILE_UPLOAD_MAX_OPEN_SESSIONS
+    else process.env.FILE_UPLOAD_MAX_OPEN_SESSIONS = previous.open
+  })
 })

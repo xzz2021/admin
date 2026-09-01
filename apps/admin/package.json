@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.118",
+    "@noble/hashes": "^2.4.0",
     "@vueuse/core": "^12.3.0",
     "@wangeditor/editor": "^5.1.23",
     "@wangeditor/editor-for-vue": "^5.1.10",

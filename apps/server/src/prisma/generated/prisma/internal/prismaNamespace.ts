@@ -403,6 +403,8 @@ export const ModelName = {
   DbBackupConfig: 'DbBackupConfig',
   DbBackupJob: 'DbBackupJob',
   File: 'File',
+  FileUploadSession: 'FileUploadSession',
+  FileUploadChunk: 'FileUploadChunk',
   UserOperationLog: 'UserOperationLog'
 } as const
 
@@ -419,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "role" | "userRole" | "menu" | "permission" | "roleMenu" | "rolePermission" | "rolePermissionDepartment" | "department" | "customer" | "dictionaryType" | "dictionaryItem" | "notice" | "message" | "userSession" | "auditLog" | "dbBackupConfig" | "dbBackupJob" | "file" | "userOperationLog"
+    modelProps: "user" | "role" | "userRole" | "menu" | "permission" | "roleMenu" | "rolePermission" | "rolePermissionDepartment" | "department" | "customer" | "dictionaryType" | "dictionaryItem" | "notice" | "message" | "userSession" | "auditLog" | "dbBackupConfig" | "dbBackupJob" | "file" | "fileUploadSession" | "fileUploadChunk" | "userOperationLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1829,6 +1831,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FileUploadSession: {
+      payload: Prisma.$FileUploadSessionPayload<ExtArgs>
+      fields: Prisma.FileUploadSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileUploadSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileUploadSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.FileUploadSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileUploadSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>
+        }
+        findMany: {
+          args: Prisma.FileUploadSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>[]
+        }
+        create: {
+          args: Prisma.FileUploadSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>
+        }
+        createMany: {
+          args: Prisma.FileUploadSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FileUploadSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.FileUploadSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>
+        }
+        update: {
+          args: Prisma.FileUploadSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.FileUploadSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileUploadSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FileUploadSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.FileUploadSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.FileUploadSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileUploadSession>
+        }
+        groupBy: {
+          args: Prisma.FileUploadSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileUploadSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileUploadSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileUploadSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    FileUploadChunk: {
+      payload: Prisma.$FileUploadChunkPayload<ExtArgs>
+      fields: Prisma.FileUploadChunkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileUploadChunkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileUploadChunkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>
+        }
+        findFirst: {
+          args: Prisma.FileUploadChunkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileUploadChunkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>
+        }
+        findMany: {
+          args: Prisma.FileUploadChunkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>[]
+        }
+        create: {
+          args: Prisma.FileUploadChunkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>
+        }
+        createMany: {
+          args: Prisma.FileUploadChunkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FileUploadChunkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>[]
+        }
+        delete: {
+          args: Prisma.FileUploadChunkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>
+        }
+        update: {
+          args: Prisma.FileUploadChunkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>
+        }
+        deleteMany: {
+          args: Prisma.FileUploadChunkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileUploadChunkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FileUploadChunkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>[]
+        }
+        upsert: {
+          args: Prisma.FileUploadChunkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileUploadChunkPayload>
+        }
+        aggregate: {
+          args: Prisma.FileUploadChunkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileUploadChunk>
+        }
+        groupBy: {
+          args: Prisma.FileUploadChunkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileUploadChunkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileUploadChunkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileUploadChunkCountAggregateOutputType> | number
+        }
+      }
+    }
     UserOperationLog: {
       payload: Prisma.$UserOperationLogPayload<ExtArgs>
       fields: Prisma.UserOperationLogFieldRefs
@@ -2239,11 +2389,41 @@ export const FileScalarFieldEnum = {
   extension: 'extension',
   size: 'size',
   url: 'url',
+  sha256: 'sha256',
   createdAt: 'createdAt',
   deletedAt: 'deletedAt'
 } as const
 
 export type FileScalarFieldEnum = (typeof FileScalarFieldEnum)[keyof typeof FileScalarFieldEnum]
+
+
+export const FileUploadSessionScalarFieldEnum = {
+  id: 'id',
+  sha256: 'sha256',
+  size: 'size',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  chunkSize: 'chunkSize',
+  totalChunks: 'totalChunks',
+  status: 'status',
+  createdById: 'createdById',
+  tempDir: 'tempDir',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileUploadSessionScalarFieldEnum = (typeof FileUploadSessionScalarFieldEnum)[keyof typeof FileUploadSessionScalarFieldEnum]
+
+
+export const FileUploadChunkScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  chunkIndex: 'chunkIndex',
+  size: 'size'
+} as const
+
+export type FileUploadChunkScalarFieldEnum = (typeof FileUploadChunkScalarFieldEnum)[keyof typeof FileUploadChunkScalarFieldEnum]
 
 
 export const UserOperationLogScalarFieldEnum = {
@@ -2515,6 +2695,20 @@ export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'FileUploadStatus'
+ */
+export type EnumFileUploadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FileUploadStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'FileUploadStatus[]'
+ */
+export type ListEnumFileUploadStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FileUploadStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2656,6 +2850,8 @@ export type GlobalOmitConfig = {
   dbBackupConfig?: Prisma.DbBackupConfigOmit
   dbBackupJob?: Prisma.DbBackupJobOmit
   file?: Prisma.FileOmit
+  fileUploadSession?: Prisma.FileUploadSessionOmit
+  fileUploadChunk?: Prisma.FileUploadChunkOmit
   userOperationLog?: Prisma.UserOperationLogOmit
 }
 

@@ -724,7 +724,19 @@ export default {
     probing: '检测中...',
     previewUnsupported: '暂不支持预览该文件类型：{type}',
     previewUrlFailed: '获取文件预览链接失败',
-    previewFailed: '文件预览失败，请稍后重试'
+    previewFailed: '文件预览失败，请稍后重试',
+    selectFiles: '选择文件',
+    hashing: '校验中',
+    waiting: '排队中',
+    uploading: '上传中',
+    paused: '已暂停',
+    instant: '秒传',
+    reselect: '请重新选择文件',
+    pause: '暂停',
+    resume: '继续',
+    cancel: '取消',
+    matchFailed: '所选文件与待续传记录不匹配',
+    instantSuccess: '文件已存在，已秒传'
   },
   dbBackup: {
     configTitle: '备份配置',

@@ -1,12 +1,11 @@
 <script setup lang="tsx">
-import { deleteFileApi, getFileListApi, uploadFileApi } from '@/api/file'
+import { deleteFileApi, getFileListApi } from '@/api/file'
 import type { FileItem, FileListParams } from '@/api/file/types'
 import { BaseButton } from '@/components/Button'
 import { ContentWrap } from '@/components/ContentWrap'
 import { FormSchema } from '@/components/Form'
 import { Search } from '@/components/Search'
 import { Table, TableColumn } from '@/components/Table'
-import { UploadBtn } from '@/components/UploadBtn'
 import { useI18n } from '@/hooks/web/useI18n'
 import { useTable } from '@/hooks/web/useTable'
 import { formatToDateTime } from '@/utils/dateUtil'
@@ -14,6 +13,7 @@ import { downloadFile, FileUnavailableError, formatFileSize, resolveStaticUrl } 
 import { ElMessage } from 'element-plus'
 import { reactive, ref, unref } from 'vue'
 import RenderFile from './components/RenderFile.vue'
+import FileUploadQueue from './components/FileUploadQueue.vue'
 
 const { t } = useI18n()
 const allFileList = ref<FileItem[]>([])
@@ -150,20 +150,14 @@ const searchSchema = reactive<FormSchema[]>([
     component: 'Input'
   }
 ])
-
-const startUpload = async (file: File) => {
-  await uploadFileApi(file)
-  await getList()
-  ElMessage.success(t('file.uploadSuccess'))
-}
 </script>
 
 <template>
   <ContentWrap>
     <Search :schema="searchSchema" @search="setSearchParams" @reset="setSearchParams" />
 
-    <div class="mb-10px flex items-center gap-10px">
-      <UploadBtn :upload-api="startUpload" />
+    <div class="mb-10px flex items-start gap-10px">
+      <FileUploadQueue @uploaded="getList" />
       <BaseButton :loading="delLoading" type="danger" @click="removeSelection()">
         {{ t('exampleDemo.batchDel') }}
       </BaseButton>

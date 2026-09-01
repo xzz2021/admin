@@ -44,6 +44,7 @@ export type FileMinAggregateOutputType = {
   extension: string | null
   size: bigint | null
   url: string | null
+  sha256: string | null
   createdAt: Date | null
   deletedAt: Date | null
 }
@@ -56,6 +57,7 @@ export type FileMaxAggregateOutputType = {
   extension: string | null
   size: bigint | null
   url: string | null
+  sha256: string | null
   createdAt: Date | null
   deletedAt: Date | null
 }
@@ -68,6 +70,7 @@ export type FileCountAggregateOutputType = {
   extension: number
   size: number
   url: number
+  sha256: number
   createdAt: number
   deletedAt: number
   _all: number
@@ -92,6 +95,7 @@ export type FileMinAggregateInputType = {
   extension?: true
   size?: true
   url?: true
+  sha256?: true
   createdAt?: true
   deletedAt?: true
 }
@@ -104,6 +108,7 @@ export type FileMaxAggregateInputType = {
   extension?: true
   size?: true
   url?: true
+  sha256?: true
   createdAt?: true
   deletedAt?: true
 }
@@ -116,6 +121,7 @@ export type FileCountAggregateInputType = {
   extension?: true
   size?: true
   url?: true
+  sha256?: true
   createdAt?: true
   deletedAt?: true
   _all?: true
@@ -215,6 +221,7 @@ export type FileGroupByOutputType = {
   extension: string | null
   size: bigint
   url: string
+  sha256: string | null
   createdAt: Date
   deletedAt: Date | null
   _count: FileCountAggregateOutputType | null
@@ -250,6 +257,7 @@ export type FileWhereInput = {
   extension?: Prisma.StringNullableFilter<"File"> | string | null
   size?: Prisma.BigIntFilter<"File"> | bigint | number
   url?: Prisma.StringFilter<"File"> | string
+  sha256?: Prisma.StringNullableFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
 }
@@ -262,6 +270,7 @@ export type FileOrderByWithRelationInput = {
   extension?: Prisma.SortOrderInput | Prisma.SortOrder
   size?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  sha256?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
@@ -277,6 +286,7 @@ export type FileWhereUniqueInput = Prisma.AtLeast<{
   extension?: Prisma.StringNullableFilter<"File"> | string | null
   size?: Prisma.BigIntFilter<"File"> | bigint | number
   url?: Prisma.StringFilter<"File"> | string
+  sha256?: Prisma.StringNullableFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeFilter<"File"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"File"> | Date | string | null
 }, "id" | "path">
@@ -289,6 +299,7 @@ export type FileOrderByWithAggregationInput = {
   extension?: Prisma.SortOrderInput | Prisma.SortOrder
   size?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  sha256?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.FileCountOrderByAggregateInput
@@ -309,6 +320,7 @@ export type FileScalarWhereWithAggregatesInput = {
   extension?: Prisma.StringNullableWithAggregatesFilter<"File"> | string | null
   size?: Prisma.BigIntWithAggregatesFilter<"File"> | bigint | number
   url?: Prisma.StringWithAggregatesFilter<"File"> | string
+  sha256?: Prisma.StringNullableWithAggregatesFilter<"File"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"File"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"File"> | Date | string | null
 }
@@ -320,6 +332,7 @@ export type FileCreateInput = {
   extension?: string | null
   size: bigint | number
   url: string
+  sha256?: string | null
   createdAt?: Date | string
   deletedAt?: Date | string | null
 }
@@ -332,6 +345,7 @@ export type FileUncheckedCreateInput = {
   extension?: string | null
   size: bigint | number
   url: string
+  sha256?: string | null
   createdAt?: Date | string
   deletedAt?: Date | string | null
 }
@@ -343,6 +357,7 @@ export type FileUpdateInput = {
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -355,6 +370,7 @@ export type FileUncheckedUpdateInput = {
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -367,6 +383,7 @@ export type FileCreateManyInput = {
   extension?: string | null
   size: bigint | number
   url: string
+  sha256?: string | null
   createdAt?: Date | string
   deletedAt?: Date | string | null
 }
@@ -378,6 +395,7 @@ export type FileUpdateManyMutationInput = {
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -390,6 +408,7 @@ export type FileUncheckedUpdateManyInput = {
   extension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   size?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  sha256?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
@@ -402,6 +421,7 @@ export type FileCountOrderByAggregateInput = {
   extension?: Prisma.SortOrder
   size?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  sha256?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
@@ -419,6 +439,7 @@ export type FileMaxOrderByAggregateInput = {
   extension?: Prisma.SortOrder
   size?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  sha256?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
@@ -431,6 +452,7 @@ export type FileMinOrderByAggregateInput = {
   extension?: Prisma.SortOrder
   size?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  sha256?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
@@ -458,6 +480,7 @@ export type FileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   extension?: boolean
   size?: boolean
   url?: boolean
+  sha256?: boolean
   createdAt?: boolean
   deletedAt?: boolean
 }, ExtArgs["result"]["file"]>
@@ -470,6 +493,7 @@ export type FileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   extension?: boolean
   size?: boolean
   url?: boolean
+  sha256?: boolean
   createdAt?: boolean
   deletedAt?: boolean
 }, ExtArgs["result"]["file"]>
@@ -482,6 +506,7 @@ export type FileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   extension?: boolean
   size?: boolean
   url?: boolean
+  sha256?: boolean
   createdAt?: boolean
   deletedAt?: boolean
 }, ExtArgs["result"]["file"]>
@@ -494,11 +519,12 @@ export type FileSelectScalar = {
   extension?: boolean
   size?: boolean
   url?: boolean
+  sha256?: boolean
   createdAt?: boolean
   deletedAt?: boolean
 }
 
-export type FileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "mimeType" | "path" | "extension" | "size" | "url" | "createdAt" | "deletedAt", ExtArgs["result"]["file"]>
+export type FileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "mimeType" | "path" | "extension" | "size" | "url" | "sha256" | "createdAt" | "deletedAt", ExtArgs["result"]["file"]>
 
 export type $FilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "File"
@@ -510,7 +536,7 @@ export type $FilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      */
     name: string
     /**
-     * @z.string().min(1).max(50).meta({ description: 'MIME 类型', example: 'image/png' })
+     * @z.string().min(1).max(255).meta({ description: 'MIME 类型', example: 'image/png' })
      */
     mimeType: string
     /**
@@ -529,6 +555,10 @@ export type $FilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
      * @z.string().url({ message: '文件 URL 格式不正确' }).max(255).meta({ description: '访问 URL', example: 'https://example.com/uploads/avatar.png' })
      */
     url: string
+    /**
+     * @z.string().length(64).regex(/^[0-9a-f]{64}$/).optional().meta({ description: 'SHA-256', example: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' })
+     */
+    sha256: string | null
     createdAt: Date
     /**
      * @z.coerce.date().optional().meta({ description: '软删除时间，待异步清理磁盘', example: '2026-01-01T12:00:00.000Z' })
@@ -964,6 +994,7 @@ export interface FileFieldRefs {
   readonly extension: Prisma.FieldRef<"File", 'String'>
   readonly size: Prisma.FieldRef<"File", 'BigInt'>
   readonly url: Prisma.FieldRef<"File", 'String'>
+  readonly sha256: Prisma.FieldRef<"File", 'String'>
   readonly createdAt: Prisma.FieldRef<"File", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"File", 'DateTime'>
 }

@@ -31,6 +31,10 @@ export function createStaticFileMiddleware(diskRoot: string, urlPrefix: string):
     const queryIndex = req.url.indexOf('?')
     const query = queryIndex >= 0 ? req.url.slice(queryIndex) : ''
     const rest = req.path.slice(prefix.length) || '/'
+    if (isUploadTempPath(rest)) {
+      res.status(404).end()
+      return
+    }
     const originalUrl = req.url
     req.url = `${rest}${query}`
     serve(req, res, (err?: Error) => {
@@ -64,3 +68,8 @@ export class StaticAssetsModule implements NestModule {
 }
 
 export const SERVER_STATIC_MODULE = StaticAssetsModule
+
+function isUploadTempPath(rest: string): boolean {
+  const normalized = rest.replace(/\\/g, '/').replace(/^\/+/, '').toLowerCase()
+  return normalized === 'file/tmp' || normalized.startsWith('file/tmp/')
+}
