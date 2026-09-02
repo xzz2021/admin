@@ -1,66 +1,69 @@
 import request, { type DownloadResponse } from '@/axios'
-import { OssListResponse } from './types'
+import type {
+  OssConfig,
+  OssListResponse,
+  OssMultipartInitResponse,
+  OssPresignGetResponse,
+  OssPresignPutResponse
+} from './types'
 
-//  此处后端合并了处理分页查询和 带id过滤的分页查询
-export const getOssListApi = (params: any): Promise<IResponse<OssListResponse>> => {
-  return request.get({ url: 'minio/publicBucket', params })
+export const getOssConfigApi = () => {
+  return request.get<OssConfig>({ url: 'oss/config', skipErrorToast: true })
 }
 
-export const getPublicFileUrlApi = (params: { objectName: string }): Promise<IResponse<{ url: string }>> => {
-  return request.get({ url: 'minio/publicFileUrl', params })
+export const getOssListApi = (params: { prefix?: string; continuationToken?: string }) => {
+  return request.get<OssListResponse>({ url: 'oss/objects', params, skipErrorToast: true })
 }
 
-// 创建文件夹
-export const createFolderApi = (data: { folderName: string; parentPath?: string }): Promise<IResponse<any>> => {
-  return request.post({ url: 'minio/createFolder', data })
+export const presignOssGetApi = (params: { key: string; disposition?: 'inline' | 'attachment' }) => {
+  return request.get<OssPresignGetResponse>({ url: 'oss/objects/presign', params })
 }
 
-// 删除文件夹
-export const deleteFolderApi = (params: any): Promise<IResponse<any>> => {
-  return request.delete({ url: 'minio/publicBucket', data: params })
+export const createOssFolderApi = (data: { prefix: string; name: string }) => {
+  return request.post<{ key: string }>({ url: 'oss/folders', data })
 }
 
-interface UploadFileParams {
-  file: File
-  // sha256: string
-  // remark?: string
-  [key: string]: any
+export const presignOssPutApi = (data: {
+  prefix: string
+  filename: string
+  contentType: string
+  size: number
+  overwrite?: boolean
+}) => {
+  return request.post<OssPresignPutResponse>({ url: 'oss/uploads/presign', data, skipErrorToast: true })
 }
-export const uploadFileOssApi = (data: UploadFileParams) => {
-  return request.post({
-    url: 'minio/upload',
+
+export const initiateOssMultipartApi = (data: {
+  prefix: string
+  filename: string
+  contentType: string
+  size: number
+  overwrite?: boolean
+}) => {
+  return request.post<OssMultipartInitResponse>({
+    url: 'oss/uploads/multipart',
     data,
-    headers: { 'Content-Type': 'multipart/form-data' }
+    skipErrorToast: true
   })
 }
 
-// 删除文件
-export const deleteObjectApi = (params: { objectName: string }): Promise<IResponse<any>> => {
-  return request.delete({ url: 'minio/delete', params })
+export const abortOssMultipartApi = (data: { key: string; uploadId: string }) => {
+  return request.post({ url: 'oss/uploads/multipart/abort', data, skipErrorToast: true })
 }
 
-export const downloadObjectApi = (params: { objectName: string }): Promise<DownloadResponse> => {
-  return request.download({
-    url: 'minio/download',
-    params
-  })
+export const copyOssObjectsApi = (data: {
+  sources: { key: string; isFolder: boolean }[]
+  destinationPrefix: string
+  destinationName?: string
+  overwrite?: boolean
+}) => {
+  return request.post({ url: 'oss/objects/copy', data, skipErrorToast: true })
 }
 
-export const downloadFolderApi = (params: { folderPath: string }): Promise<DownloadResponse> => {
-  return request.download({
-    url: 'minio/folder/download',
-    params
-  })
+export const deleteOssObjectsApi = (data: { keys: { key: string; isFolder: boolean }[] }) => {
+  return request.delete({ url: 'oss/objects', data })
 }
 
-// 搜索
-export const searchOssApi = (params: { searchTerm: string }): Promise<IResponse<any>> => {
-  return request.get({ url: 'minio/search', params })
-}
-
-// 获取文件URL
-export const getFileUrlApi = (params: {
-  objectName: string
-}): Promise<IResponse<{ url: string; objectName: string; operation: string; expiry: number }>> => {
-  return request.get({ url: 'minio/presigned', params })
+export const downloadOssFolderApi = (params: { prefix: string }): Promise<DownloadResponse> => {
+  return request.download({ url: 'oss/folders/archive', params })
 }

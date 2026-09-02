@@ -4,29 +4,36 @@
 
 ## 根目录（Compose / Server）
 
-| 变量                                                | 用途                                                                  |
-| --------------------------------------------------- | --------------------------------------------------------------------- |
-| `NODE_ENV`                                          | 生产为 `production` 时 Zod 强制校验密钥与连接串                       |
-| `PORT`                                              | HTTP 端口（默认 3000）                                                |
-| `TOKEN_SECRET` / `TOKEN_REFRESH_SECRET`             | JWT 密钥（建议 ≥32 随机字符）                                         |
-| `TOKEN_EXPIRES_TIME`                                | Access 过期（秒）                                                     |
-| `TOKEN_REFRESH_EXPIRES_TIME`                        | Refresh 过期（秒）                                                    |
-| `SSO_COUNT`                                         | 同用户最大会话数                                                      |
-| `SWAGGER` / `SWAGGER_USERNAME` / `SWAGGER_PASSWORD` | Swagger 开关与 Basic Auth（仅 `SWAGGER=true` 时需要账号）             |
-| `HELMET`                                            | 是否启用 helmet                                                       |
-| `STATIC_FILE_ROOT_PATH`                             | 静态磁盘根（如 `public`）                                             |
-| `STATIC_FILE_SERVE_ROOT`                            | 静态 URL 前缀（如 `api/public`）                                      |
-| `SEED_ADMIN_USERNAME` / `PASSWORD` / `PHONE`        | 空库 Seed 超级管理员                                                  |
-| `POSTGRES_DB`                                       | 库名                                                                  |
-| `POSTGRES_ADMIN_USER` / `PASSWORD`                  | 超级用户                                                              |
-| `POSTGRES_MIGRATOR_USER` / `PASSWORD`               | 迁移用户（密码须与另外两个不同）                                      |
-| `POSTGRES_APP_USER` / `PASSWORD`                    | 运行时用户                                                            |
-| `PG_DATABASE_URL`                                   | **migrate** 容器：Compose 原样注入为 Nest/Prisma 的 `PG_DATABASE_URL` |
-| `APP_DATABASE_URL`                                  | **server** 容器：Compose 将其注入为进程内的 `PG_DATABASE_URL`         |
-| `REDIS_HOST` / `PORT` / `PASSWORD`                  | Redis（Compose 服务名 `redis`）                                       |
-| `DB_BACKUP_DIR`                                     | 容器内备份目录（默认 `/app/apps/server/backups`）                     |
-| `DB_BACKUP_CRON` / `TIMEZONE` / `RETENTION_MAX`     | 定时备份                                                              |
-| `DB_BACKUP_PREFIX` / `GZIP`                         | 备份文件名前缀与是否 gzip                                             |
+| 变量                                                          | 用途                                                                  |
+| ------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `NODE_ENV`                                                    | 生产为 `production` 时 Zod 强制校验密钥与连接串                       |
+| `PORT`                                                        | HTTP 端口（默认 3000）                                                |
+| `TOKEN_SECRET` / `TOKEN_REFRESH_SECRET`                       | JWT 密钥（建议 ≥32 随机字符）                                         |
+| `TOKEN_EXPIRES_TIME`                                          | Access 过期（秒）                                                     |
+| `TOKEN_REFRESH_EXPIRES_TIME`                                  | Refresh 过期（秒）                                                    |
+| `SSO_COUNT`                                                   | 同用户最大会话数                                                      |
+| `SWAGGER` / `SWAGGER_USERNAME` / `SWAGGER_PASSWORD`           | Swagger 开关与 Basic Auth（仅 `SWAGGER=true` 时需要账号）             |
+| `HELMET`                                                      | 是否启用 helmet                                                       |
+| `STATIC_FILE_ROOT_PATH`                                       | 静态磁盘根（如 `public`）                                             |
+| `STATIC_FILE_SERVE_ROOT`                                      | 静态 URL 前缀（如 `api/public`）                                      |
+| `OSS_S3_ENDPOINT` / `ACCESS_KEY` / `SECRET_KEY` / `BUCKET`    | 启用 OSS 时必填。缺一则 `/oss/*` 返回 503，进程仍可启动               |
+| `OSS_S3_REGION`                                               | 默认 `us-east-1`（MinIO 可用）                                        |
+| `OSS_S3_FORCE_PATH_STYLE`                                     | 默认 `true`（MinIO 必须）；AWS 虚拟主机可设 `false`                   |
+| `OSS_PUT_SIMPLE_MAX_BYTES`                                    | 小于此值用单次预签名 PUT，默认 16MiB                                  |
+| `OSS_MULTIPART_PART_BYTES`                                    | 分片大小，默认 8MiB（且 ≥ 5MiB）                                      |
+| `OSS_PRESIGN_GET_EXPIRES_SEC` / `OSS_PRESIGN_PUT_EXPIRES_SEC` | 预签名过期，默认 3600 / 900 秒                                        |
+| `OSS_MAX_BATCH_KEYS`                                          | 删除 / 移动 / zip 触及对象数上限，默认 1000                           |
+| `SEED_ADMIN_USERNAME` / `PASSWORD` / `PHONE`                  | 空库 Seed 超级管理员                                                  |
+| `POSTGRES_DB`                                                 | 库名                                                                  |
+| `POSTGRES_ADMIN_USER` / `PASSWORD`                            | 超级用户                                                              |
+| `POSTGRES_MIGRATOR_USER` / `PASSWORD`                         | 迁移用户（密码须与另外两个不同）                                      |
+| `POSTGRES_APP_USER` / `PASSWORD`                              | 运行时用户                                                            |
+| `PG_DATABASE_URL`                                             | **migrate** 容器：Compose 原样注入为 Nest/Prisma 的 `PG_DATABASE_URL` |
+| `APP_DATABASE_URL`                                            | **server** 容器：Compose 将其注入为进程内的 `PG_DATABASE_URL`         |
+| `REDIS_HOST` / `PORT` / `PASSWORD`                            | Redis（Compose 服务名 `redis`）                                       |
+| `DB_BACKUP_DIR`                                               | 容器内备份目录（默认 `/app/apps/server/backups`）                     |
+| `DB_BACKUP_CRON` / `TIMEZONE` / `RETENTION_MAX`               | 定时备份                                                              |
+| `DB_BACKUP_PREFIX` / `GZIP`                                   | 备份文件名前缀与是否 gzip                                             |
 
 ### 命名注意
 
@@ -37,19 +44,29 @@ Nest 与 Prisma **只读 `PG_DATABASE_URL`**。Compose 里：
 
 本地 `apps/server/.env` 直接写 `PG_DATABASE_URL`。生产根目录 `.env` 必须同时提供上述两个 URL。
 
+### OSS / S3 CORS
+
+预签名直传要求 bucket CORS 允许管理后台 Origin：
+
+- Methods：`GET`、`PUT`、`HEAD`
+- Headers：`Content-Type`、`Authorization`、`x-amz-*`
+- ExposeHeaders：`ETag`（multipart complete 需要）
+
+本仓库不自动改 bucket CORS。已有库需在「菜单 / 角色」中自行启用 OSS（seed 只影响空库）。
+
 ## Admin Vite
 
-| 变量                              | `.env.base`（本地 `--mode base`） | `.env.pro`（`build:pro`） |
-| --------------------------------- | --------------------------------- | ------------------------- |
-| `VITE_API_BASE_PATH`              | `api/`                            | `/api/`                   |
-| `VITE_BASE_PATH`                  | `/`                               | `/`                       |
-| `VITE_APP_TITLE`                  | 见文件                            | 见文件                    |
-| `VITE_OUT_DIR`                    | —                                 | `dist-pro`                |
-| `VITE_DROP_CONSOLE` / `DEBUGGER`  | —                                 | true                      |
-| `VITE_SOURCEMAP`                  | —                                 | false                     |
-| `VITE_OSS_PUBLIC_BUCKET`          | `public`                          | `public`                  |
-| `VITE_USE_ALL_ELEMENT_PLUS_STYLE` | true                              | true                      |
-| `VITE_HIDE_GLOBAL_SETTING`        | false                             | false                     |
+| 变量                              | `.env.base`（本地 `--mode base`）                       | `.env.pro`（`build:pro`） |
+| --------------------------------- | ------------------------------------------------------- | ------------------------- |
+| `VITE_API_BASE_PATH`              | `api/`                                                  | `/api/`                   |
+| `VITE_BASE_PATH`                  | `/`                                                     | `/`                       |
+| `VITE_APP_TITLE`                  | 见文件                                                  | 见文件                    |
+| `VITE_OUT_DIR`                    | —                                                       | `dist-pro`                |
+| `VITE_DROP_CONSOLE` / `DEBUGGER`  | —                                                       | true                      |
+| `VITE_SOURCEMAP`                  | —                                                       | false                     |
+| `VITE_OSS_PUBLIC_BUCKET`          | 遗留，运行时不再读取（bucket 仅服务端 `OSS_S3_BUCKET`） | 同左                      |
+| `VITE_USE_ALL_ELEMENT_PLUS_STYLE` | true                                                    | true                      |
+| `VITE_HIDE_GLOBAL_SETTING`        | false                                                   | false                     |
 
 生产构建必须用 **`/api/`**（绝对路径）。`api/` 仅给本地 Vite 开发代理。文件：`apps/admin/.env.base`、`.env.dev`、`.env.pro`。
 

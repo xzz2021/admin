@@ -21,7 +21,7 @@ const withCancel = <T>(url: string, send: (config: RequestConfig) => Promise<T>)
 
 /** JSON 业务请求：始终返回拦截器解包后的 `response.data`（IResponse）。 */
 const requestData = <T>(option: JsonAxiosConfig): CancellablePromise<T> => {
-  const { url, method, params, data, headers, withCredentials, timeout, onUploadProgress } = option
+  const { url, method, params, data, headers, withCredentials, timeout, onUploadProgress, skipErrorToast } = option
 
   return withCancel(url || '', (pending) =>
     axiosInstance
@@ -34,6 +34,7 @@ const requestData = <T>(option: JsonAxiosConfig): CancellablePromise<T> => {
         withCredentials,
         timeout,
         onUploadProgress,
+        skipErrorToast,
         ...pending
       })
       .then((response) => response.data)

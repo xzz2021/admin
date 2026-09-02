@@ -45,4 +45,8 @@ export enum ErrorEnum {
   OSS_FILE_OR_DIR_EXIST = '1401:当前创建的文件或目录已存在',
   OSS_NO_OPERATION_REQUIRED = '1402:无需操作',
   OSS_EXCEE_MAXIMUM_QUANTITY = '1403:已超出支持的最大处理数量',
+  OSS_NOT_CONFIGURED = '1404:OSS 未配置或不可用',
+  OSS_INVALID_KEY = '1405:对象名称或路径不合法',
+  OSS_NOT_FOUND = '1406:对象不存在',
+  OSS_S3_FAILED = '1407:对象存储操作失败',
 }

@@ -1,74 +1,31 @@
-import { downloadFolderApi, downloadObjectApi, getFileUrlApi } from '@/api/oss'
+import { presignOssGetApi } from '@/api/oss'
+import type { OssFileItem } from '@/api/oss/types'
 import { useI18n } from '@/hooks/web/useI18n'
+import { getFileIcon2 } from '@/utils/file'
 import { getPreviewFilename, isPreviewableType, openPreview } from '@/utils/preview'
-import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios'
 import { ElMessage } from 'element-plus'
 
-const getFilenameFromHeader = (headers: RawAxiosResponseHeaders | AxiosResponseHeaders) => {
-  const contentDisposition = headers['content-disposition']
-  let filename = 'download.zip'
-  if (contentDisposition) {
-    const filenameMatch = contentDisposition.match(/filename="(.+)"/)
-    if (filenameMatch) {
-      filename = decodeURIComponent(filenameMatch[1])
-    }
-  }
-  return filename
-}
-
-export const downloadFile = async (rawName: string) => {
-  const isFolder = rawName.endsWith('/')
-  try {
-    const file = isFolder
-      ? await downloadFolderApi({
-          folderPath: rawName
-        })
-      : await downloadObjectApi({
-          objectName: rawName
-        })
-
-    const url = window.URL.createObjectURL(file.data)
-    const link = document.createElement('a')
-    link.href = url
-
-    const fileName = rawName.split('/').pop() || rawName
-    link.download = isFolder ? getFilenameFromHeader(file.headers) : fileName
-
-    document.body.appendChild(link)
-    link.click()
-
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-
-    ElMessage.success('文件下载成功')
-  } catch (error) {
-    console.error('下载失败:', error)
-    ElMessage.error('文件下载失败')
-  }
-}
-
-export const previewFile = async (rawName: string, fileType: string) => {
+export const previewOssFile = async (item: OssFileItem) => {
   const { t } = useI18n()
+  const fileType = getFileIcon2(item.name.split('.').pop() || '').type
   if (!isPreviewableType(fileType)) {
-    ElMessage.error(t('file.previewUnsupported', { type: fileType }))
+    try {
+      const res = await presignOssGetApi({ key: item.key, disposition: 'attachment' })
+      window.open(res.data.url, '_blank')
+    } catch {
+      ElMessage.error(t('file.previewUnsupported', { type: fileType }))
+    }
     return
   }
 
   try {
-    const res = await getFileUrlApi({ objectName: rawName })
-    const url = res?.data?.url
-    if (!url) {
-      ElMessage.error(t('file.previewUrlFailed'))
-      return
-    }
-
+    const res = await presignOssGetApi({ key: item.key, disposition: 'inline' })
     await openPreview({
       type: fileType,
-      url,
-      filename: getPreviewFilename(rawName)
+      url: res.data.url,
+      filename: getPreviewFilename(item.name)
     })
-  } catch (error) {
-    console.error(error)
+  } catch {
     ElMessage.error(t('file.previewFailed'))
   }
 }

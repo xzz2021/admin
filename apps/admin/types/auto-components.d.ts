@@ -20,7 +20,7 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
-  const ElCard: (typeof import('element-plus/es'))['ElCard']
-  const RouterLink: (typeof import('vue-router'))['RouterLink']
-  const RouterView: (typeof import('vue-router'))['RouterView']
+  const ElCard: typeof import('element-plus/es')['ElCard']
+  const RouterLink: typeof import('vue-router')['RouterLink']
+  const RouterView: typeof import('vue-router')['RouterView']
 }

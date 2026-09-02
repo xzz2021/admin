@@ -54,6 +54,7 @@ Seed 中权限编码规则：`code = \`${resource}:${action}\``，`resource`对�
 | `menu:view` / `menu:add` / `menu:update` / `menu:delete`               | MenuController；Permission CRUD 复用 menu:* |
 | `department:*` / `dictionary:*`                                        | 对应模块                                    |
 | `fileList:view` / `add` / `delete`                                     | StaticfileController                        |
+| `oss:view` / `oss:add` / `oss:delete`                                  | OssController                               |
 | `onlineUser:view` / `kick`                                             | OnlineController                            |
 | `server:view`                                                          | MonitorController                           |
 | `message:view` / `send`                                                | MessageController                           |

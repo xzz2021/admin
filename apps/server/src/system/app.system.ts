@@ -8,6 +8,7 @@ import { MenuModule } from '@/system/menu/menu.module'
 import { MessageModule } from '@/system/message/message.module'
 import { MonitorModule } from '@/system/monitor/monitor.module'
 import { OnlineModule } from '@/system/online/online.module'
+import { OssModule } from '@/system/oss/oss.module'
 import { PermissionModule } from '@/system/permission/permission.module'
 import { RoleModule } from '@/system/role/role.module'
 import { SessionModule } from '@/system/session/session.module'
@@ -27,4 +28,5 @@ export const CORE_SYSTEM_MODULE = [
   MonitorModule,
   OnlineModule,
   MessageModule,
+  OssModule,
 ]

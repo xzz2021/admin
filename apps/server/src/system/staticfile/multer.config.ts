@@ -1,3 +1,4 @@
+import { DANGEROUS_FILENAME_RE } from '@/processor/constants/filename'
 import { BadRequestException } from '@nestjs/common'
 import type { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface'
 import { randomUUID } from 'crypto'
@@ -21,7 +22,7 @@ const MANAGE_EXT = new Set([...IMAGE_EXT, '.pdf', '.txt', '.zip'])
 const AVATAR_MAX_BYTES = 5 * 1024 * 1024
 const MANAGE_MAX_BYTES = 10 * 1024 * 1024
 
-export const DANGEROUS_FILENAME_RE = /\.(php|phtml|asp|aspx|exe|sh|bat|cmd|js|mjs|cjs|html|htm|shtml)(\.|$)/i
+export { DANGEROUS_FILENAME_RE }
 
 export function getStaticFileRoot(): string {
   const configured = process.env.STATIC_FILE_ROOT_PATH

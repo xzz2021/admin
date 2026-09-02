@@ -19,11 +19,13 @@ declare module 'axios' {
     requestId?: string
     _retry?: boolean
     _refreshInfraError?: boolean
+    skipErrorToast?: boolean
   }
 
   interface InternalAxiosRequestConfig {
     requestId?: string
     _retry?: boolean
     _refreshInfraError?: boolean
+    skipErrorToast?: boolean
   }
 }

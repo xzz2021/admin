@@ -88,7 +88,9 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    showAxiosError(getAxiosErrorMessage(error))
+    if (!error.config?.skipErrorToast) {
+      showAxiosError(getAxiosErrorMessage(error))
+    }
     return Promise.reject(error)
   }
 )

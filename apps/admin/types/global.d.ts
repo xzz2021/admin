@@ -43,6 +43,7 @@ declare global {
     withCredentials?: boolean
     timeout?: number
     onUploadProgress?: (event: { loaded: number; total?: number }) => void
+    skipErrorToast?: boolean
   }
 
   declare interface IResponse<T = any> {

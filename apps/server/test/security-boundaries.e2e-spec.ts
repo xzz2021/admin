@@ -3,6 +3,8 @@ import { AuthorizationService } from '@/processor/authorization/authorization.se
 import { RequiredPermission } from '@/processor/decorator'
 import { JwtRefreshAuthGuard, PermissionGuard } from '@/processor/guard'
 import { RtTokenService } from '@/system/auth/rt.token.service'
+import { OssController } from '@/system/oss/oss.controller'
+import { OssService } from '@/system/oss/oss.service'
 import { FileUploadService } from '@/system/staticfile/file-upload.service'
 import { assertNotDangerousFilename } from '@/system/staticfile/multer.config'
 import { StaticfileController } from '@/system/staticfile/staticfile.controller'
@@ -49,6 +51,7 @@ describe('Security boundaries (e2e)', () => {
   const uploadChunk = jest.fn()
   const complete = jest.fn()
   const abort = jest.fn()
+  const listObjects = jest.fn()
 
   beforeAll(async () => {
     uploadRoot = mkdtempSync(join(tmpdir(), 'admin2-upload-e2e-'))
@@ -56,7 +59,7 @@ describe('Security boundaries (e2e)', () => {
     jest.spyOn(AuthGuard('jwt-refresh').prototype, 'canActivate').mockResolvedValue(true)
 
     const moduleFixture = await Test.createTestingModule({
-      controllers: [SecurityTestController, StaticfileController],
+      controllers: [SecurityTestController, StaticfileController, OssController],
       providers: [
         JwtRefreshAuthGuard,
         PermissionGuard,
@@ -79,6 +82,10 @@ describe('Security boundaries (e2e)', () => {
         {
           provide: FileUploadService,
           useValue: { initiate, getSession, uploadChunk, complete, abort },
+        },
+        {
+          provide: OssService,
+          useValue: { listObjects },
         },
         {
           provide: AuthorizationService,
@@ -221,5 +228,10 @@ describe('Security boundaries (e2e)', () => {
   it('rejects chunk upload without fileList:add', async () => {
     await request(app.getHttpServer()).put('/staticfile/uploads/sess-1/chunks/0').expect(403)
     expect(uploadChunk).not.toHaveBeenCalled()
+  })
+
+  it('rejects listing OSS objects without oss:view', async () => {
+    await request(app.getHttpServer()).get('/oss/objects').expect(403)
+    expect(listObjects).not.toHaveBeenCalled()
   })
 })
